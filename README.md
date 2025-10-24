@@ -16,7 +16,21 @@
 💰 钱包地址
 0x59B7c28c236E6017df28e7F376B84579872A4E33
 ---
-
+简单说明:
+1.在 src/deepseekBNB.py(这个是真正的主文件必须存在) 中修改 TRADE_CONFIG：
+TRADE_CONFIG = {
+    'symbol': 'BNB/USDT',        # 交易对
+    'leverage': 3,                # 杠杆倍数
+    'timeframe': '15m',           # K线周期
+    'test_mode': False,           # 实盘/测试模式
+    'position_management': {
+        'max_position_percent': 80,  # 最大仓位百分比
+        'min_position_percent': 5,   # 最小仓位百分比
+        'force_reserve_percent': 20, # 强制预留资金
+    }
+}
+2. .env这个是记录你ai模型的api和交易所api的记录文件
+下载这2个基本上就能跑了
 ## ✨ 核心特性
 
 ### 🧠 **AI驱动决策**
