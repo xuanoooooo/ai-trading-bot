@@ -264,7 +264,8 @@ This project is licensed under the [MIT License](LICENSE) - see the LICENSE file
 
 If you have profited from this project, welcome to support:
 
-**Wallet Address**: `0x59B7c28c236E6017df28e7F376B84579872A4E33`
+## 💰 **Wallet Address**
+# `0x59B7c28c236E6017df28e7F376B84579872A4E33`
 
 - 💝 **Thanks for Support** - If profitable brothers are willing to remember me kindly
 - 📖 **Documentation** - Check docs/ directory for detailed usage instructions
