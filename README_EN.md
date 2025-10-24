@@ -6,6 +6,15 @@
 
 > 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
 
+## 📖 Documentation Language / 文档语言
+
+<div align="center">
+
+[![English](https://img.shields.io/badge/English-🇺🇸-blue.svg)](README_EN.md)
+[![中文](https://img.shields.io/badge/中文-🇨🇳-red.svg)](README_CN.md)
+
+</div>
+
 ## ⚠️ **IMPORTANT: Must Use One-Way Position Mode**
 **Please ensure your Binance account is set to One-Way Position Mode, Hedge Mode will cause trading failures!**
 
@@ -57,13 +66,6 @@ python src/deepseekBNB.py
 ### 💰 If you have profited from this project, welcome to support:
 ## 💰 **Wallet Address**
 # `0x59B7c28c236E6017df28e7F376B84579872A4E33`
-
----
-
-## 📖 Documentation Language / 文档语言
-
-- 🇨🇳 **[中文文档 (Chinese)](README_CN.md)** - Detailed Chinese usage guide
-- 🇺🇸 **[English Documentation](README_EN.md)** - Complete English documentation
 
 ---
 
@@ -329,3 +331,10 @@ If you have profited from this project, welcome to support:
 ---
 
 **⭐ If this project helps you, please give it a Star!**
+
+---
+
+## 💰 If you have profited from this project, welcome to support:
+
+## 💰 **Wallet Address**
+# `0x59B7c28c236E6017df28e7F376B84579872A4E33`

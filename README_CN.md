@@ -1,10 +1,22 @@
 # 🤖 AI自动交易机器人 - DeepSeek Trading Bot
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
 
 > 🚀 **基于DeepSeek AI的智能加密货币交易机器人，支持动态仓位管理和全自动交易决策**
+
+## 📖 文档语言 / Documentation Language
+
+<div align="center">
+
+[![English](https://img.shields.io/badge/English-🇺🇸-blue.svg)](README_EN.md)
+[![中文](https://img.shields.io/badge/中文-🇨🇳-red.svg)](README_CN.md)
+
+</div>
+
+## ⚠️ **重要：必须使用单向持仓模式**
+**请确保您的币安账户设置为单向持仓模式（One-Way Mode），双向持仓模式（Hedge Mode）会导致交易失败！**
 
 ## ✨ 核心特性
 
@@ -236,7 +248,7 @@ ai-trading-bot/
 
 ## 📄 许可证
 
-本项目采用 [MIT许可证](LICENSE) - 详见LICENSE文件
+本项目采用 [Apache 2.0许可证](LICENSE) - 详见LICENSE文件
 
 ## ⚠️ 免责声明
 
@@ -265,3 +277,10 @@ ai-trading-bot/
 ---
 
 **⭐ 如果这个项目对您有帮助，请给个Star支持一下！**
+
+---
+
+## 💰 如果您通过这个项目获得了收益，欢迎支持一下：
+
+## 💰 **钱包地址**
+# `0x59B7c28c236E6017df28e7F376B84579872A4E33`
