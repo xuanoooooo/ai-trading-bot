@@ -22,6 +22,8 @@
 ## 💰 **钱包地址**
 # `0x59B7c28c236E6017df28e7F376B84579872A4E33`
 
+<img width="1124" height="877" alt="图片" src="https://github.com/user-attachments/assets/b014a85a-7791-4af1-a9dd-a6faf277c8ac" />
+
 ## 🚀 快速开始（最简单）
 
 ### 📝 1. 修改交易配置
