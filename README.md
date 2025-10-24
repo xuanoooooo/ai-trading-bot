@@ -1,267 +1,276 @@
-# 🤖 AI Trading Bot - DeepSeek Automated Trading
+# 🤖 AI自动交易机器人 - DeepSeek智能交易
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
 
-> 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
+> 🚀 **基于DeepSeek AI的智能加密货币交易机器人，支持动态仓位管理和全自动交易决策**
 
-## ✨ Key Features
+## 📖 文档语言 / Documentation Language
 
-### 🧠 **AI-Driven Decisions**
-- **DeepSeek AI Analysis** - Advanced LLM-based intelligent market analysis
-- **Fully Autonomous** - AI independently analyzes technical indicators without human intervention
-- **Dynamic Position Management** - AI intelligently adjusts position sizes based on market conditions
+- 🇨🇳 **[中文文档 (Chinese)](README_CN.md)** - 详细的中文使用指南
+- 🇺🇸 **[English Documentation](README_EN.md)** - Complete English documentation
 
-### 📊 **Technical Analysis Engine**
-- **Multi-dimensional Indicators** - SMA, EMA, MACD, RSI, Bollinger Bands, Volume analysis
-- **Support/Resistance Detection** - Automatic calculation of static and dynamic levels
-- **Trend Analysis** - Price momentum and trend continuity analysis
-- **Real-time Data** - 15-minute K-line data with 96 historical data points
+---
 
-### 🛡️ **Risk Management System**
-- **Smart Risk Control** - Maximum 80% position limit with mandatory 20% buffer
-- **Leverage Protection** - Fixed 3x leverage for controlled risk
-- **Minimum Trade Amount** - Automatic exchange minimum trade requirements check
-- **Error Tolerance** - Trade amount precision handling and reasonableness validation
+## ✨ 核心特性
 
-### 🔧 **Technical Architecture**
-- **Binance Futures** - Supports Binance futures trading
-- **Multi-currency Support** - Configurable trading pairs (BNB/USDT, DOGE/USDT, etc.)
-- **Persistent Operation** - tmux session management for remote server deployment
-- **Complete Logging** - Automatic log rotation with detailed trading records
+### 🧠 **AI驱动决策**
+- **DeepSeek AI分析** - 基于先进大语言模型的智能市场分析
+- **完全自主决策** - AI独立分析技术指标，无人工干预
+- **动态仓位管理** - AI根据市场情况智能调整仓位大小
 
-## 🚀 Quick Start
+### 📊 **技术分析引擎**
+- **多维度指标** - SMA、EMA、MACD、RSI、布林带、成交量分析
+- **支撑阻力识别** - 自动计算静态和动态支撑阻力位
+- **趋势分析** - 价格动量、趋势连续性分析
+- **实时数据** - 15分钟K线数据，96根历史数据点
 
-### 📋 System Requirements
+### 🛡️ **风险管理系统**
+- **智能风控** - 最大80%仓位限制，强制20%资金预留
+- **杠杆保护** - 固定3倍杠杆，风险可控
+- **最小交易量** - 自动检查交易所最小交易要求
+- **容错机制** - 交易数量精度处理和合理性验证
+
+### 🔧 **技术架构**
+- **币安合约** - 支持币安期货交易
+- **多币种支持** - 可配置交易对（BNB/USDT、DOGE/USDT等）
+- **持久化运行** - tmux会话管理，支持远程服务器部署
+- **完整日志** - 自动日志轮转，详细交易记录
+
+## 🚀 快速开始
+
+### 📋 系统要求
 - Python 3.11+
 - Linux/macOS/Windows
-- Binance account (futures permissions)
-- DeepSeek API key
+- 币安账户（期货权限）
+- DeepSeek API密钥
 
-### ⚡ One-Click Installation
+### ⚡ 一键安装
 ```bash
-# Clone the project
-git clone https://github.com/yourusername/ai-trading-bot.git
+# 克隆项目
+git clone https://github.com/xuanoooooo/ai-trading-bot.git
 cd ai-trading-bot
 
-# Run installation script
+# 运行安装脚本
 chmod +x scripts/setup.sh
 ./scripts/setup.sh
 ```
 
-### 🔧 Manual Installation
+### 🔧 手动安装
 ```bash
-# 1. Create virtual environment
+# 1. 创建虚拟环境
 python3 -m venv venv
 source venv/bin/activate  # Linux/macOS
-# or venv\Scripts\activate  # Windows
+# 或 venv\Scripts\activate  # Windows
 
-# 2. Install dependencies
+# 2. 安装依赖
 pip install -r requirements.txt
 
-# 3. Configure environment variables
+# 3. 配置环境变量
 cp config/env.example .env
-# Edit .env file with your API keys
+# 编辑 .env 文件，填入您的API密钥
 ```
 
-## ⚙️ Configuration
+## ⚙️ 配置说明
 
-### 🔑 API Key Configuration
-Configure in `.env` file:
+### 🔑 API密钥配置
+在 `.env` 文件中配置：
 ```env
 # DeepSeek AI API
 DEEPSEEK_API_KEY=your_deepseek_api_key
 
-# Binance API Keys
+# 币安API密钥
 BINANCE_API_KEY=your_binance_api_key
 BINANCE_SECRET=your_binance_secret
 ```
 
-### 📊 Trading Configuration
-Modify `TRADE_CONFIG` in `src/deepseekBNB.py`:
+### 📊 交易配置
+在 `src/deepseekBNB.py` 中修改 `TRADE_CONFIG`：
 ```python
 TRADE_CONFIG = {
-    'symbol': 'BNB/USDT',        # Trading pair
-    'leverage': 3,                # Leverage multiplier
-    'timeframe': '15m',           # K-line period
-    'test_mode': False,           # Live/Test mode
+    'symbol': 'BNB/USDT',        # 交易对
+    'leverage': 3,                # 杠杆倍数
+    'timeframe': '15m',           # K线周期
+    'test_mode': False,           # 实盘/测试模式
     'position_management': {
-        'max_position_percent': 80,  # Maximum position percentage
-        'min_position_percent': 5,   # Minimum position percentage
-        'force_reserve_percent': 20, # Mandatory buffer funds
+        'max_position_percent': 80,  # 最大仓位百分比
+        'min_position_percent': 5,   # 最小仓位百分比
+        'force_reserve_percent': 20, # 强制预留资金
     }
 }
 ```
 
-## 🎯 Usage
+## 🎯 使用方法
 
-### 🖥️ Local Operation
+### 🖥️ 本地运行
 ```bash
-# Activate virtual environment
+# 激活虚拟环境
 source venv/bin/activate
 
-# Start trading bot
+# 启动交易机器人
 python src/deepseekBNB.py
 ```
 
-### 🖥️ Remote Server Deployment
+### 🖥️ 远程服务器部署
 ```bash
-# Create persistent session with tmux
+# 使用tmux创建持久会话
 tmux new -s trading-bot
 
-# Run in tmux
+# 在tmux中运行
 source venv/bin/activate
 python src/deepseekBNB.py
 
-# Detach session (program continues running)
-# Ctrl+b then press d
+# 断开会话（程序继续运行）
+# Ctrl+b 然后按 d
 
-# Reconnect to session
+# 重新连接会话
 tmux attach -t trading-bot
 ```
 
-### 🚀 Quick Start Script
+### 🚀 快速启动脚本
 ```bash
-# Use provided start script
+# 使用提供的启动脚本
 chmod +x scripts/start_trading.sh
 ./scripts/start_trading.sh
 ```
 
-## 📈 AI Decision Process
+## 📈 AI决策流程
 
-### 🤖 Information AI Receives
-1. **K-line Data** - Recent 5 x 15-minute K-lines
-2. **Technical Indicators** - SMA, RSI, MACD, Bollinger Bands, etc.
-3. **Account Information** - Total equity, free balance, margin usage ratio
-4. **Position Status** - Current position direction, quantity, P&L
-5. **Leverage Mechanism** - 3x leverage explanation and calculation method
+### 🤖 AI接收信息
+1. **K线数据** - 最近5根15分钟K线
+2. **技术指标** - SMA、RSI、MACD、布林带等
+3. **账户信息** - 总权益、可用余额、保证金占用率
+4. **持仓状态** - 当前持仓方向、数量、盈亏
+5. **杠杆机制** - 3倍杠杆说明和计算方式
 
-### 🎯 AI Decision Output
+### 🎯 AI返回决策
 ```json
 {
     "signal": "BUY|SELL|HOLD",
-    "reason": "Analysis reasoning",
-    "stop_loss": specific_price,
-    "take_profit": specific_price,
+    "reason": "分析理由",
+    "stop_loss": 具体价格,
+    "take_profit": 具体价格,
     "confidence": "HIGH|MEDIUM|LOW",
-    "position_percent": integer_from_0_to_100
+    "position_percent": 0到100的整数
 }
 ```
 
-### 💰 Position Calculation
-- AI returns percentage → System calculates margin
-- Actual position = Margin × 3x leverage
-- Automatic risk control limits and precision handling
+### 💰 仓位计算
+- AI返回百分比 → 系统计算保证金
+- 实际仓位 = 保证金 × 3倍杠杆
+- 自动风控限制和精度处理
 
-## 📊 Technical Indicators
+## 📊 技术指标详解
 
-### 📈 Moving Averages
-- **SMA5/20/50** - Short, medium, long-term trends
-- **EMA12/26** - Exponential moving averages
-- **Price Position Relationship** - Percentage position relative to moving averages
+### 📈 移动平均线
+- **SMA5/20/50** - 短期、中期、长期趋势
+- **EMA12/26** - 指数移动平均线
+- **价格位置关系** - 相对均线的百分比位置
 
-### 🎯 Momentum Indicators
-- **RSI** - Relative Strength Index (overbought/oversold judgment)
-- **MACD** - Moving Average Convergence Divergence
-- **Volume Ratio** - Current volume / 20-period average volume ratio
+### 🎯 动量指标
+- **RSI** - 相对强弱指数（超买/超卖判断）
+- **MACD** - 移动平均收敛发散
+- **成交量比率** - 当前成交量与平均成交量比值
 
-### 🎚️ Bollinger Bands Analysis
-- **Upper/Lower Bands** - Dynamic support/resistance levels
-- **Position Percentage** - Price position within Bollinger Bands
-- **Volatility Analysis** - Market volatility degree
+### 🎚️ 布林带分析
+- **上轨/下轨** - 动态支撑阻力位
+- **位置百分比** - 价格在布林带中的位置
+- **波动性分析** - 市场波动程度
 
-### 💰 Support/Resistance
-- **Static Levels** - Based on historical highs/lows
-- **Dynamic Levels** - Based on Bollinger Bands
-- **Price Relationship** - Percentage distance from key levels
+### 💰 支撑阻力
+- **静态水平** - 基于历史高低点
+- **动态水平** - 基于布林带
+- **价格关系** - 距离关键水平的百分比
 
-## 🛡️ Risk Management
+## 🛡️ 风险管理
 
-### ⚠️ Important Reminders
-- **Sub-account Recommendation** - Strongly recommend using sub-accounts to limit risk
-- **Capital Management** - Only invest funds you can afford to lose
-- **API Security** - Safely store API keys with appropriate permissions
-- **Operation Monitoring** - Regularly check bot operation status
+### ⚠️ 重要提醒
+- **子账户建议** - 强烈建议使用子账户限制风险
+- **资金管理** - 只投入可承受损失的资金
+- **API安全** - 妥善保管API密钥，设置适当权限
+- **监控运行** - 定期检查机器人运行状态
 
-### 🔒 Risk Control Mechanisms
-- **Position Limits** - Maximum 80% fund usage
-- **Capital Reserve** - Mandatory 20% buffer funds
-- **Minimum Trade Amount** - Automatic exchange requirement checks
-- **Precision Handling** - Automatic trade amount precision adjustment
+### 🔒 风控机制
+- **仓位限制** - 最大80%资金使用率
+- **资金预留** - 强制20%缓冲资金
+- **最小交易量** - 自动检查交易所要求
+- **精度处理** - 交易数量自动精度调整
 
-## 📁 Project Structure
+## 📁 项目结构
 
 ```
 ai-trading-bot/
-├── README.md                 # Project description
-├── LICENSE                   # Open source license
-├── requirements.txt         # Python dependencies
-├── .gitignore              # Git ignore file
-├── config/                  # Configuration directory
-│   ├── env.example        # Environment variable example
-│   └── trading_config.json # Trading configuration example
-├── src/                     # Source code
-│   ├── deepseekBNB.py      # Main trading bot
-│   ├── indicators.py       # Technical indicators module
-│   └── utils.py            # Utility functions
-├── docs/                    # Documentation
-│   ├── installation.md     # Installation guide
-│   ├── configuration.md    # Configuration guide
-│   └── trading_guide.md    # Trading guide
-├── examples/               # Examples
-│   └── basic_usage.py     # Basic usage example
-└── scripts/                # Scripts
-    ├── setup.sh           # Installation script
-    └── start_trading.sh   # Start script
+├── README.md                 # 项目说明
+├── README_CN.md             # 中文详细文档
+├── README_EN.md             # 英文详细文档
+├── LICENSE                   # 开源许可证
+├── requirements.txt         # Python依赖
+├── .gitignore              # Git忽略文件
+├── config/                  # 配置目录
+│   ├── env.example        # 环境变量示例
+│   └── trading_config.json # 交易配置示例
+├── src/                     # 源代码
+│   ├── deepseekBNB.py      # 主交易机器人
+│   ├── indicators.py       # 技术指标模块
+│   └── utils.py            # 工具函数
+├── docs/                    # 文档
+│   ├── installation.md     # 安装指南
+│   ├── configuration.md    # 配置说明
+│   └── trading_guide.md    # 交易指南
+├── examples/               # 示例
+│   └── basic_usage.py     # 基础使用示例
+└── scripts/                # 脚本
+    ├── setup.sh           # 安装脚本
+    └── start_trading.sh   # 启动脚本
 ```
 
-## 🤝 Contributing
+## 🤝 贡献指南
 
-### 🐛 Bug Reports
-- Use GitHub Issues to report bugs
-- Provide detailed error information and logs
-- Describe your system environment
+### 🐛 报告问题
+- 使用GitHub Issues报告bug
+- 提供详细的错误信息和日志
+- 说明您的系统环境
 
-### 💡 Feature Suggestions
-- Welcome new feature suggestions
-- Describe usage scenarios in detail
-- Consider implementation feasibility
+### 💡 功能建议
+- 欢迎提出新功能建议
+- 详细描述使用场景
+- 考虑实现的可行性
 
-### 🔧 Code Contributions
-1. Fork the project
-2. Create feature branch
-3. Submit changes
-4. Create Pull Request
+### 🔧 代码贡献
+1. Fork项目
+2. 创建功能分支
+3. 提交更改
+4. 发起Pull Request
 
-## 📄 License
+## 📄 许可证
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+本项目采用 [MIT许可证](LICENSE) - 详见LICENSE文件
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-**Important Risk Warning:**
+**重要风险提示：**
 
-- 🚨 **Investment Risk** - Cryptocurrency trading involves significant risks
-- 💰 **Capital Loss** - May result in total capital loss
-- 🤖 **AI Decisions** - Bot decisions do not guarantee profits
-- 🔒 **Personal Responsibility** - All risks from using this software are borne by the user
-- 📊 **Testing Recommendation** - Recommend testing with small funds first
-- 🛡️ **Sub-account** - Strongly recommend using sub-accounts to limit risk
+- 🚨 **投资有风险** - 加密货币交易存在重大风险
+- 💰 **资金损失** - 可能造成全部资金损失
+- 🤖 **AI决策** - 机器人决策不保证盈利
+- 🔒 **个人责任** - 使用本软件的所有风险由用户承担
+- 📊 **测试建议** - 建议先用小资金测试
+- 🛡️ **子账户** - 强烈建议使用子账户限制风险
 
-**This software is for learning and research purposes only and does not constitute investment advice. Please fully understand the risks before use and invest carefully.**
+**本软件仅供学习和研究使用，不构成投资建议。使用前请充分了解风险，谨慎投资。**
 
-## 💰 Support & Thanks
+## 💰 支持与感谢
 
-If you have profited from this project, welcome to support:
+如果您通过这个项目获得了收益，欢迎支持一下：
 
-**Wallet Address**: `0x59B7c28c236E6017df28e7F376B84579872A4E33`
+**钱包地址**: `0x59B7c28c236E6017df28e7F376B84579872A4E33`
 
-- 💝 **Thanks for Support** - If profitable brothers are willing to remember me kindly
-- 📖 **Documentation** - Check docs/ directory for detailed usage instructions
-- 🔧 **Technical Issues** - Please check log files to troubleshoot problems
-- ⚠️ **Risk Reminder** - Investment has risks, please use carefully
+- 💝 **感谢支持** - 如果挣到钱的兄弟们愿意就念我个好
+- 📖 **文档** - 查看docs/目录获取详细使用说明
+- 🔧 **技术问题** - 请查看日志文件排查问题
+- ⚠️ **风险提醒** - 投资有风险，请谨慎使用
 
 ---
 
-**⭐ If this project helps you, please give it a Star!**
+**⭐ 如果这个项目对您有帮助，请给个Star支持一下！**
