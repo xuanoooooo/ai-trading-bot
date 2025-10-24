@@ -71,6 +71,45 @@ python src/deepseekBNB.py
 
 ---
 
+## 🔥 Latest Updates (2025-10-24)
+
+### ✨ **Major Upgrades**
+- 🎯 **AI Position Management Optimization** - AI can now intelligently adjust position percentage (0-80%) based on market conditions
+- 🔧 **Dynamic Fund Management** - System automatically calculates margin, AI doesn't need to worry about asset quantities
+- 📊 **Complete Account Information** - AI can view available balance, margin ratio, and position P&L when making decisions
+- 🛡️ **Enhanced Risk Control** - Precision handling, minimum trade amount checks, reasonability validation
+
+### 🐛 **Critical Bug Fixes**
+- ✅ **Fixed Reverse Close Logic Error** - Long position + SELL signal now only closes position, no longer incorrectly opens short
+- ✅ **Fixed BNB Precision Issue** - Correctly uses 2 decimal places, avoiding `Precision error`
+- ✅ **Fixed Add-to-Position Logic** - Clarified AI prompts to prevent accidental duplicate orders
+
+### 📝 **Details**
+<details>
+<summary>Click to view detailed update content</summary>
+
+#### Bug #1: Reverse Close Error (Critical)
+**Issue:** Previous version would close long position then open short position when receiving SELL signal while holding long. This violated AI's intent (may only want to close and observe).
+
+**Fix:**
+- Long position + SELL signal → **Only close long** (no new position)
+- Short position + BUY signal → **Only close short** (no new position)
+
+**Impact:** Prevents accidental two-way trading and extra fees
+
+#### Bug #2: BNB Precision Error
+**Issue:** Code used 3 decimal places `round(amount, 3)`, but BNB only supports 2 decimals, causing order failures.
+
+**Fix:**
+- Calculation precision: `round(amount, 3)` → `round(amount, 2)`
+- Print format: `.3f` / `.4f` → `.2f`
+
+**Impact:** Prevents `APIError(code=-1111): Precision is over the maximum` error
+
+</details>
+
+---
+
 ## ✨ Key Features
 
 ### 🧠 **AI-Driven Decisions**

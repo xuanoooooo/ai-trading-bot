@@ -666,8 +666,8 @@ def calculate_position_size(signal_data, account_status, current_price):
         raw_amount = position_value / current_price
         
         # ===== 容错处理 =====
-        # 1. 精度处理：BNB保留3位小数
-        amount = round(raw_amount, 3)
+        # 1. 精度处理：BNB保留2位小数
+        amount = round(raw_amount, 2)
         
         # 2. 最小数量检查
         min_safe_amount = 0.01  # BNB最小0.01个
@@ -696,7 +696,7 @@ def calculate_position_size(signal_data, account_status, current_price):
         if final_percent != ai_percent:
             print(f"⚠️ AI建议 {ai_percent}%，风控调整为 {final_percent}%")
         
-        print(f"💰 仓位计算: AI建议{ai_percent}% → 实际{final_percent}% → 保证金{margin_needed:.2f}U → 仓位{position_value:.2f}U → 数量{amount:.3f}")
+        print(f"💰 仓位计算: AI建议{ai_percent}% → 实际{final_percent}% → 保证金{margin_needed:.2f}U → 仓位{position_value:.2f}U → 数量{amount:.2f}")
         
         return {
             'amount': amount,
@@ -758,21 +758,21 @@ def execute_trade(signal_data, price_data):
         if signal_data['signal'] == 'BUY':
             if current_position and current_position['side'] == 'short':
                 # 平空仓 - 平完就结束
-                print(f"📉 平空仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
+                print(f"📉 平空仓: {current_position['size']:.2f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
                 exchange.create_market_buy_order(
                     TRADE_CONFIG['symbol'],
                     current_position['size']
                 )
             elif not current_position:
                 # 无持仓时才开多仓
-                print(f"📈 开多仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
+                print(f"📈 开多仓: {trade_amount:.2f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_buy_order(
                     TRADE_CONFIG['symbol'],
                     trade_amount
                 )
             elif current_position['side'] == 'long':
                 # 加多仓
-                print(f"📈 加多仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
+                print(f"📈 加多仓: {trade_amount:.2f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_buy_order(
                     TRADE_CONFIG['symbol'],
                     trade_amount
@@ -781,21 +781,21 @@ def execute_trade(signal_data, price_data):
         elif signal_data['signal'] == 'SELL':
             if current_position and current_position['side'] == 'long':
                 # 平多仓 - 平完就结束
-                print(f"📈 平多仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
+                print(f"📈 平多仓: {current_position['size']:.2f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
                 exchange.create_market_sell_order(
                     TRADE_CONFIG['symbol'],
                     current_position['size']
                 )
             elif not current_position:
                 # 无持仓时才开空仓
-                print(f"📉 开空仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
+                print(f"📉 开空仓: {trade_amount:.2f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_sell_order(
                     TRADE_CONFIG['symbol'],
                     trade_amount
                 )
             elif current_position['side'] == 'short':
                 # 加空仓
-                print(f"📉 加空仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
+                print(f"📉 加空仓: {trade_amount:.2f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_sell_order(
                     TRADE_CONFIG['symbol'],
                     trade_amount
