@@ -1,0 +1,48 @@
+{
+  "trading_pairs": {
+    "BNB_USDT": {
+      "symbol": "BNB/USDT",
+      "leverage": 3,
+      "timeframe": "15m",
+      "min_trade_amount": 0.01,
+      "decimal_places": 3
+    },
+    "DOGE_USDT": {
+      "symbol": "DOGE/USDT", 
+      "leverage": 3,
+      "timeframe": "15m",
+      "min_trade_amount": 10,
+      "decimal_places": 1
+    },
+    "BTC_USDT": {
+      "symbol": "BTC/USDT",
+      "leverage": 3,
+      "timeframe": "15m", 
+      "min_trade_amount": 0.001,
+      "decimal_places": 3
+    }
+  },
+  "position_management": {
+    "max_position_percent": 80,
+    "min_position_percent": 5,
+    "force_reserve_percent": 20,
+    "allow_zero": true
+  },
+  "risk_management": {
+    "max_daily_loss_percent": 10,
+    "max_consecutive_losses": 5,
+    "emergency_stop_loss_percent": 20
+  },
+  "technical_analysis": {
+    "data_points": 96,
+    "short_term_periods": 20,
+    "medium_term_periods": 50,
+    "long_term_periods": 96
+  },
+  "logging": {
+    "log_level": "INFO",
+    "max_log_size_mb": 10,
+    "backup_count": 3,
+    "enable_console_output": true
+  }
+}
