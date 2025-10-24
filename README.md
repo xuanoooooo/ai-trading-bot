@@ -10,7 +10,11 @@
 
 - 🇨🇳 **[中文文档 (Chinese)](README_CN.md)** - 详细的中文使用指南
 - 🇺🇸 **[English Documentation](README_EN.md)** - Complete English documentation
+💰 支持与感谢
 
+如果您通过这个项目获得了收益，欢迎支持一下：
+💰 钱包地址
+0x59B7c28c236E6017df28e7F376B84579872A4E33
 ---
 
 ## ✨ 核心特性
