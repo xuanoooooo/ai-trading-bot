@@ -93,7 +93,7 @@ Detailed English description of the module.
 模块的详细英文描述。
 
 Author: AI Trading Bot
-License: MIT
+License: Apache 2.0
 """
 ```
 

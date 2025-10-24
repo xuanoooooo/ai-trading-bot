@@ -757,21 +757,14 @@ def execute_trade(signal_data, price_data):
         # 执行交易逻辑
         if signal_data['signal'] == 'BUY':
             if current_position and current_position['side'] == 'short':
-                # 先平空仓
-                print(f"📉 平空仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}")
+                # 平空仓 - 平完就结束
+                print(f"📉 平空仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
                 exchange.create_market_buy_order(
                     TRADE_CONFIG['symbol'],
                     current_position['size']
                 )
-                time.sleep(1)
-                # 再开多仓
-                print(f"📈 开多仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
-                exchange.create_market_buy_order(
-                    TRADE_CONFIG['symbol'],
-                    trade_amount
-                )
             elif not current_position:
-                # 直接开多仓
+                # 无持仓时才开多仓
                 print(f"📈 开多仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_buy_order(
                     TRADE_CONFIG['symbol'],
@@ -787,21 +780,14 @@ def execute_trade(signal_data, price_data):
 
         elif signal_data['signal'] == 'SELL':
             if current_position and current_position['side'] == 'long':
-                # 先平多仓
-                print(f"📈 平多仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}")
+                # 平多仓 - 平完就结束
+                print(f"📈 平多仓: {current_position['size']:.4f} {TRADE_CONFIG['symbol']}（反向信号，只平仓不开新仓）")
                 exchange.create_market_sell_order(
                     TRADE_CONFIG['symbol'],
                     current_position['size']
                 )
-                time.sleep(1)
-                # 再开空仓
-                print(f"📉 开空仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
-                exchange.create_market_sell_order(
-                    TRADE_CONFIG['symbol'],
-                    trade_amount
-                )
             elif not current_position:
-                # 直接开空仓
+                # 无持仓时才开空仓
                 print(f"📉 开空仓: {trade_amount:.4f} {TRADE_CONFIG['symbol']}")
                 exchange.create_market_sell_order(
                     TRADE_CONFIG['symbol'],
