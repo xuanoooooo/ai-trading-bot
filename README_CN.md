@@ -14,6 +14,7 @@
 [![中文](https://img.shields.io/badge/中文-🇨🇳-red.svg)](README_CN.md)
 
 </div>
+<img width="1124" height="877" alt="图片" src="https://github.com/user-attachments/assets/e31c63ae-daea-463b-9307-9bdfc9d37a70" />
 
 ## ⚠️ **重要：必须使用单向持仓模式**
 **请确保您的币安账户设置为单向持仓模式（One-Way Mode），双向持仓模式（Hedge Mode）会导致交易失败！**
