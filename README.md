@@ -1,3 +1,4 @@
+紧急修复了一个单向持仓错误 切记需要调整为单向持仓
 # 🤖 AI自动交易机器人 - DeepSeek智能交易
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
