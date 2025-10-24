@@ -1,10 +1,13 @@
 # 🤖 AI Trading Bot - DeepSeek Automated Trading
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
 
 > 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
+
+## ⚠️ **IMPORTANT: Must Use One-Way Position Mode**
+**Please ensure your Binance account is set to One-Way Position Mode, Hedge Mode will cause trading failures!**
 
 ## 🚀 Quick Start (Simplest)
 
@@ -296,7 +299,7 @@ ai-trading-bot/
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+This project is licensed under the [Apache License 2.0](LICENSE) - see the LICENSE file for details.
 
 ## ⚠️ Disclaimer
 

@@ -1,16 +1,13 @@
-
-
-紧急修复了一个单向持仓错误 切记需要调整为单向持仓
-
-
-
 # 🤖 AI自动交易机器人 - DeepSeek智能交易
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
 
 > 🚀 **基于DeepSeek AI的智能加密货币交易机器人，支持动态仓位管理和全自动交易决策**
+
+## ⚠️ **重要：必须使用单向持仓模式**
+**请确保您的币安账户设置为单向持仓模式（One-Way Mode），双向持仓模式（Hedge Mode）会导致交易失败！**
 
 ## 🚀 快速开始（最简单）
 
@@ -302,7 +299,7 @@ ai-trading-bot/
 
 ## 📄 许可证
 
-本项目采用 [MIT许可证](LICENSE) - 详见LICENSE文件
+本项目采用 [Apache 2.0许可证](LICENSE) - 详见LICENSE文件
 
 ## ⚠️ 免责声明
 
