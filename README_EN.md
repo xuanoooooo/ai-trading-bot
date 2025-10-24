@@ -51,6 +51,10 @@ python src/deepseekBNB.py
 
 **Download these 2 files and you're basically ready to go!** 🎉
 
+### 💰 If you have profited from this project, welcome to support:
+## 💰 **Wallet Address**
+# `0x59B7c28c236E6017df28e7F376B84579872A4E33`
+
 ---
 
 ## 📖 Documentation Language / 文档语言
