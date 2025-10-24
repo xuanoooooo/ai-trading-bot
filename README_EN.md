@@ -15,6 +15,8 @@
 
 </div>
 
+<img width="1124" height="877" alt="图片" src="https://github.com/user-attachments/assets/4e31f5dd-94eb-4590-b5a6-88f725b865c8" />
+
 ## ⚠️ **IMPORTANT: Must Use One-Way Position Mode**
 **Please ensure your Binance account is set to One-Way Position Mode, Hedge Mode will cause trading failures!**
 
