@@ -6,51 +6,60 @@
 
 > 🚀 **基于DeepSeek AI的智能加密货币交易机器人，支持动态仓位管理和全自动交易决策**
 
+## 🚀 快速开始（最简单）
+
+### 📝 1. 修改交易配置
+在 `src/deepseekBNB.py` 中修改：
+```python
+TRADE_CONFIG = {
+    'symbol': 'BNB/USDT',        # 交易对
+    'leverage': 3,                # 杠杆倍数
+    'timeframe': '15m',           # K线周期
+    'test_mode': False,           # 实盘/测试模式
+    'position_management': {
+        'max_position_percent': 80,  # 最大仓位百分比
+        'min_position_percent': 5,   # 最小仓位百分比
+        'force_reserve_percent': 20, # 强制预留资金
+    }
+}
+```
+
+### 🔑 2. 配置API密钥
+创建 `.env` 文件，填入您的API密钥：
+```env
+# DeepSeek API 密钥
+DEEPSEEK_API_KEY=your_deepseek_api_key
+
+# Binance API 配置
+BINANCE_API_KEY=your_binance_api_key
+BINANCE_SECRET=your_binance_secret
+
+# OKX API 配置（可选）
+OKX_API_KEY=your_okx_api_key
+OKX_SECRET=your_okx_secret
+OKX_PASSWORD=your_okx_password
+```
+
+### ▶️ 3. 运行
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动机器人
+python src/deepseekBNB.py
+```
+
+**下载这2个文件基本上就能跑了！** 🎉
+
+---
+
 ## 📖 文档语言 / Documentation Language
 
 - 🇨🇳 **[中文文档 (Chinese)](README_CN.md)** - 详细的中文使用指南
 - 🇺🇸 **[English Documentation](README_EN.md)** - Complete English documentation
-💰 支持与感谢
 
-如果您通过这个项目获得了收益，欢迎支持一下：
-💰 钱包地址
-0x59B7c28c236E6017df28e7F376B84579872A4E33
 ---
-简单说明:
-1.在 src/deepseekBNB.py(这个是真正的主文件必须存在) 中修改 TRADE_CONFIG：
-TRADE_CONFIG = {
-    
-    'symbol': 'BNB/USDT',        # 交易对
-    
-    'leverage': 3,                # 杠杆倍数
-    
-    'timeframe': '15m',           # K线周期
-    
-    'test_mode': False,           # 实盘/测试模式
-    
-    'position_management': {
-    
-        'max_position_percent': 80,  # 最大仓位百分比
-        
-        'min_position_percent': 5,   # 最小仓位百分比
-        
-        'force_reserve_percent': 20, # 强制预留资金
-    
-    }
-}
-2. .env这个是记录你ai模型的api和交易所api的记录文件
-# DeepSeek API 密钥
-DEEPSEEK_API_KEY=
 
-# Binance API 配置
-BINANCE_API_KEY=
-BINANCE_SECRET=
-
-# OKX API 配置
-OKX_API_KEY=
-OKX_SECRET=
-OKX_PASSWORD=
-下载这2个基本上就能跑了
 ## ✨ 核心特性
 
 ### 🧠 **AI驱动决策**

@@ -6,6 +6,53 @@
 
 > 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
 
+## 🚀 Quick Start (Simplest)
+
+### 📝 1. Modify Trading Configuration
+Edit in `src/deepseekBNB.py`:
+```python
+TRADE_CONFIG = {
+    'symbol': 'BNB/USDT',        # Trading pair
+    'leverage': 3,                # Leverage multiplier
+    'timeframe': '15m',           # K-line period
+    'test_mode': False,           # Live/Test mode
+    'position_management': {
+        'max_position_percent': 80,  # Maximum position percentage
+        'min_position_percent': 5,   # Minimum position percentage
+        'force_reserve_percent': 20, # Mandatory buffer funds
+    }
+}
+```
+
+### 🔑 2. Configure API Keys
+Create `.env` file with your API keys:
+```env
+# DeepSeek API Key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+
+# Binance API Configuration
+BINANCE_API_KEY=your_binance_api_key
+BINANCE_SECRET=your_binance_secret
+
+# OKX API Configuration (Optional)
+OKX_API_KEY=your_okx_api_key
+OKX_SECRET=your_okx_secret
+OKX_PASSWORD=your_okx_password
+```
+
+### ▶️ 3. Run
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start trading bot
+python src/deepseekBNB.py
+```
+
+**Download these 2 files and you're basically ready to go!** 🎉
+
+---
+
 ## 📖 Documentation Language / 文档语言
 
 - 🇨🇳 **[中文文档 (Chinese)](README_CN.md)** - Detailed Chinese usage guide
