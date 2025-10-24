@@ -196,7 +196,7 @@ chmod +x scripts/start_trading.sh
 ## 📈 AI Decision Process
 
 ### 🤖 Information AI Receives
-1. **K-line Data** - Recent 5 x 15-minute K-lines
+1. **K-line Data** - Recent 96 x 15-minute K-lines (24-hour historical data)
 2. **Technical Indicators** - SMA, RSI, MACD, Bollinger Bands, etc.
 3. **Account Information** - Total equity, free balance, margin usage ratio
 4. **Position Status** - Current position direction, quantity, P&L
