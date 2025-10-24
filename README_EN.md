@@ -335,8 +335,3 @@ If you have profited from this project, welcome to support:
 **⭐ If this project helps you, please give it a Star!**
 
 ---
-
-## 💰 If you have profited from this project, welcome to support:
-
-## 💰 **Wallet Address**
-# `0x59B7c28c236E6017df28e7F376B84579872A4E33`
