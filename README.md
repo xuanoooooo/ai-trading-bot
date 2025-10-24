@@ -19,17 +19,37 @@
 简单说明:
 1.在 src/deepseekBNB.py(这个是真正的主文件必须存在) 中修改 TRADE_CONFIG：
 TRADE_CONFIG = {
+    
     'symbol': 'BNB/USDT',        # 交易对
+    
     'leverage': 3,                # 杠杆倍数
+    
     'timeframe': '15m',           # K线周期
+    
     'test_mode': False,           # 实盘/测试模式
+    
     'position_management': {
+    
         'max_position_percent': 80,  # 最大仓位百分比
+        
         'min_position_percent': 5,   # 最小仓位百分比
+        
         'force_reserve_percent': 20, # 强制预留资金
+    
     }
 }
 2. .env这个是记录你ai模型的api和交易所api的记录文件
+# DeepSeek API 密钥
+DEEPSEEK_API_KEY=
+
+# Binance API 配置
+BINANCE_API_KEY=
+BINANCE_SECRET=
+
+# OKX API 配置
+OKX_API_KEY=
+OKX_SECRET=
+OKX_PASSWORD=
 下载这2个基本上就能跑了
 ## ✨ 核心特性
 
