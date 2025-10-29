@@ -208,47 +208,63 @@ Visit [Binance Futures Trading Rules](https://www.binance.com/en/futures/trading
 
 <br>
 
-#### 💰 Capital Usage Configuration
+#### 💰 Minimum Account Balance Requirement
 
-Find lines **689-692** (long position) and **731-734** (short position):
+Find lines **705** (long position) and **760** (short position):
 
 ```python
-# Open long position (using 30% of available balance)
-margin = balance['available'] * 0.3  # ← Modify percentage here
-position_value = margin * TRADE_CONFIG['leverage']
+if balance and balance['available'] > 10:  # ← Minimum 10 USDT required
 ```
 
 <table>
 <tr>
-<th width="30%">Capital Usage Rate</th>
+<th width="30%">Minimum Balance</th>
 <th width="70%">How to Modify</th>
 </tr>
 
 <tr>
 <td>
 
-**Current: 30%**
+**Current: 10 USDT**
 
-Uses 30% of available balance per position
+Account must have at least 10 USDT to open positions
 
 </td>
 <td>
 
 ```python
-# Conservative: 20%
-margin = balance['available'] * 0.2
+# Loose: 5 USDT minimum
+if balance and balance['available'] > 5:
 
-# Default: 30% (recommended)
-margin = balance['available'] * 0.3
+# Default: 10 USDT (recommended)
+if balance and balance['available'] > 10:
 
-# Aggressive: 50%
-margin = balance['available'] * 0.5
+# Strict: 100 USDT minimum
+if balance and balance['available'] > 100:
 ```
 
-⚠️ **Note**: Must modify BOTH places (long at line 689 + short at line 731)
+⚠️ **Note**:
+- Must modify BOTH places (long 705 + short 760)
+- Setting too low may result in orders below `min_order_qty`
+- Recommended to keep at least 10 USDT
 
 </td>
 </tr>
+
+</table>
+
+<br>
+
+#### 🎯 AI Dynamic Position Sizing (v2.0 Feature)
+
+**AI now automatically determines position size based on signal strength and confidence!**
+
+No manual configuration needed. AI adjusts intelligently:
+- **Strong signal + High confidence**: Uses 40-50% of available balance
+- **Medium signal + Medium confidence**: Uses 20-30% of available balance
+- **Weak signal + Low confidence**: Uses 10-20% of available balance
+
+The program automatically ensures position size doesn't exceed `Available Balance × Leverage`
 
 </table>
 
@@ -489,47 +505,63 @@ Visit [Binance Futures Trading Rules](https://www.binance.com/en/futures/trading
 
 <br>
 
-#### 💰 Capital Usage Configuration
+#### 💰 Minimum Account Balance Requirement
 
-Find lines **689-692** (long position) and **731-734** (short position):
+Find lines **705** (long position) and **760** (short position):
 
 ```python
-# Open long position (using 30% of available balance)
-margin = balance['available'] * 0.3  # ← Modify percentage here
-position_value = margin * TRADE_CONFIG['leverage']
+if balance and balance['available'] > 10:  # ← Minimum 10 USDT required
 ```
 
 <table>
 <tr>
-<th width="30%">Capital Usage Rate</th>
+<th width="30%">Minimum Balance</th>
 <th width="70%">How to Modify</th>
 </tr>
 
 <tr>
 <td>
 
-**Current: 30%**
+**Current: 10 USDT**
 
-Uses 30% of available balance per position
+Account must have at least 10 USDT to open positions
 
 </td>
 <td>
 
 ```python
-# Conservative: 20%
-margin = balance['available'] * 0.2
+# Loose: 5 USDT minimum
+if balance and balance['available'] > 5:
 
-# Default: 30% (recommended)
-margin = balance['available'] * 0.3
+# Default: 10 USDT (recommended)
+if balance and balance['available'] > 10:
 
-# Aggressive: 50%
-margin = balance['available'] * 0.5
+# Strict: 100 USDT minimum
+if balance and balance['available'] > 100:
 ```
 
-⚠️ **Note**: Must modify BOTH places (long at line 689 + short at line 731)
+⚠️ **Note**:
+- Must modify BOTH places (long 705 + short 760)
+- Setting too low may result in orders below `min_order_qty`
+- Recommended to keep at least 10 USDT
 
 </td>
 </tr>
+
+</table>
+
+<br>
+
+#### 🎯 AI Dynamic Position Sizing (v2.0 Feature)
+
+**AI now automatically determines position size based on signal strength and confidence!**
+
+No manual configuration needed. AI adjusts intelligently:
+- **Strong signal + High confidence**: Uses 40-50% of available balance
+- **Medium signal + Medium confidence**: Uses 20-30% of available balance
+- **Weak signal + Low confidence**: Uses 10-20% of available balance
+
+The program automatically ensures position size doesn't exceed `Available Balance × Leverage`
 
 </table>
 

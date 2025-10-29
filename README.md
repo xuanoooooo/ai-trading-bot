@@ -293,47 +293,63 @@ TRADE_CONFIG = {
 
 <br>
 
-#### 💰 资金使用率配置
+#### 💰 最小账户余额要求
 
-找到第 **689-692** 行（开多仓）和第 **731-734** 行（开空仓）的资金计算：
+找到第 **705** 行（开多仓）和第 **760** 行（开空仓）的余额检查：
 
 ```python
-# 开多仓（使用30%可用余额）
-margin = balance['available'] * 0.3  # ← 这里修改百分比
-position_value = margin * TRADE_CONFIG['leverage']
+if balance and balance['available'] > 10:  # ← 最小10 USDT才能开仓
 ```
 
 <table>
 <tr>
-<th width="30%">资金使用率</th>
+<th width="30%">最小余额</th>
 <th width="70%">修改方法</th>
 </tr>
 
 <tr>
 <td>
 
-**当前：30%**
+**当前：10 USDT**
 
-每次开仓使用可用余额的30%
+账户至少要有10 USDT才能开仓
 
 </td>
 <td>
 
 ```python
-# 保守：使用20%
-margin = balance['available'] * 0.2
+# 宽松：5 USDT就能开仓
+if balance and balance['available'] > 5:
 
-# 默认：使用30%（推荐）
-margin = balance['available'] * 0.3
+# 默认：10 USDT（推荐）
+if balance and balance['available'] > 10:
 
-# 激进：使用50%
-margin = balance['available'] * 0.5
+# 严格：100 USDT才能开仓
+if balance and balance['available'] > 100:
 ```
 
-⚠️ **注意**：需要同时修改两处（开多689行 + 开空731行）
+⚠️ **注意**：
+- 需要同时修改两处（开多705行 + 开空760行）
+- 设置太低可能导致开仓金额过小，不满足`min_order_qty`
+- 建议至少保留10 USDT
 
 </td>
 </tr>
+
+</table>
+
+<br>
+
+#### 🎯 AI动态开仓金额（v2.0新功能）
+
+**AI现在会根据信号强度和信心程度自动决定开仓金额！**
+
+无需手动配置，AI会在提示词指导下智能调整：
+- **强信号高信心**：使用40-50%可用余额
+- **中等信号中信心**：使用20-30%可用余额
+- **弱信号低信心**：使用10-20%可用余额
+
+程序会自动确保开仓金额不超过 `可用余额 × 杠杆倍数`
 
 </table>
 
@@ -613,47 +629,63 @@ TRADE_CONFIG = {
 
 <br>
 
-#### 💰 资金使用率配置
+#### 💰 最小账户余额要求
 
-找到第 **689-692** 行（开多仓）和第 **731-734** 行（开空仓）的资金计算：
+找到第 **705** 行（开多仓）和第 **760** 行（开空仓）的余额检查：
 
 ```python
-# 开多仓（使用30%可用余额）
-margin = balance['available'] * 0.3  # ← 这里修改百分比
-position_value = margin * TRADE_CONFIG['leverage']
+if balance and balance['available'] > 10:  # ← 最小10 USDT才能开仓
 ```
 
 <table>
 <tr>
-<th width="30%">资金使用率</th>
+<th width="30%">最小余额</th>
 <th width="70%">修改方法</th>
 </tr>
 
 <tr>
 <td>
 
-**当前：30%**
+**当前：10 USDT**
 
-每次开仓使用可用余额的30%
+账户至少要有10 USDT才能开仓
 
 </td>
 <td>
 
 ```python
-# 保守：使用20%
-margin = balance['available'] * 0.2
+# 宽松：5 USDT就能开仓
+if balance and balance['available'] > 5:
 
-# 默认：使用30%（推荐）
-margin = balance['available'] * 0.3
+# 默认：10 USDT（推荐）
+if balance and balance['available'] > 10:
 
-# 激进：使用50%
-margin = balance['available'] * 0.5
+# 严格：100 USDT才能开仓
+if balance and balance['available'] > 100:
 ```
 
-⚠️ **注意**：需要同时修改两处（开多689行 + 开空731行）
+⚠️ **注意**：
+- 需要同时修改两处（开多705行 + 开空760行）
+- 设置太低可能导致开仓金额过小，不满足`min_order_qty`
+- 建议至少保留10 USDT
 
 </td>
 </tr>
+
+</table>
+
+<br>
+
+#### 🎯 AI动态开仓金额（v2.0新功能）
+
+**AI现在会根据信号强度和信心程度自动决定开仓金额！**
+
+无需手动配置，AI会在提示词指导下智能调整：
+- **强信号高信心**：使用40-50%可用余额
+- **中等信号中信心**：使用20-30%可用余额
+- **弱信号低信心**：使用10-20%可用余额
+
+程序会自动确保开仓金额不超过 `可用余额 × 杠杆倍数`
 
 </table>
 
