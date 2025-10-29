@@ -134,6 +134,16 @@ This is a **Single Coin AI Trading System** (for multiple coins, run multiple pr
 ### 3. Network Access
 If you cannot access Binance API, please resolve network issues on your own.
 
+### 4. Trading Parameters Configuration
+**⚠️ If you need to trade other coins, please modify the following parameters:**
+- Open `src/deepseekBNB.py`, find `TRADE_CONFIG` configuration
+- Modify `symbol` to the coin you want to trade (e.g., `ETHUSDT`, `BTCUSDT`, etc.)
+- **Important**: Different coins have different minimum order quantities. Please check Binance for the trading rules:
+  - BNB/SOL: minimum 0.01
+  - BTC/ETH: minimum 0.001
+  - DOGE/SHIB: minimum 1 or more
+- Modify `min_order_qty` to the corresponding minimum order quantity
+
 ---
 
 ## 🚀 Quick Start

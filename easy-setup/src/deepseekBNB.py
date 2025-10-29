@@ -659,16 +659,29 @@ def execute_trade(decision, market_data):
     try:
         current_position = market_data['position']
         balance = get_account_balance()
+        current_price = market_data['price']
+        
+        # 准备AI决策信号数据
+        signal_data = {
+            'reason': decision.get('reason', 'N/A'),
+            'confidence': decision.get('confidence', 'N/A')
+        }
         
         if action == 'BUY_OPEN':
             if current_position and current_position['side'] == 'SHORT':
-                # 先平空仓
+                # 先平空仓，记录统计
                 print(f"📈 平空仓: {current_position['amount']:.2f} BNB")
                 binance_client.futures_create_order(
                     symbol='BNBUSDT',
                     side='BUY',
                     type='MARKET',
                     quantity=current_position['amount']
+                )
+                # 记录平仓统计
+                trading_stats.record_position_exit(
+                    exit_price=current_price,
+                    amount=current_position['amount'],
+                    signal_data=signal_data
                 )
                 time.sleep(1)
             
@@ -688,16 +701,29 @@ def execute_trade(decision, market_data):
                             type='MARKET',
                             quantity=qty
                         )
+                        # 记录开仓统计
+                        trading_stats.record_position_entry(
+                            side='BUY',
+                            entry_price=current_price,
+                            amount=qty,
+                            signal_data=signal_data
+                        )
         
         elif action == 'SELL_OPEN':
             if current_position and current_position['side'] == 'LONG':
-                # 先平多仓
+                # 先平多仓，记录统计
                 print(f"📉 平多仓: {current_position['amount']:.2f} BNB")
                 binance_client.futures_create_order(
                     symbol='BNBUSDT',
                     side='SELL',
                     type='MARKET',
                     quantity=current_position['amount']
+                )
+                # 记录平仓统计
+                trading_stats.record_position_exit(
+                    exit_price=current_price,
+                    amount=current_position['amount'],
+                    signal_data=signal_data
                 )
                 time.sleep(1)
             
@@ -717,6 +743,13 @@ def execute_trade(decision, market_data):
                             type='MARKET',
                             quantity=qty
                         )
+                        # 记录开仓统计
+                        trading_stats.record_position_entry(
+                            side='SELL',
+                            entry_price=current_price,
+                            amount=qty,
+                            signal_data=signal_data
+                        )
         
         elif action == 'CLOSE':
             if current_position:
@@ -727,6 +760,12 @@ def execute_trade(decision, market_data):
                     side=side,
                     type='MARKET',
                     quantity=current_position['amount']
+                )
+                # 记录平仓统计
+                trading_stats.record_position_exit(
+                    exit_price=current_price,
+                    amount=current_position['amount'],
+                    signal_data=signal_data
                 )
         
         print("✅ 交易执行成功")
@@ -783,8 +822,8 @@ def main():
         print("🚨 实盘交易模式，请谨慎操作！")
 
     # 每15分钟执行一次
-        schedule.every(15).minutes.do(trading_bot)
-        print("执行频率: 每15分钟一次")
+    schedule.every(15).minutes.do(trading_bot)
+    print("执行频率: 每15分钟一次")
 
     # 立即执行一次
     trading_bot()
