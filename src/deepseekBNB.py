@@ -425,22 +425,12 @@ def analyze_portfolio_with_ai(market_data, btc_data):
     macd_series_text = ", ".join([f"{x:.4f}" for x in market_data['macd_series'][-5:]])
     atr_series_text = ", ".join([f"{x:.2f}" for x in market_data['atr_series'][-5:]])
     
-    # 趋势方向
+    # SMA位置关系（客观数据）
     sma20 = market_data['sma_20']
     sma50 = market_data['sma_50']
     price = market_data['price']
     
-    if price > sma20 and sma20 > sma50:
-        trend_direction = "多头排列"
-        trend_strength = ((price - sma50) / sma50 * 100)
-    elif price < sma20 and sma20 < sma50:
-        trend_direction = "空头排列"
-        trend_strength = ((sma50 - price) / sma50 * 100)
-    else:
-        trend_direction = "震荡"
-        trend_strength = 0
-    
-    # 资金费率文本
+    # 资金费率（客观数据）
     funding_rate = market_data['funding_rate']
     if funding_rate > 0.0001:
         funding_text = "多头付费"
@@ -519,14 +509,14 @@ def analyze_portfolio_with_ai(market_data, btc_data):
 - AI调用次数: {INVOCATION_COUNT}次
 
 【BNB/USDT市场数据】
-- 价格: ${market_data['price']:,.2f} | 24h: {market_data['change_24h']:+.2f}% | 15m: {market_data['change_15m']:+.2f}%
+- 价格: ${market_data['price']:,.2f} | 24h涨跌: {market_data['change_24h']:+.2f}% | 15m涨跌: {market_data['change_15m']:+.2f}%
 - 资金费率: {funding_rate:.6f} ({funding_text}) | 持仓量: {market_data['open_interest']:,.0f}{current_kline_text}
 
 【15分钟技术指标】
-- RSI: {market_data['rsi']:.1f} | 趋势: [{rsi_series_text}]
-- MACD: {market_data['macd']:.4f} | 趋势: [{macd_series_text}]
-- ATR: {market_data['atr']:.2f} | 波动: [{atr_series_text}]
-- SMA20/50: {trend_direction} (强度{trend_strength:.2f}%)
+- RSI: {market_data['rsi']:.1f} | 时间序列: [{rsi_series_text}]
+- MACD: {market_data['macd']:.4f} | 时间序列: [{macd_series_text}]
+- ATR: {market_data['atr']:.2f} | 时间序列: [{atr_series_text}]
+- 价格: ${price:.2f} | SMA20: ${sma20:.2f} | SMA50: ${sma50:.2f}
 - 布林带位置: {market_data['bb_position']:.2%}{kline_text}{btc_text}{balance_text}{position_text}{stats_text}{last_decisions_text}
 """
     
@@ -535,20 +525,15 @@ def analyze_portfolio_with_ai(market_data, btc_data):
 
 {market_text}
 
-【数据周期说明】
-- 15分钟周期（短期）：快速反应市场变化，捕捉短期机会
-- 历史16根K线（4小时）：观察价格形态和趋势演变
+【数据周期】
+- 15分钟K线数据
+- 历史16根K线（4小时历史数据，从旧→新）
 
 【决策要求】
 1. 综合分析当前K线实时状态、历史K线形态、技术指标、BTC大盘
 2. 给出交易决策：BUY_OPEN（开多）/ SELL_OPEN（开空）/ CLOSE（平仓）/ HOLD（观望）
 3. 说明决策理由（必须包含K线和指标分析）
 4. 评估信心程度：HIGH / MEDIUM / LOW
-
-【决策理念】
-- 基于数据和技术分析做决策
-- 趋势明确时果断入场，模糊时耐心观望
-- 有持仓时关注止盈止损，无持仓时寻找机会
 
 请严格按照以下JSON格式回复（不要有任何额外文本）：
 {{
