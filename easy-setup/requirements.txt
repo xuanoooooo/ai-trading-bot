@@ -1,0 +1,6 @@
+python-binance
+openai
+pandas
+schedule
+python-dotenv
+requests

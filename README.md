@@ -6,6 +6,85 @@
 
 > 🚀 **基于DeepSeek AI的BNB智能交易机器人，使用币安原生库python-binance**
 
+---
+
+## 📦 开箱即用版（无编程基础用户专享）
+
+> **🎁 为不懂编程的用户准备的傻瓜式部署包！**
+
+如果你是**无编程基础**的用户，我们为你准备了开箱即用版本，只需3步即可启动：
+
+### ✨ 开箱即用版特点
+
+- 🚀 **一键安装** - 自动检测环境、自动安装依赖
+- 🚀 **一键启动** - 自动检查配置、自动启动程序
+- 📝 **详细文档** - 5分钟快速开始指南（中英文）
+- 🛡️ **傻瓜配置** - .env文件带详细中文注释
+- 💡 **智能检测** - 自动诊断问题并给出解决方案
+- 🎨 **彩色界面** - Linux版本支持彩色终端输出
+- 🔧 **后台运行** - Linux支持后台运行和进程管理
+
+### 📥 下载开箱即用版
+
+从 [Releases](https://github.com/xuanoooooo/ai-trading-bot/releases) 页面下载最新的：
+- **`AI交易机器人-开箱即用版.tar.gz`** （推荐，支持Windows/Linux/Mac）
+
+或者从项目中直接获取：
+```bash
+# 下载项目后，开箱即用版位于：
+./GitHub发布版/AI交易机器人-无编程基础用户版.tar.gz
+```
+
+### 🚀 3步快速启动
+
+#### Windows用户：
+```
+1. 解压压缩包
+2. 双击运行 scripts/Windows系统一键安装.bat（首次使用）
+3. 双击运行 scripts/Windows系统一键启动.bat
+```
+
+#### Linux/Mac用户：
+```bash
+# 1. 解压
+tar -xzf AI交易机器人-开箱即用版.tar.gz
+cd easy-setup
+
+# 2. 配置API密钥
+nano .env  # 填入你的DeepSeek和币安API密钥
+
+# 3. 安装并启动
+chmod +x scripts/*.sh
+bash scripts/Linux系统一键安装.sh
+bash scripts/Linux系统一键启动.sh
+```
+
+### 📖 开箱即用版包含内容
+
+```
+AI交易机器人-开箱即用版/
+├── 使用说明-请先看我.txt          # 首页说明
+├── README_快速开始.txt             # 中文快速指南
+├── README_QUICK_START.txt          # 英文快速指南
+├── .env                             # API密钥配置（带详细注释）
+├── requirements.txt                 # Python依赖
+├── LICENSE                          # 开源许可证
+│
+├── src/
+│   └── deepseekBNB.py              # 主程序
+│
+├── scripts/
+│   ├── Windows系统一键安装.bat     # Windows安装脚本
+│   ├── Windows系统一键启动.bat     # Windows启动脚本
+│   ├── Linux系统一键安装.sh        # Linux安装脚本
+│   └── Linux系统一键启动.sh        # Linux启动脚本
+│
+└── config/
+    └── 配置说明.txt                 # 详细配置教程（9个章节）
+```
+
+---
+
 ## 📦 项目定位
 
 这是一个**单币种AI交易系统**（多币种请同时运行多个程序实例），特点：

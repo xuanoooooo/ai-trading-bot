@@ -6,6 +6,85 @@
 
 > 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
 
+---
+
+## 📦 Easy Setup Version (For Non-Programmers)
+
+> **🎁 Foolproof deployment package for users without programming experience!**
+
+If you are a user **without programming experience**, we have prepared a ready-to-use version that can be started in just 3 steps:
+
+### ✨ Easy Setup Features
+
+- 🚀 **One-Click Installation** - Auto-detect environment, auto-install dependencies
+- 🚀 **One-Click Startup** - Auto-check configuration, auto-start program
+- 📝 **Detailed Documentation** - 5-minute quick start guide (Chinese & English)
+- 🛡️ **Foolproof Configuration** - .env file with detailed Chinese annotations
+- 💡 **Smart Detection** - Auto-diagnose issues and provide solutions
+- 🎨 **Colorful Interface** - Linux version supports colorful terminal output
+- 🔧 **Background Running** - Linux supports background running and process management
+
+### 📥 Download Easy Setup Version
+
+Download from [Releases](https://github.com/xuanoooooo/ai-trading-bot/releases) page:
+- **`AI交易机器人-开箱即用版.tar.gz`** (Recommended, supports Windows/Linux/Mac)
+
+Or get it directly from the project:
+```bash
+# After downloading the project, the easy setup version is located at:
+./GitHub发布版/AI交易机器人-无编程基础用户版.tar.gz
+```
+
+### 🚀 3-Step Quick Start
+
+#### Windows Users:
+```
+1. Extract the archive
+2. Double-click scripts/Windows系统一键安装.bat (first time only)
+3. Double-click scripts/Windows系统一键启动.bat
+```
+
+#### Linux/Mac Users:
+```bash
+# 1. Extract
+tar -xzf AI交易机器人-开箱即用版.tar.gz
+cd easy-setup
+
+# 2. Configure API Keys
+nano .env  # Fill in your DeepSeek and Binance API keys
+
+# 3. Install and Start
+chmod +x scripts/*.sh
+bash scripts/Linux系统一键安装.sh
+bash scripts/Linux系统一键启动.sh
+```
+
+### 📖 Easy Setup Package Contents
+
+```
+AI Trading Bot - Easy Setup/
+├── 使用说明-请先看我.txt          # Homepage instructions
+├── README_快速开始.txt             # Chinese quick guide
+├── README_QUICK_START.txt          # English quick guide
+├── .env                             # API key configuration (with detailed comments)
+├── requirements.txt                 # Python dependencies
+├── LICENSE                          # Open source license
+│
+├── src/
+│   └── deepseekBNB.py              # Main program
+│
+├── scripts/
+│   ├── Windows系统一键安装.bat     # Windows installation script
+│   ├── Windows系统一键启动.bat     # Windows startup script
+│   ├── Linux系统一键安装.sh        # Linux installation script
+│   └── Linux系统一键启动.sh        # Linux startup script
+│
+└── config/
+    └── 配置说明.txt                 # Detailed configuration tutorial (9 chapters)
+```
+
+---
+
 ## 📦 Project Positioning
 
 This is a **Single Coin AI Trading System** (for multiple coins, run multiple program instances simultaneously). Features:
