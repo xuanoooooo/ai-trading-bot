@@ -180,6 +180,250 @@ AI交易机器人-开箱即用版/
 
 <br>
 
+### ⚙️ 开箱即用版 - 交易参数配置
+
+<details>
+<summary><h3 style="color: red; display: inline;">⚙️ 点击展开：详细配置教程</h3></summary>
+
+<br>
+
+打开 `src/deepseekBNB.py` 文件，找到第 **95-99** 行的 `TRADE_CONFIG` 配置：
+
+```python
+# 交易配置
+TRADE_CONFIG = {
+    'symbol': 'BNBUSDT',        # 交易对
+    'leverage': 3,              # 杠杆倍数
+    'min_order_qty': 0.01,      # 最小交易数量
+}
+```
+
+<br>
+
+#### 📝 各参数详细说明
+
+<table>
+<tr>
+<th width="25%">参数名称</th>
+<th width="35%">说明</th>
+<th width="40%">修改示例</th>
+</tr>
+
+<tr>
+<td><code>symbol</code></td>
+<td>
+
+**交易币种对**
+
+决定交易哪个币种
+
+</td>
+<td>
+
+```python
+# 交易以太坊
+'symbol': 'ETHUSDT'
+
+# 交易比特币
+'symbol': 'BTCUSDT'
+
+# 交易SOL
+'symbol': 'SOLUSDT'
+```
+
+</td>
+</tr>
+
+<tr>
+<td><code>leverage</code></td>
+<td>
+
+**杠杆倍数**
+
+默认3倍，范围1-125
+
+⚠️ 杠杆越高风险越大
+
+</td>
+<td>
+
+```python
+# 保守：1倍（无杠杆）
+'leverage': 1
+
+# 适中：3倍（默认）
+'leverage': 3
+
+# 激进：10倍
+'leverage': 10
+```
+
+</td>
+</tr>
+
+<tr>
+<td><code>min_order_qty</code></td>
+<td>
+
+**最小开单数量**
+
+不同币种要求不同
+
+⚠️ 必须符合币安规则
+
+</td>
+<td>
+
+```python
+# BNB/SOL
+'min_order_qty': 0.01
+
+# BTC/ETH
+'min_order_qty': 0.001
+
+# DOGE
+'min_order_qty': 1
+```
+
+**查询方法**：
+访问 [币安合约交易规则](https://www.binance.com/zh-CN/futures/trading-rules/perpetual/leverage-margin)
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+#### 💰 资金使用率配置
+
+找到第 **689-692** 行（开多仓）和第 **731-734** 行（开空仓）的资金计算：
+
+```python
+# 开多仓（使用30%可用余额）
+margin = balance['available'] * 0.3  # ← 这里修改百分比
+position_value = margin * TRADE_CONFIG['leverage']
+```
+
+<table>
+<tr>
+<th width="30%">资金使用率</th>
+<th width="70%">修改方法</th>
+</tr>
+
+<tr>
+<td>
+
+**当前：30%**
+
+每次开仓使用可用余额的30%
+
+</td>
+<td>
+
+```python
+# 保守：使用20%
+margin = balance['available'] * 0.2
+
+# 默认：使用30%（推荐）
+margin = balance['available'] * 0.3
+
+# 激进：使用50%
+margin = balance['available'] * 0.5
+```
+
+⚠️ **注意**：需要同时修改两处（开多689行 + 开空731行）
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+#### ⚠️ 重要提醒
+
+<table>
+<tr>
+<td width="50%">
+
+**🚫 不建议交易的币种**
+
+- 单价 < 1 USDT 的币种
+- 例如：SHIB、PEPE、FLOKI
+- 原因：小数位过多，易产生精度错误
+
+</td>
+<td width="50%">
+
+**✅ 推荐交易的币种**
+
+- 主流币：BTC、ETH、BNB
+- 中型币：SOL、DOGE、MATIC
+- 单价 > 1 USDT，流动性好
+
+</td>
+</tr>
+</table>
+
+<br>
+
+#### 📋 完整配置示例
+
+<details>
+<summary><b>示例1：交易以太坊（ETH）</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'ETHUSDT',      # 改为以太坊
+    'leverage': 3,            # 保持3倍杠杆
+    'min_order_qty': 0.001,   # ETH最小0.001
+}
+
+# 资金使用率保持30%
+margin = balance['available'] * 0.3
+```
+
+</details>
+
+<details>
+<summary><b>示例2：保守交易比特币（BTC）</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'BTCUSDT',      # 比特币
+    'leverage': 1,            # 降低到1倍（无杠杆）
+    'min_order_qty': 0.001,   # BTC最小0.001
+}
+
+# 降低资金使用率到20%
+margin = balance['available'] * 0.2
+```
+
+</details>
+
+<details>
+<summary><b>示例3：激进交易SOL</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'SOLUSDT',      # Solana
+    'leverage': 5,            # 提高到5倍杠杆
+    'min_order_qty': 0.01,    # SOL最小0.01
+}
+
+# 提高资金使用率到50%
+margin = balance['available'] * 0.5
+```
+
+</details>
+
+<br>
+
+</details>
+
+<br>
+
 ---
 
 <br>

@@ -95,6 +95,248 @@ AI Trading Bot - Easy Setup/
     └── 配置说明.txt                 # Detailed configuration tutorial (9 chapters)
 ```
 
+### ⚙️ Easy Setup - Trading Parameters Configuration
+
+<details>
+<summary><h3 style="color: red; display: inline;">⚙️ Click to Expand: Detailed Configuration Guide</h3></summary>
+
+<br>
+
+Open `src/deepseekBNB.py` file, find the `TRADE_CONFIG` configuration at lines **95-99**:
+
+```python
+# Trading Configuration
+TRADE_CONFIG = {
+    'symbol': 'BNBUSDT',        # Trading pair
+    'leverage': 3,              # Leverage multiplier
+    'min_order_qty': 0.01,      # Minimum order quantity
+}
+```
+
+<br>
+
+#### 📝 Parameter Details
+
+<table>
+<tr>
+<th width="25%">Parameter</th>
+<th width="35%">Description</th>
+<th width="40%">Examples</th>
+</tr>
+
+<tr>
+<td><code>symbol</code></td>
+<td>
+
+**Trading Pair**
+
+Determines which coin to trade
+
+</td>
+<td>
+
+```python
+# Trade Ethereum
+'symbol': 'ETHUSDT'
+
+# Trade Bitcoin
+'symbol': 'BTCUSDT'
+
+# Trade SOL
+'symbol': 'SOLUSDT'
+```
+
+</td>
+</tr>
+
+<tr>
+<td><code>leverage</code></td>
+<td>
+
+**Leverage Multiplier**
+
+Default 3x, range 1-125
+
+⚠️ Higher leverage = Higher risk
+
+</td>
+<td>
+
+```python
+# Conservative: 1x (no leverage)
+'leverage': 1
+
+# Moderate: 3x (default)
+'leverage': 3
+
+# Aggressive: 10x
+'leverage': 10
+```
+
+</td>
+</tr>
+
+<tr>
+<td><code>min_order_qty</code></td>
+<td>
+
+**Minimum Order Quantity**
+
+Varies by coin
+
+⚠️ Must comply with Binance rules
+
+</td>
+<td>
+
+```python
+# BNB/SOL
+'min_order_qty': 0.01
+
+# BTC/ETH
+'min_order_qty': 0.001
+
+# DOGE
+'min_order_qty': 1
+```
+
+**How to check**:
+Visit [Binance Futures Trading Rules](https://www.binance.com/en/futures/trading-rules/perpetual/leverage-margin)
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+#### 💰 Capital Usage Configuration
+
+Find lines **689-692** (long position) and **731-734** (short position):
+
+```python
+# Open long position (using 30% of available balance)
+margin = balance['available'] * 0.3  # ← Modify percentage here
+position_value = margin * TRADE_CONFIG['leverage']
+```
+
+<table>
+<tr>
+<th width="30%">Capital Usage Rate</th>
+<th width="70%">How to Modify</th>
+</tr>
+
+<tr>
+<td>
+
+**Current: 30%**
+
+Uses 30% of available balance per position
+
+</td>
+<td>
+
+```python
+# Conservative: 20%
+margin = balance['available'] * 0.2
+
+# Default: 30% (recommended)
+margin = balance['available'] * 0.3
+
+# Aggressive: 50%
+margin = balance['available'] * 0.5
+```
+
+⚠️ **Note**: Must modify BOTH places (long at line 689 + short at line 731)
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+#### ⚠️ Important Reminders
+
+<table>
+<tr>
+<td width="50%">
+
+**🚫 Not Recommended Coins**
+
+- Price < 1 USDT
+- Examples: SHIB, PEPE, FLOKI
+- Reason: Too many decimals cause precision errors
+
+</td>
+<td width="50%">
+
+**✅ Recommended Coins**
+
+- Major coins: BTC, ETH, BNB
+- Mid-cap coins: SOL, DOGE, MATIC
+- Price > 1 USDT, good liquidity
+
+</td>
+</tr>
+</table>
+
+<br>
+
+#### 📋 Complete Configuration Examples
+
+<details>
+<summary><b>Example 1: Trading Ethereum (ETH)</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'ETHUSDT',      # Switch to Ethereum
+    'leverage': 3,            # Keep 3x leverage
+    'min_order_qty': 0.001,   # ETH minimum 0.001
+}
+
+# Keep 30% capital usage
+margin = balance['available'] * 0.3
+```
+
+</details>
+
+<details>
+<summary><b>Example 2: Conservative Bitcoin (BTC) Trading</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'BTCUSDT',      # Bitcoin
+    'leverage': 1,            # Reduce to 1x (no leverage)
+    'min_order_qty': 0.001,   # BTC minimum 0.001
+}
+
+# Reduce capital usage to 20%
+margin = balance['available'] * 0.2
+```
+
+</details>
+
+<details>
+<summary><b>Example 3: Aggressive SOL Trading</b></summary>
+
+```python
+TRADE_CONFIG = {
+    'symbol': 'SOLUSDT',      # Solana
+    'leverage': 5,            # Increase to 5x leverage
+    'min_order_qty': 0.01,    # SOL minimum 0.01
+}
+
+# Increase capital usage to 50%
+margin = balance['available'] * 0.5
+```
+
+</details>
+
+<br>
+
+</details>
+
 ---
 
 ## 📦 Project Positioning
