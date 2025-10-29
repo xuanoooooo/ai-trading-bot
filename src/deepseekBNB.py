@@ -581,7 +581,7 @@ def analyze_portfolio_with_ai(market_data, bnb_1h_data, btc_data):
 【决策要求】
 1. 综合分析当前K线实时状态、历史K线形态、技术指标、BTC大盘
 2. 给出交易决策：BUY_OPEN（开多）/ SELL_OPEN（开空）/ CLOSE（平仓）/ HOLD（观望）
-3. 说明决策理由（必须包含K线和指标分析）
+3. 说明决策理由（包含K线形态和技术指标分析）
 4. 评估信心程度：HIGH / MEDIUM / LOW
 
 请严格按照以下JSON格式回复（不要有任何额外文本）：
