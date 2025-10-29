@@ -27,6 +27,15 @@
       "action": "HOLD",
       "reason": "K线：当前阴线在1107-1110区间震荡，历史K线显示连续多根K线在1105-1112区间内波动，无明显突破信号 | 指标：15分钟RSI 57.2处于中性区域，MACD从高位回落但仍为正值，1小时RSI 31.0显示超卖但价格未确认反弹，ATR显示波动率较低，BTC大盘RSI 68.6接近超买但趋势强度为0%",
       "confidence": "MEDIUM"
+    },
+    {
+      "time": "2025-10-29T23:57:22.681475",
+      "coin": "BNB",
+      "action": "BUY_OPEN",
+      "reason": "测试",
+      "confidence": "HIGH",
+      "position_value": 100,
+      "risk_level": "MEDIUM"
     }
   ]
 }

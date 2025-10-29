@@ -119,7 +119,7 @@ def save_current_runtime():
         print(f"⚠️ 保存运行时状态失败: {e}")
 
 
-def save_ai_decision(coin, action, reason, confidence):
+def save_ai_decision(coin, action, reason, confidence, position_value=0, risk_level='MEDIUM'):
     """保存AI决策到文件"""
     try:
         if os.path.exists(AI_DECISIONS_FILE):
@@ -133,7 +133,9 @@ def save_ai_decision(coin, action, reason, confidence):
             'coin': coin,
             'action': action,
             'reason': reason,
-            'confidence': confidence
+            'confidence': confidence,
+            'position_value': position_value,
+            'risk_level': risk_level
         }
         data['decisions'].append(decision)
         
@@ -581,15 +583,24 @@ def analyze_portfolio_with_ai(market_data, bnb_1h_data, btc_data):
 【决策要求】
 1. 综合分析当前K线实时状态、历史K线形态、技术指标、BTC大盘
 2. 给出交易决策：BUY_OPEN（开多）/ SELL_OPEN（开空）/ CLOSE（平仓）/ HOLD（观望）
-3. 说明决策理由（包含K线形态和技术指标分析）
-4. 评估信心程度：HIGH / MEDIUM / LOW
+3. 决定开仓金额（position_value，单位USDT）：
+   - 根据信号强度和信心程度决定
+   - 强信号高信心：可用余额的40-50%
+   - 中等信号中信心：可用余额的20-30%
+   - 弱信号低信心：可用余额的10-20%
+   - CLOSE和HOLD时填0
+4. 说明决策理由（包含K线形态和技术指标分析）
+5. 评估信心程度：HIGH（>80%胜率预期）/ MEDIUM（60-80%）/ LOW（<60%）
+6. 评估风险等级：HIGH（市场剧烈波动）/ MEDIUM（正常波动）/ LOW（稳定环境）
 
 请严格按照以下JSON格式回复（不要有任何额外文本）：
 {{
     "action": "BUY_OPEN|SELL_OPEN|CLOSE|HOLD",
     "reason": "K线：[形态描述] | 指标：[指标描述]",
-    "confidence": "HIGH|MEDIUM|LOW"
-    }}
+    "position_value": 100,
+    "confidence": "HIGH|MEDIUM|LOW",
+    "risk_level": "HIGH|MEDIUM|LOW"
+}}
     """
 
     try:
@@ -621,7 +632,9 @@ def analyze_portfolio_with_ai(market_data, bnb_1h_data, btc_data):
                 coin='BNB',
                 action=decision.get('action', 'HOLD'),
                 reason=decision.get('reason', 'N/A'),
-                confidence=decision.get('confidence', 'LOW')
+                confidence=decision.get('confidence', 'LOW'),
+                position_value=decision.get('position_value', 0),
+                risk_level=decision.get('risk_level', 'MEDIUM')
             )
             
             return decision
@@ -645,7 +658,9 @@ def execute_trade(decision, market_data):
     print(f"{'='*60}")
     print(f"操作: {action}")
     print(f"理由: {decision.get('reason', 'N/A')}")
-    print(f"信心: {decision.get('confidence', 'N/A')}")
+    print(f"开仓金额: {decision.get('position_value', 0)} USDT")
+    print(f"信心程度: {decision.get('confidence', 'N/A')}")
+    print(f"风险等级: {decision.get('risk_level', 'N/A')}")
     print(f"{'='*60}\n")
     
     if action == 'HOLD':
@@ -686,15 +701,26 @@ def execute_trade(decision, market_data):
                 time.sleep(1)
             
             if not current_position or current_position['side'] == 'SHORT':
-                # 开多仓（使用30%可用余额）
+                # 开多仓（使用AI指定的开仓金额）
                 if balance and balance['available'] > 10:
-                    margin = balance['available'] * 0.3
-                    position_value = margin * TRADE_CONFIG['leverage']
+                    # 获取AI指定的开仓金额
+                    ai_position_value = float(decision.get('position_value', 0))
+                    
+                    # 计算上限：可用余额 * 杠杆
+                    max_position_value = balance['available'] * TRADE_CONFIG['leverage']
+                    
+                    # 边界检查：不能超过可用资金
+                    position_value = min(ai_position_value, max_position_value)
+                    
+                    # 计算开仓数量
                     qty = position_value / market_data['price']
                     qty = math.floor(qty * 100) / 100  # 保留2位小数
                     
+                    # 边界检查：必须满足最小数量要求
                     if qty >= TRADE_CONFIG['min_order_qty']:
-                        print(f"📈 开多仓: {qty:.2f} BNB")
+                        actual_value = qty * market_data['price']
+                        print(f"📈 开多仓: {qty:.2f} BNB (价值 ${actual_value:.2f})")
+                        print(f"   AI建议: ${ai_position_value:.2f} | 实际使用: ${actual_value:.2f}")
                         binance_client.futures_create_order(
                             symbol='BNBUSDT',
                             side='BUY',
@@ -708,6 +734,8 @@ def execute_trade(decision, market_data):
                             amount=qty,
                             signal_data=signal_data
                         )
+                    else:
+                        print(f"⚠️ 开仓数量 {qty:.4f} BNB < 最小要求 {TRADE_CONFIG['min_order_qty']} BNB，跳过开仓")
         
         elif action == 'SELL_OPEN':
             if current_position and current_position['side'] == 'LONG':
@@ -728,15 +756,26 @@ def execute_trade(decision, market_data):
                 time.sleep(1)
             
             if not current_position or current_position['side'] == 'LONG':
-                # 开空仓（使用30%可用余额）
+                # 开空仓（使用AI指定的开仓金额）
                 if balance and balance['available'] > 10:
-                    margin = balance['available'] * 0.3
-                    position_value = margin * TRADE_CONFIG['leverage']
-                    qty = position_value / market_data['price']
-                    qty = math.floor(qty * 100) / 100
+                    # 获取AI指定的开仓金额
+                    ai_position_value = float(decision.get('position_value', 0))
                     
+                    # 计算上限：可用余额 * 杠杆
+                    max_position_value = balance['available'] * TRADE_CONFIG['leverage']
+                    
+                    # 边界检查：不能超过可用资金
+                    position_value = min(ai_position_value, max_position_value)
+                    
+                    # 计算开仓数量
+                    qty = position_value / market_data['price']
+                    qty = math.floor(qty * 100) / 100  # 保留2位小数
+                    
+                    # 边界检查：必须满足最小数量要求
                     if qty >= TRADE_CONFIG['min_order_qty']:
-                        print(f"📉 开空仓: {qty:.2f} BNB")
+                        actual_value = qty * market_data['price']
+                        print(f"📉 开空仓: {qty:.2f} BNB (价值 ${actual_value:.2f})")
+                        print(f"   AI建议: ${ai_position_value:.2f} | 实际使用: ${actual_value:.2f}")
                         binance_client.futures_create_order(
                             symbol='BNBUSDT',
                             side='SELL',
@@ -750,6 +789,8 @@ def execute_trade(decision, market_data):
                             amount=qty,
                             signal_data=signal_data
                         )
+                    else:
+                        print(f"⚠️ 开仓数量 {qty:.4f} BNB < 最小要求 {TRADE_CONFIG['min_order_qty']} BNB，跳过开仓")
         
         elif action == 'CLOSE':
             if current_position:
