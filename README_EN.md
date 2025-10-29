@@ -6,6 +6,15 @@
 
 > 🚀 **Intelligent cryptocurrency trading bot powered by DeepSeek AI with dynamic position management and fully automated trading decisions**
 
+## 📦 Project Positioning
+
+This is a **Single Coin AI Trading System** (for multiple coins, run multiple program instances simultaneously). Features:
+- ✅ **Single Coin Per Instance** - Default BNB/USDT contract (code example), can be modified for other coins
+- ✅ **Multi-Coin Solution** - Need multiple coins? Simply run multiple program instances, each trading one coin
+- ✅ **Binance Native Library** - Uses python-binance library (not CCXT), better performance
+- ✅ **BTC Market Reference** - Keeps Bitcoin as market sentiment reference
+- 🛡️ **Risk Isolation Recommendation** - Strongly recommend creating separate Binance sub-accounts for each coin, allowing AI to trade independently and effectively isolate risks. Multi-coin simultaneous operation is still under testing and will be released after confirming no risks
+
 ## 📖 Language Selection / 语言选择
 
 <div align="center">
@@ -118,6 +127,21 @@ python src/deepseekBNB.py
 ---
 
 ## 🔥 Latest Updates
+
+### 🔮 **Coming Soon - 3-Minute Ultra-High Frequency Version (In Testing)**
+
+> **⚡️ Extreme speed version for users who don't mind AI calling costs**
+
+#### 🚨 Important Notes
+- ⏱️ **3-Minute Decision Cycle** - AI analyzes market and makes decisions every 3 minutes
+- 💰 **Higher AI Calling Costs** - Call frequency increased by 3x+ (from 10 minutes to 3 minutes)
+- ⚠️ **Market Noise Risk** - Ultra-short cycles may lead to frequent trading, beware of market noise interference
+- 🧪 **Testing Phase** - Currently being validated on test accounts, will be released after confirming no risks
+- 🎯 **Use Case** - Suitable for users pursuing ultimate response speed and insensitive to trading costs
+
+**Stay tuned!** We are conducting rigorous testing to ensure stability and safety before release.
+
+---
 
 ### 🚀 **v2.1.0 (2025-10-29) - Major Multi-Timeframe Analysis Upgrade**
 
