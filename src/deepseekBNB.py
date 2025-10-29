@@ -237,8 +237,44 @@ def get_btc_market_reference():
         return None
 
 
+def get_bnb_1h_data():
+    """获取BNB 1小时数据"""
+    try:
+        # 获取30根1小时K线（确保有足够数据计算指标）
+        klines = binance_client.futures_klines(
+            symbol='BNBUSDT',
+            interval='1h',
+            limit=30
+        )
+        
+        df = pd.DataFrame(klines, columns=[
+            'timestamp', 'open', 'high', 'low', 'close', 'volume',
+            'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
+        ])
+        
+        df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
+        for col in ['open', 'high', 'low', 'close', 'volume']:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+        df = calculate_technical_indicators(df)
+        current_data = df.iloc[-1]
+        
+        return {
+            'rsi': current_data['rsi'],
+            'macd': current_data['macd'],
+            'macd_signal': current_data['macd_signal'],
+            'sma_20': current_data['sma_20'],
+            'sma_50': current_data['sma_50'],
+            'rsi_series': df['rsi'].tail(10).tolist(),
+            'macd_series': df['macd'].tail(10).tolist(),
+        }
+    except Exception as e:
+        print(f"❌ 获取BNB 1小时数据失败: {e}")
+        return None
+
+
 def get_bnb_market_data():
-    """获取BNB完整市场数据"""
+    """获取BNB完整市场数据（15分钟）"""
     try:
         current_time = datetime.now()
         
@@ -376,7 +412,7 @@ def get_account_balance():
         return None
 
 
-def analyze_portfolio_with_ai(market_data, btc_data):
+def analyze_portfolio_with_ai(market_data, bnb_1h_data, btc_data):
     """使用AI分析市场并做出交易决策"""
     global INVOCATION_COUNT
     INVOCATION_COUNT += 1
@@ -420,10 +456,23 @@ def analyze_portfolio_with_ai(market_data, btc_data):
         body = "🟢" if close_p > open_p else "🔴" if close_p < open_p else "➖"
         kline_text += f"\n  K{i}: {body} O${open_p:.2f} H${high_p:.2f} L${low_p:.2f} C${close_p:.2f} ({change:+.2f}%)"
     
-    # 构建技术指标文本
+    # 构建技术指标文本（15分钟）
     rsi_series_text = ", ".join([f"{x:.1f}" for x in market_data['rsi_series'][-5:]])
     macd_series_text = ", ".join([f"{x:.4f}" for x in market_data['macd_series'][-5:]])
     atr_series_text = ", ".join([f"{x:.2f}" for x in market_data['atr_series'][-5:]])
+    
+    # 构建1小时数据文本
+    if bnb_1h_data:
+        rsi_series_1h_text = ", ".join([f"{x:.1f}" for x in bnb_1h_data['rsi_series'][-5:]])
+        macd_series_1h_text = ", ".join([f"{x:.4f}" for x in bnb_1h_data['macd_series'][-5:]])
+        bnb_1h_text = f"""
+
+【1小时技术指标】
+- RSI: {bnb_1h_data['rsi']:.1f} | 时间序列: [{rsi_series_1h_text}]
+- MACD: {bnb_1h_data['macd']:.4f} | 时间序列: [{macd_series_1h_text}]
+- SMA20: ${bnb_1h_data['sma_20']:.2f} | SMA50: ${bnb_1h_data['sma_50']:.2f}"""
+    else:
+        bnb_1h_text = ""
     
     # SMA位置关系（客观数据）
     sma20 = market_data['sma_20']
@@ -517,7 +566,7 @@ def analyze_portfolio_with_ai(market_data, btc_data):
 - MACD: {market_data['macd']:.4f} | 时间序列: [{macd_series_text}]
 - ATR: {market_data['atr']:.2f} | 时间序列: [{atr_series_text}]
 - 价格: ${price:.2f} | SMA20: ${sma20:.2f} | SMA50: ${sma50:.2f}
-- 布林带位置: {market_data['bb_position']:.2%}{kline_text}{btc_text}{balance_text}{position_text}{stats_text}{last_decisions_text}
+- 布林带位置: {market_data['bb_position']:.2%}{bnb_1h_text}{kline_text}{btc_text}{balance_text}{position_text}{stats_text}{last_decisions_text}
 """
     
     prompt = f"""
@@ -709,11 +758,14 @@ def trading_bot():
         print("⚠️ 获取市场数据失败，跳过本次")
         return
 
+    # 获取1小时数据
+    bnb_1h_data = get_bnb_1h_data()
+    
     # 获取BTC参考
     btc_data = get_btc_market_reference()
     
     # AI分析
-    decision = analyze_portfolio_with_ai(market_data, btc_data)
+    decision = analyze_portfolio_with_ai(market_data, bnb_1h_data, btc_data)
     
     # 执行交易
     execute_trade(decision, market_data)
