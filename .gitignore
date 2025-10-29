@@ -1,0 +1,177 @@
+# 🔒 敏感信息保护
+# 环境变量文件（包含API密钥）
+.env
+.env.local
+.env.production
+.env.staging
+
+# 配置文件（包含敏感信息）
+config.json
+trading_config.json
+*.config
+
+# 📊 日志文件
+*.log
+logs/
+trading_logs/
+
+# 🐍 Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 🧪 测试和覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# 🔧 开发工具
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 📁 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 🗂️ 临时文件
+*.tmp
+*.temp
+temp/
+tmp/
+
+# 📈 交易数据
+trading_data/
+backtest_results/
+*.csv
+*.xlsx
+
+# 🔐 密钥和证书
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# 🐳 Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# 📦 包管理
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 🚀 部署相关
+deploy/
+deployment/
+*.deployment
+
+# 📱 移动端
+*.apk
+*.ipa
+
+# 🎯 特定于交易机器人的文件
+# 交易历史
+trade_history/
+position_history/
+
+# 备份文件
+backup/
+*.backup
+*.bak
+
+# 会话文件
+*.session
+session/
+
+# 缓存文件
+cache/
+*.cache
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 虚拟机
+.vagrant/
+Vagrantfile
+
+# 云服务配置
+.aws/
+.gcp/
+.azure/
+
+# 本地开发配置
+local_config/
+dev_config/
+
+# 性能分析
+*.prof
+*.profile
+
+# 内存转储
+*.dmp
+core.*
+
+# 网络相关
+*.pcap
+*.cap
+
+# 安全相关
+*.gpg
+*.asc
+*.sig
+
+# 文档生成
+docs/_build/
+docs/build/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IPython
+profile_default/
+ipython_config.py
+
+# 环境变量模板（保留示例文件）
+!.env.example
+!config/.env.example
