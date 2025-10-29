@@ -1,5 +1,17 @@
 # 🤖 AI Trading Bot - Single Coin Per Instance (Run Multiple Instances for Multi-Coin Trading)
 
+## 📖 Language Selection / 语言选择
+
+<div align="center">
+
+| [🇺🇸 English](README_EN.md) | [🇨🇳 中文文档](README_CN.md) |
+|:---:|:---:|
+| **English** | **简体中文** |
+
+</div>
+
+---
+
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)

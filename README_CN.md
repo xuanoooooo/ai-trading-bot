@@ -1,5 +1,17 @@
 # 🤖 AI自动交易机器人 - 单币种版本（多币种请运行多个实例）
 
+## 📖 语言选择 / Language Selection
+
+<div align="center">
+
+| [🇨🇳 中文文档](README_CN.md) | [🇺🇸 English](README_EN.md) |
+|:---:|:---:|
+| **简体中文** | **English** |
+
+</div>
+
+---
+
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
@@ -93,18 +105,6 @@ AI交易机器人-开箱即用版/
 - ✅ **币安原生库** - 使用python-binance库（非CCXT），性能更优
 - ✅ **BTC大盘参考** - 保留比特币作为市场情绪参考
 - 🛡️ **风险隔离建议** - 强烈建议为每个币种创建独立的币安子账户，让AI独立操盘，有效隔离风险。多币种同时运行功能仍在测试中，待确认无风险后发布
-
-## 📖 语言选择 / Language Selection
-
-<div align="center">
-
-| [🇨🇳 中文文档](README_CN.md) | [🇺🇸 English](README_EN.md) |
-|:---:|:---:|
-| **简体中文** | **English** |
-
-</div>
-
----
 
 ## ⚠️ **重要提示**
 
