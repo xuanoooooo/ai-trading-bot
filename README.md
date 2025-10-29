@@ -433,28 +433,6 @@ AI决策理由：
 
 ---
 
-## ⚙️ 配置说明
-
-### 交易配置 (`config/trading_config.json`)
-
-```json
-{
-  "trading": {
-    "symbol": "BNBUSDT",        // 交易对
-    "leverage": 3,               // 杠杆倍数
-    "min_order_qty": 0.01,       // 最小交易数量
-    "test_mode": false           // 测试模式
-  },
-  "position_management": {
-    "default_position_percent": 30,  // 默认仓位
-    "max_position_percent": 50,      // 最大仓位
-    "reserve_percent": 20            // 预留资金
-  }
-}
-```
-
----
-
 ## 📊 数据文件说明
 
 ### `trading_stats.json` - 交易统计

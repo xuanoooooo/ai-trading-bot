@@ -367,22 +367,6 @@ BINANCE_API_KEY=your_binance_api_key
 BINANCE_SECRET=your_binance_secret
 ```
 
-### 📊 Trading Configuration
-Modify `TRADE_CONFIG` in `src/deepseekBNB.py`:
-```python
-TRADE_CONFIG = {
-    'symbol': 'BNB/USDT',        # Trading pair
-    'leverage': 3,                # Leverage multiplier
-    'timeframe': '15m',           # K-line period
-    'test_mode': False,           # Live/Test mode
-    'position_management': {
-        'max_position_percent': 80,  # Maximum position percentage
-        'min_position_percent': 5,   # Minimum position percentage
-        'force_reserve_percent': 20, # Mandatory buffer funds
-    }
-}
-```
-
 ## 🎯 Usage
 
 ### 🖥️ Local Operation
