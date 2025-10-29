@@ -353,6 +353,89 @@ margin = balance['available'] * 0.5
 
 ---
 
+## 🔥 Latest Updates
+
+### 🎯 **v2.2.0 (2025-10-30) - AI Dynamic Position Management**
+
+> **🚀 Major Upgrade: AI can now intelligently determine position size!**
+
+#### 💡 Core Features
+
+- ✨ **AI Dynamic Position Sizing** - Autonomously decides how much capital to use based on signal strength and confidence
+- 🎚️ **Intelligent Position Strategy**:
+  - Strong signal + High confidence: Uses 40-50% of available balance
+  - Medium signal + Medium confidence: Uses 20-30% of available balance
+  - Weak signal + Low confidence: Uses 10-20% of available balance
+- 🛡️ **Strict Boundary Protection**:
+  - Lower limit: Must meet Binance `min_order_qty` requirement (e.g., 0.01 BNB)
+  - Upper limit: Cannot exceed `Available Balance × Leverage`
+  - Auto-adjustment: Automatically limits to safe range when AI suggests exceeding limits
+- 📊 **New Output Fields**:
+  - `position_value`: Position amount (USDT)
+  - `risk_level`: Risk level (HIGH/MEDIUM/LOW)
+  - `confidence`: Confidence level (HIGH/MEDIUM/LOW)
+- 📝 **Complete Logging**: Shows AI suggested amount vs actual amount used
+
+#### 📋 Real Example
+
+```json
+{
+    "action": "BUY_OPEN",
+    "position_value": 1500,  // AI decides to use 1500 USDT
+    "confidence": "HIGH",
+    "risk_level": "LOW",
+    "reason": "Candle: Strong breakout... | Indicators: RSI oversold reversal..."
+}
+```
+
+**Upgrade Highlight:** No longer fixed 30% position - AI flexibly adjusts based on market conditions!
+
+---
+
+### 🚀 **v2.1.0 (2025-10-29) - Major Multi-Timeframe Analysis Upgrade**
+
+> **⚡️ This is a MAJOR feature upgrade! AI decision-making capability significantly enhanced!**
+
+#### 📊 Multi-Timeframe Technical Analysis (Core Feature)
+
+- ✨ **Added 1-Hour Timeframe Data** - 30 × 1-hour candles (30-hour history) + Latest 10 indicator trend values
+- 📈 **Enhanced 15-Minute Data** - 16 × 15-minute candles (4-hour history) + Latest 10 indicator trend values + Current real-time candle
+- ⏰ **Real-Time Candle Data** - AI receives the forming candle (open, current price, high/low, volume, elapsed time)
+- 🎯 **Multi-Timeframe Cross-Validation** - Analyzes short-term (15-min) and mid-term (1-hour) simultaneously, avoids short-term noise
+- 🧠 **AI Smart Comparison** - Automatically compares data across different timeframes to identify real trends
+
+**Real Example:**
+```
+AI Decision Reasoning:
+"15-minute RSI 57.2 is in neutral zone, MACD declining from highs but still positive,
+ 1-hour RSI 31.0 shows oversold but price hasn't confirmed bounce,
+ ATR shows low volatility"
+```
+✅ AI can accurately distinguish between short-term and mid-term signals for more rational decisions!
+
+#### 🔧 Other Improvements
+
+- 🔧 **Removed AI Hard-Coded Instructions** - Deleted subjective judgments like "bullish alignment"/"oscillation", 100% objective data
+- 📊 **Time Series Optimization** - Clearly marked all data in "old→new" order
+- 🔧 **Fixed .env Loading Path** - Resolved configuration file reading issues
+- ✨ **Enhanced Startup Script** - Supports system Python3, no virtual environment needed
+- ✅ **Complete Testing** - Multi-timeframe data acquisition and AI analysis quality fully tested
+
+---
+
+### ✨ **v2.0 (2025-10-27) - Core Features**
+- 📈 **16 K-line Data** - Complete 4-hour short-term data (16 × 15-minute)
+- 🎯 **Mandatory K-line + Indicator Analysis** - AI must analyze both K-line patterns and technical indicators
+- 📊 **Real-time Current K-line Data** - AI can see forming K-lines (OHLC, volume, volatility)
+- 🧠 **AI Decision Memory** - AI sees last 3 decisions (45-minute history), avoids contradictory decisions
+- 💾 **Local Trading History** - Auto-saves to trading_stats.json
+- 📝 **AI Decision Logs** - Records all decisions to ai_decisions.json
+- 🔄 **Binance API Retry Mechanism** - 5 retries + 30s timeout, auto-handles temporary network issues
+- 🌐 **BTC Market Reference** - 15-minute BTC data as market sentiment reference
+
+---
+---
+
 ## 📦 Project Positioning
 
 This is a **Single Coin AI Trading System** (for multiple coins, run multiple program instances simultaneously). Features:
@@ -722,79 +805,6 @@ python src/deepseekBNB.py
 
 </div>
 
----
-
-## 🔥 Latest Updates
-
-### 🔮 **Coming Soon - 3-Minute Ultra-High Frequency Version (In Testing)**
-
-> **⚡️ Extreme speed version for users who don't mind AI calling costs**
-
-#### 🚨 Important Notes
-- ⏱️ **3-Minute Decision Cycle** - AI analyzes market and makes decisions every 3 minutes
-- 💰 **Higher AI Calling Costs** - Call frequency increased by 3x+ (from 10 minutes to 3 minutes)
-- ⚠️ **Market Noise Risk** - Ultra-short cycles may lead to frequent trading, beware of market noise interference
-- 🧪 **Testing Phase** - Currently being validated on test accounts, will be released after confirming no risks
-- 🎯 **Use Case** - Suitable for users pursuing ultimate response speed and insensitive to trading costs
-
-**Stay tuned!** We are conducting rigorous testing to ensure stability and safety before release.
-
----
-
-### 🚀 **v2.1.0 (2025-10-29) - Major Multi-Timeframe Analysis Upgrade**
-
-> **⚡️ This is a MAJOR feature upgrade! AI decision-making capability significantly enhanced!**
-
-#### 📊 Multi-Timeframe Technical Analysis (Core Feature)
-
-- ✨ **Added 1-Hour Timeframe Data** - 30 × 1-hour candles (30-hour history) + Latest 10 indicator trend values
-- 📈 **Enhanced 15-Minute Data** - 16 × 15-minute candles (4-hour history) + Latest 10 indicator trend values + Current real-time candle
-- ⏰ **Real-Time Candle Data** - AI receives the forming candle (open, current price, high/low, volume, elapsed time)
-- 🎯 **Multi-Timeframe Cross-Validation** - Analyzes short-term (15-min) and mid-term (1-hour) simultaneously, avoids short-term noise
-- 🧠 **AI Smart Comparison** - Automatically compares data across different timeframes to identify real trends
-
-**Real Example:**
-```
-AI Decision Reasoning:
-"15-minute RSI 57.2 is in neutral zone, MACD declining from highs but still positive,
- 1-hour RSI 31.0 shows oversold but price hasn't confirmed bounce,
- ATR shows low volatility"
-```
-✅ AI can accurately distinguish between short-term and mid-term signals for more rational decisions!
-
-#### 🔧 Other Improvements
-
-- 🔧 **Removed AI Hard-Coded Instructions** - Deleted subjective judgments like "bullish alignment"/"oscillation", 100% objective data
-- 📊 **Time Series Optimization** - Clearly marked all data in "old→new" order
-- 🔧 **Fixed .env Loading Path** - Resolved configuration file reading issues
-- ✨ **Enhanced Startup Script** - Supports system Python3, no virtual environment needed
-- ✅ **Complete Testing** - Multi-timeframe data acquisition and AI analysis quality fully tested
-
----
-
-### ✨ **v2.0 (2025-10-27) - Core Features**
-- 📈 **16 K-line Data** - Complete 4-hour short-term data (16 × 15-minute)
-- 🎯 **Mandatory K-line + Indicator Analysis** - AI must analyze both K-line patterns and technical indicators
-- 📊 **Real-time Current K-line Data** - AI can see forming K-lines (OHLC, volume, volatility)
-- 🧠 **AI Decision Memory** - AI sees last 3 decisions (45-minute history), avoids contradictory decisions
-- 💾 **Local Trading History** - Auto-saves to trading_stats.json
-- 📝 **AI Decision Logs** - Records all decisions to ai_decisions.json
-- 🔄 **Binance API Retry Mechanism** - 5 retries + 30s timeout, auto-handles temporary network issues
-- 🌐 **BTC Market Reference** - 15-minute BTC data as market sentiment reference
-
----
-#### Bug #2: BNB Precision Error
-**Issue:** Code used 3 decimal places `round(amount, 3)`, but BNB only supports 2 decimals, causing order failures.
-
-**Fix:**
-- Calculation precision: `round(amount, 3)` → `round(amount, 2)`
-- Print format: `.3f` / `.4f` → `.2f`
-
-**Impact:** Prevents `APIError(code=-1111): Precision is over the maximum` error
-
-</details>
-
----
 
 ## ✨ Key Features
 
