@@ -357,6 +357,24 @@ Visit [Binance Futures Trading Rules](https://www.binance.com/en/futures/trading
 
 #### 💰 Minimum Account Balance Requirement
 
+> **🤔 Why do we need minimum balance? What's the difference from `min_order_qty`?**
+> 
+> These are two different limits:
+> - **`min_order_qty` (Minimum Order Quantity)**: Binance's hard requirement, minimum coins per order (e.g., 0.01 BNB)
+> - **`balance > 10` (Minimum Account Balance)**: Our risk control, minimum USDT in account to allow trading
+> 
+> **Why do we need balance limit?**
+> 
+> | Scenario | Balance | BNB Price | Without Balance Limit | With Balance Limit (>10) |
+> |----------|---------|-----------|----------------------|-------------------------|
+> | **Tiny Account** | 5 USDT | 1100 | Try to open → 💥 Order fails<br>(0.01 BNB = 11 USDT > 5 USDT) | ❌ Reject order<br>✅ Avoid failure |
+> | **Barely Enough** | 12 USDT | 1100 | Open 11 USDT → ⚠️ 1U left<br>10% move = liquidation | ❌ Reject order<br>✅ Protect funds |
+> | **Sufficient** | 50 USDT | 1100 | ✅ Normal trading | ✅ Normal trading |
+> 
+> **Summary**: Balance limit prevents trading with tiny accounts, avoiding order failures and easy liquidations!
+
+<br>
+
 Find lines **705** (long position) and **760** (short position):
 
 ```python
@@ -380,20 +398,28 @@ Account must have at least 10 USDT to open positions
 <td>
 
 ```python
-# Loose: 5 USDT minimum
+# Loose: 5 USDT (not recommended, high liquidation risk)
 if balance and balance['available'] > 5:
 
-# Default: 10 USDT (recommended)
+# Default: 10 USDT (recommended for BNB)
 if balance and balance['available'] > 10:
 
-# Strict: 100 USDT minimum
+# Conservative: 20 USDT (safer)
+if balance and balance['available'] > 20:
+
+# Strict: 100 USDT (for large coins like BTC)
 if balance and balance['available'] > 100:
 ```
 
 ⚠️ **Note**:
 - Must modify BOTH places (long 705 + short 760)
-- Setting too low may result in orders below `min_order_qty`
-- Recommended to keep at least 10 USDT
+- Setting too low may cause:
+  - Order value < Binance minimum → Order fails
+  - Remaining margin too small → Easy liquidation
+- **Adjust based on trading coin**:
+  - BNB/SOL (price~1000): Suggest ≥ 20 USDT
+  - ETH (price~3000): Suggest ≥ 50 USDT
+  - BTC (price~60000): Suggest ≥ 100 USDT
 
 </td>
 </tr>
@@ -737,6 +763,24 @@ Visit [Binance Futures Trading Rules](https://www.binance.com/en/futures/trading
 
 #### 💰 Minimum Account Balance Requirement
 
+> **🤔 Why do we need minimum balance? What's the difference from `min_order_qty`?**
+> 
+> These are two different limits:
+> - **`min_order_qty` (Minimum Order Quantity)**: Binance's hard requirement, minimum coins per order (e.g., 0.01 BNB)
+> - **`balance > 10` (Minimum Account Balance)**: Our risk control, minimum USDT in account to allow trading
+> 
+> **Why do we need balance limit?**
+> 
+> | Scenario | Balance | BNB Price | Without Balance Limit | With Balance Limit (>10) |
+> |----------|---------|-----------|----------------------|-------------------------|
+> | **Tiny Account** | 5 USDT | 1100 | Try to open → 💥 Order fails<br>(0.01 BNB = 11 USDT > 5 USDT) | ❌ Reject order<br>✅ Avoid failure |
+> | **Barely Enough** | 12 USDT | 1100 | Open 11 USDT → ⚠️ 1U left<br>10% move = liquidation | ❌ Reject order<br>✅ Protect funds |
+> | **Sufficient** | 50 USDT | 1100 | ✅ Normal trading | ✅ Normal trading |
+> 
+> **Summary**: Balance limit prevents trading with tiny accounts, avoiding order failures and easy liquidations!
+
+<br>
+
 Find lines **705** (long position) and **760** (short position):
 
 ```python
@@ -760,20 +804,28 @@ Account must have at least 10 USDT to open positions
 <td>
 
 ```python
-# Loose: 5 USDT minimum
+# Loose: 5 USDT (not recommended, high liquidation risk)
 if balance and balance['available'] > 5:
 
-# Default: 10 USDT (recommended)
+# Default: 10 USDT (recommended for BNB)
 if balance and balance['available'] > 10:
 
-# Strict: 100 USDT minimum
+# Conservative: 20 USDT (safer)
+if balance and balance['available'] > 20:
+
+# Strict: 100 USDT (for large coins like BTC)
 if balance and balance['available'] > 100:
 ```
 
 ⚠️ **Note**:
 - Must modify BOTH places (long 705 + short 760)
-- Setting too low may result in orders below `min_order_qty`
-- Recommended to keep at least 10 USDT
+- Setting too low may cause:
+  - Order value < Binance minimum → Order fails
+  - Remaining margin too small → Easy liquidation
+- **Adjust based on trading coin**:
+  - BNB/SOL (price~1000): Suggest ≥ 20 USDT
+  - ETH (price~3000): Suggest ≥ 50 USDT
+  - BTC (price~60000): Suggest ≥ 100 USDT
 
 </td>
 </tr>
