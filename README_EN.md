@@ -105,42 +105,49 @@ python src/deepseekBNB.py
 
 ---
 
-## 🔥 Latest Updates (2025-10-27)
+## 🔥 Latest Updates
 
-### 🆕 **v2.1 Today's Updates**
-- 🧹 **Code Cleanup** - Removed 4-hour K-line analysis feature (long-term trend analysis to be released in next version)
-- 📝 **Documentation Updates** - Updated all README files to clarify current feature scope
-- 🔮 **Feature Preview** - Multi-timeframe analysis (4-hour long-term trend) coming in v3.0
+### 🚀 **v2.1.0 (2025-10-29) - Major Multi-Timeframe Analysis Upgrade**
 
-### ✨ **v2.0 Major Upgrades**
-- 📈 **16 K-line Data** - Increased from 5 to 16 x 15-minute K-lines (more complete short-term data)
-- 🎯 **Mandatory K-line + Indicator Analysis** - AI must explain both K-line patterns and technical indicators (format: K-line: xxx | Indicator: xxx)
-- 💾 **Local Trading History** - Auto-saves trading records to trading_stats.json (recent 200 trades)
-- 📝 **AI Decision Logs** - Records all AI decisions to ai_decisions.json (recent 100 entries)
-- 📊 **Trading Statistics** - Real-time total trades, win rate, total P&L, runtime tracking
-- 🎯 **AI Position Management Optimization** - AI can now intelligently adjust position percentage (0-80%) based on market conditions
-- 🔧 **Dynamic Fund Management** - System automatically calculates margin, AI doesn't need to worry about asset quantities
-- 📊 **Complete Account Information** - AI can view available balance, margin ratio, and position P&L when making decisions
-- 🛡️ **Enhanced Risk Control** - Precision handling, minimum trade amount checks, reasonability validation
+> **⚡️ This is a MAJOR feature upgrade! AI decision-making capability significantly enhanced!**
 
-### 🐛 **v1.0 Bug Fixes**
-- ✅ **Fixed Reverse Close Logic Error** - Long position + SELL signal now only closes position, no longer incorrectly opens short
-- ✅ **Fixed BNB Precision Issue** - Correctly uses 2 decimal places, avoiding `Precision error`
-- ✅ **Fixed Add-to-Position Logic** - Clarified AI prompts to prevent accidental duplicate orders
+#### 📊 Multi-Timeframe Technical Analysis (Core Feature)
 
-### 📝 **Details**
-<details>
-<summary>Click to view detailed update content</summary>
+- ✨ **Added 1-Hour Timeframe Data** - AI now analyzes both 15-minute (short-term) + 1-hour (mid-term) data simultaneously
+- 🎯 **Multi-Timeframe Cross-Validation** - Avoids misleading short-term fluctuations, improves decision accuracy
+- 📈 **Complete Technical Indicators** - 1-hour RSI, MACD, SMA20/50 with time series trends
+- 🧠 **AI Smart Comparison** - Automatically compares data across different timeframes to identify real trends
 
-#### Bug #1: Reverse Close Error (Critical)
-**Issue:** Previous version would close long position then open short position when receiving SELL signal while holding long. This violated AI's intent (may only want to close and observe).
+**Real Example:**
+```
+AI Decision Reasoning:
+"15-minute RSI 57.2 is in neutral zone, MACD declining from highs but still positive,
+ 1-hour RSI 31.0 shows oversold but price hasn't confirmed bounce,
+ ATR shows low volatility"
+```
+✅ AI can accurately distinguish between short-term and mid-term signals for more rational decisions!
 
-**Fix:**
-- Long position + SELL signal → **Only close long** (no new position)
-- Short position + BUY signal → **Only close short** (no new position)
+#### 🔧 Other Improvements
 
-**Impact:** Prevents accidental two-way trading and extra fees
+- 🔧 **Removed AI Hard-Coded Instructions** - Deleted subjective judgments like "bullish alignment"/"oscillation", 100% objective data
+- 📊 **Time Series Optimization** - Clearly marked all data in "old→new" order
+- 🔧 **Fixed .env Loading Path** - Resolved configuration file reading issues
+- ✨ **Enhanced Startup Script** - Supports system Python3, no virtual environment needed
+- ✅ **Complete Testing** - Multi-timeframe data acquisition and AI analysis quality fully tested
 
+---
+
+### ✨ **v2.0 (2025-10-27) - Core Features**
+- 📈 **16 K-line Data** - Complete 4-hour short-term data (16 × 15-minute)
+- 🎯 **Mandatory K-line + Indicator Analysis** - AI must analyze both K-line patterns and technical indicators
+- 📊 **Real-time Current K-line Data** - AI can see forming K-lines (OHLC, volume, volatility)
+- 🧠 **AI Decision Memory** - AI sees last 3 decisions (45-minute history), avoids contradictory decisions
+- 💾 **Local Trading History** - Auto-saves to trading_stats.json
+- 📝 **AI Decision Logs** - Records all decisions to ai_decisions.json
+- 🔄 **Binance API Retry Mechanism** - 5 retries + 30s timeout, auto-handles temporary network issues
+- 🌐 **BTC Market Reference** - 15-minute BTC data as market sentiment reference
+
+---
 #### Bug #2: BNB Precision Error
 **Issue:** Code used 3 decimal places `round(amount, 3)`, but BNB only supports 2 decimals, causing order failures.
 
@@ -162,10 +169,11 @@ python src/deepseekBNB.py
 - **Dynamic Position Management** - AI intelligently adjusts position sizes based on market conditions
 
 ### 📊 **Technical Analysis Engine**
-- **Multi-dimensional Indicators** - SMA, EMA, MACD, RSI, Bollinger Bands, Volume analysis
-- **Support/Resistance Detection** - Automatic calculation of static and dynamic levels
-- **Trend Analysis** - Price momentum and trend continuity analysis
-- **Real-time Data** - 15-minute K-line data with 96 historical data points
+- **Multi-dimensional Indicators** - RSI, MACD, SMA20/50, Bollinger Bands, ATR volatility
+- **🚀 Multi-Timeframe Analysis** - 15-minute (short-term) + 1-hour (mid-term) K-lines, cross-validation to avoid misjudgment
+- **K-line Pattern Analysis** - 16 historical K-lines (4-hour history) + real-time current K-line
+- **Time Series Data** - Last 10 values of indicator trends (old→new, clearly showing trend evolution)
+- **BTC Market Reference** - Bitcoin market sentiment as auxiliary judgment
 
 ### 🛡️ **Risk Management System**
 - **Smart Risk Control** - Maximum 80% position limit with mandatory 20% buffer
