@@ -1,4 +1,4 @@
-# 🤖 AI自动交易机器人 - BNB单币种版本（支持更换币种，详细请看说明）
+# 🤖 AI自动交易机器人 - 单币种版本（多币种请运行多个实例）
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -8,8 +8,9 @@
 
 ## 📦 项目定位
 
-这是一个**精简的单币种AI交易系统**，专注于：
-- ✅ **单币种交易** - 专注BNB/USDT合约交易
+这是一个**单币种AI交易系统**（多币种请同时运行多个程序实例），特点：
+- ✅ **单币种交易** - 默认BNB/USDT合约（代码示例），可自行修改为其他币种
+- ✅ **多币种方案** - 需要多币种？同时运行多个程序实例即可，每个实例交易一个币种
 - ✅ **币安原生库** - 使用python-binance库（非CCXT），性能更优
 - ✅ **BTC大盘参考** - 保留比特币作为市场情绪参考
 

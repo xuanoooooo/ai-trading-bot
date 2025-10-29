@@ -1,4 +1,4 @@
-# 🤖 AI Trading Bot - BNB Single Coin Version (Support Other Coins, See Documentation)
+# 🤖 AI Trading Bot - Single Coin Per Instance (Run Multiple Instances for Multi-Coin Trading)
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -183,7 +183,8 @@ AI Decision Reasoning:
 
 ### 🔧 **Technical Architecture**
 - **Binance Futures** - Supports Binance futures trading
-- **Multi-currency Support** - Configurable trading pairs (BNB/USDT, DOGE/USDT, etc.)
+- **Single Coin Per Instance** - Each program instance trades one coin (default: BNB/USDT). For multiple coins, run multiple instances simultaneously
+- **Easy Coin Switching** - Simply modify the `symbol` parameter in code to trade any other coin
 - **Persistent Operation** - tmux session management for remote server deployment
 - **Complete Logging** - Automatic log rotation with detailed trading records
 
