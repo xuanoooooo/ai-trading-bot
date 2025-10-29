@@ -535,6 +535,10 @@ def analyze_portfolio_with_ai(market_data, btc_data):
 
 {market_text}
 
+【数据周期说明】
+- 15分钟周期（短期）：快速反应市场变化，捕捉短期机会
+- 历史16根K线（4小时）：观察价格形态和趋势演变
+
 【决策要求】
 1. 综合分析当前K线实时状态、历史K线形态、技术指标、BTC大盘
 2. 给出交易决策：BUY_OPEN（开多）/ SELL_OPEN（开空）/ CLOSE（平仓）/ HOLD（观望）
