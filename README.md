@@ -265,6 +265,7 @@ python-binance
   - BTC/ETH: 最小 0.001
   - DOGE/SHIB: 最小 1 或更大
 - 修改 `min_order_qty` 为对应币种的最小交易量
+- **建议**：不建议交易单价低于1U的币种（如SHIB、PEPE等），小数点位数过多容易引起精度错误
 
 ---
 

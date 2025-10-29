@@ -143,6 +143,7 @@ If you cannot access Binance API, please resolve network issues on your own.
   - BTC/ETH: minimum 0.001
   - DOGE/SHIB: minimum 1 or more
 - Modify `min_order_qty` to the corresponding minimum order quantity
+- **Recommendation**: Not recommended to trade coins with unit price below 1 USDT (e.g., SHIB, PEPE), as excessive decimal places can cause precision errors
 
 ---
 
