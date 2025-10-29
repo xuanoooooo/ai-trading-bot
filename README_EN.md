@@ -105,6 +105,18 @@ python src/deepseekBNB.py
 
 ---
 
+## 📸 Demo Screenshot
+
+<div align="center">
+
+![Terminal Demo](images/terminal-demo.png)
+
+*✨ AI automatically analyzes market data and makes trading decisions - Real-time K-line analysis + Multi-timeframe technical indicators*
+
+</div>
+
+---
+
 ## 🔥 Latest Updates
 
 ### 🚀 **v2.1.0 (2025-10-29) - Major Multi-Timeframe Analysis Upgrade**

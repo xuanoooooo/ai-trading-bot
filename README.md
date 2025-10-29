@@ -68,6 +68,18 @@ cd src && python deepseekBNB.py
 
 ---
 
+## 📸 运行演示
+
+<div align="center">
+
+![终端运行演示](images/terminal-demo.png)
+
+*✨ AI自动分析市场数据并给出交易决策 - 实时K线分析 + 多周期技术指标*
+
+</div>
+
+---
+
 ## 🔥 最新更新
 
 ### 🚀 **v2.1.0 (2025-10-29) - 多时段分析重大升级**
