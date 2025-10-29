@@ -1,110 +1,252 @@
-# 🤖 AI自动交易机器人 - 单币种版本（多币种请运行多个实例）
-
-## 📖 语言选择 / Language Selection
-
 <div align="center">
 
-| [🇨🇳 中文文档](README.md) | [🇺🇸 English](README_EN.md) |
-|:---:|:---:|
-| **简体中文** | **English** |
+# 🤖 AI自动交易机器人
 
-</div>
-
----
+### 单币种版本（多币种请运行多个实例）
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Trading](https://img.shields.io/badge/Trading-Cryptocurrency-orange.svg)](https://binance.com)
 
-> 🚀 **基于DeepSeek AI的BNB智能交易机器人，使用币安原生库python-binance**
+**🚀 基于DeepSeek AI的智能交易机器人，使用币安原生库python-binance**
 
 ---
 
+### 📖 语言选择 / Language Selection
+
+| [🇨🇳 中文文档](README.md) | [🇺🇸 English](README_EN.md) |
+|:---:|:---:|
+| **简体中文** | **English** |
+
+---
+
+### 💰 如果您通过这个项目获得了收益，欢迎支持一下
+
+**钱包地址 (BEP20/BSC)**
+
+```
+0x59B7c28c236E6017df28e7F376B84579872A4E33
+```
+
+<sub>您的支持是我持续更新的动力 ❤️</sub>
+
+</div>
+
+<br>
+
+---
+
+<br>
+
 ## 📦 开箱即用版（无编程基础用户专享）
 
-> **🎁 为不懂编程的用户准备的傻瓜式部署包！**
+<div align="center">
+
+**🎁 为不懂编程的用户准备的傻瓜式部署包！**
+
+</div>
+
+<br>
 
 如果你是**无编程基础**的用户，我们为你准备了开箱即用版本，只需3步即可启动：
 
+<br>
+
 ### ✨ 开箱即用版特点
 
-- 🚀 **一键安装** - 自动检测环境、自动安装依赖
-- 🚀 **一键启动** - 自动检查配置、自动启动程序
-- 📝 **详细文档** - 5分钟快速开始指南（中英文）
-- 🛡️ **傻瓜配置** - .env文件带详细中文注释
-- 💡 **智能检测** - 自动诊断问题并给出解决方案
-- 🎨 **彩色界面** - Linux版本支持彩色终端输出
-- 🔧 **后台运行** - Linux支持后台运行和进程管理
+<table>
+<tr>
+<td width="50%">
+
+**🚀 一键安装**
+- 自动检测环境
+- 自动安装依赖
+
+**📝 详细文档**
+- 5分钟快速开始
+- 中英文双语支持
+
+**🎨 彩色界面**
+- Linux彩色终端
+- 美观易读
+
+</td>
+<td width="50%">
+
+**🚀 一键启动**
+- 自动检查配置
+- 自动启动程序
+
+**🛡️ 傻瓜配置**
+- .env详细注释
+- 智能错误诊断
+
+**🔧 后台运行**
+- Linux后台支持
+- 进程管理
+
+</td>
+</tr>
+</table>
+
+<br>
 
 ### 📥 下载开箱即用版
 
-从 [Releases](https://github.com/xuanoooooo/ai-trading-bot/releases) 页面下载最新的：
-- **`AI交易机器人-开箱即用版.tar.gz`** （推荐，支持Windows/Linux/Mac）
+<div align="center">
 
-或者从项目中直接获取：
-```bash
-# 下载项目后，开箱即用版位于：
-./GitHub发布版/AI交易机器人-无编程基础用户版.tar.gz
-```
+📦 从 [**Releases**](https://github.com/xuanoooooo/ai-trading-bot/releases) 页面下载最新版本
+
+**`AI交易机器人-开箱即用版.tar.gz`**
+
+<sub>支持 Windows / Linux / Mac</sub>
+
+</div>
+
+<br>
 
 ### 🚀 3步快速启动
 
-#### Windows用户：
+<details>
+<summary><b>🪟 Windows用户（点击展开）</b></summary>
+
+<br>
+
 ```
-1. 解压压缩包
-2. 双击运行 scripts/Windows系统一键安装.bat（首次使用）
-3. 双击运行 scripts/Windows系统一键启动.bat
+1️⃣ 解压压缩包
+
+2️⃣ 双击运行 scripts/Windows系统一键安装.bat（首次使用）
+   → 等待依赖安装完成
+
+3️⃣ 双击运行 scripts/Windows系统一键启动.bat
+   → 程序开始运行
 ```
 
-#### Linux/Mac用户：
+</details>
+
+<details>
+<summary><b>🐧 Linux/Mac用户（点击展开）</b></summary>
+
+<br>
+
 ```bash
-# 1. 解压
+# 1️⃣ 解压
 tar -xzf AI交易机器人-开箱即用版.tar.gz
 cd easy-setup
 
-# 2. 配置API密钥
+# 2️⃣ 配置API密钥
 nano .env  # 填入你的DeepSeek和币安API密钥
 
-# 3. 安装并启动
+# 3️⃣ 安装并启动
 chmod +x scripts/*.sh
 bash scripts/Linux系统一键安装.sh
 bash scripts/Linux系统一键启动.sh
 ```
 
+</details>
+
+<br>
+
 ### 📖 开箱即用版包含内容
+
+<details>
+<summary><b>查看详细文件列表（点击展开）</b></summary>
+
+<br>
 
 ```
 AI交易机器人-开箱即用版/
-├── 使用说明-请先看我.txt          # 首页说明
-├── README_快速开始.txt             # 中文快速指南
-├── README_QUICK_START.txt          # 英文快速指南
-├── .env                             # API密钥配置（带详细注释）
-├── requirements.txt                 # Python依赖
-├── LICENSE                          # 开源许可证
+├── 📄 使用说明-请先看我.txt          # 首页说明
+├── 📄 README_快速开始.txt             # 中文快速指南
+├── 📄 README_QUICK_START.txt          # 英文快速指南
+├── 🔑 .env                             # API密钥配置（带详细注释）
+├── 📋 requirements.txt                 # Python依赖
+├── 📜 LICENSE                          # 开源许可证
 │
-├── src/
-│   └── deepseekBNB.py              # 主程序
+├── 📁 src/
+│   └── 🐍 deepseekBNB.py              # 主程序
 │
-├── scripts/
-│   ├── Windows系统一键安装.bat     # Windows安装脚本
-│   ├── Windows系统一键启动.bat     # Windows启动脚本
-│   ├── Linux系统一键安装.sh        # Linux安装脚本
-│   └── Linux系统一键启动.sh        # Linux启动脚本
+├── 📁 scripts/
+│   ├── 🪟 Windows系统一键安装.bat     # Windows安装脚本
+│   ├── 🪟 Windows系统一键启动.bat     # Windows启动脚本
+│   ├── 🐧 Linux系统一键安装.sh        # Linux安装脚本
+│   └── 🐧 Linux系统一键启动.sh        # Linux启动脚本
 │
-└── config/
-    └── 配置说明.txt                 # 详细配置教程（9个章节）
+└── 📁 config/
+    └── 📖 配置说明.txt                 # 详细配置教程（9个章节）
 ```
+
+</details>
+
+<br>
 
 ---
 
+<br>
+
 ## 📦 项目定位
 
-这是一个**单币种AI交易系统**（多币种请同时运行多个程序实例），特点：
-- ✅ **单币种交易** - 默认BNB/USDT合约（代码示例），可自行修改为其他币种
-- ✅ **多币种方案** - 需要多币种？同时运行多个程序实例即可，每个实例交易一个币种
-- ✅ **币安原生库** - 使用python-binance库（非CCXT），性能更优
-- ✅ **BTC大盘参考** - 保留比特币作为市场情绪参考
-- 🛡️ **风险隔离建议** - 强烈建议为每个币种创建独立的币安子账户，让AI独立操盘，有效隔离风险。多币种同时运行功能仍在测试中，待确认无风险后发布
+<div align="center">
+
+**这是一个单币种AI交易系统**
+
+<sub>多币种请同时运行多个程序实例</sub>
+
+</div>
+
+<br>
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+**💰 单币种交易**
+
+默认BNB/USDT合约
+
+可自行修改币种
+
+</td>
+<td width="33%" align="center">
+
+**🔄 多币种方案**
+
+运行多个程序实例
+
+每个实例交易一个币种
+
+</td>
+<td width="33%" align="center">
+
+**⚡ 币安原生库**
+
+python-binance
+
+性能更优
+
+</td>
+</tr>
+<tr>
+<td width="33%" align="center">
+
+**📊 BTC大盘参考**
+
+市场情绪参考
+
+辅助决策
+
+</td>
+<td width="66%" align="center" colspan="2">
+
+**🛡️ 风险隔离建议**
+
+强烈建议为每个币种创建独立的币安子账户，让AI独立操盘，有效隔离风险
+
+<sub>多币种同时运行功能仍在测试中，待确认无风险后发布</sub>
+
+</td>
+</tr>
+</table>
 
 ## ⚠️ **重要提示**
 
