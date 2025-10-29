@@ -137,7 +137,7 @@ If you cannot access Binance API, please resolve network issues on your own.
 ### 4. Trading Parameters Configuration
 
 <details>
-<summary><b>⚙️ Click to Expand: Detailed Configuration Guide</b></summary>
+<summary><h3 style="color: red; display: inline;">⚙️ Click to Expand: Detailed Configuration Guide</h3></summary>
 
 <br>
 

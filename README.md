@@ -259,7 +259,7 @@ python-binance
 ### 3. 交易参数配置
 
 <details>
-<summary><b>⚙️ 点击展开：详细配置教程</b></summary>
+<summary><h3 style="color: red; display: inline;">⚙️ 点击展开：详细配置教程</h3></summary>
 
 <br>
 
