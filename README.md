@@ -887,8 +887,6 @@ AI决策理由：
 │   ├── start_trading.sh            # 启动脚本
 │   └── setup.sh                    # 环境配置脚本
 ├── docs/
-│   ├── 币种配置说明.md             # 如何修改交易币种（重要）
-│   └── COIN_CONFIG.md              # Coin configuration guide (EN)
 ├── requirements.txt                # Python依赖
 ├── .env                            # API密钥（需自行创建）
 └── README.md                       # 项目说明
@@ -963,7 +961,7 @@ cat trading_stats.json | jq '.total_trades, .win_rate, .total_pnl'
 ## 🐛 常见问题
 
 ### Q1: 如何修改交易币种（从BNB改为ETH/DOGE等）？
-**A**: 详见 **[📖 币种配置说明文档](docs/币种配置说明.md)** 或 **[EN Version](docs/COIN_CONFIG.md)**
+**A**: 请点击上方 **"⚙️ 点击展开：详细配置教程"** 查看完整的配置说明，包括如何修改交易币种、杠杆倍数、最小开单量、资金使用率等参数。
 
 ### Q2: API连接超时？
 **A**: 检查网络连接，程序已内置5次重试机制。
