@@ -113,9 +113,10 @@ python src/deepseekBNB.py
 
 #### 📊 Multi-Timeframe Technical Analysis (Core Feature)
 
-- ✨ **Added 1-Hour Timeframe Data** - AI now analyzes both 15-minute (short-term) + 1-hour (mid-term) data simultaneously
-- 🎯 **Multi-Timeframe Cross-Validation** - Avoids misleading short-term fluctuations, improves decision accuracy
-- 📈 **Complete Technical Indicators** - 1-hour RSI, MACD, SMA20/50 with time series trends
+- ✨ **Added 1-Hour Timeframe Data** - 30 × 1-hour candles (30-hour history) + Latest 10 indicator trend values
+- 📈 **Enhanced 15-Minute Data** - 16 × 15-minute candles (4-hour history) + Latest 10 indicator trend values + Current real-time candle
+- ⏰ **Real-Time Candle Data** - AI receives the forming candle (open, current price, high/low, volume, elapsed time)
+- 🎯 **Multi-Timeframe Cross-Validation** - Analyzes short-term (15-min) and mid-term (1-hour) simultaneously, avoids short-term noise
 - 🧠 **AI Smart Comparison** - Automatically compares data across different timeframes to identify real trends
 
 **Real Example:**
