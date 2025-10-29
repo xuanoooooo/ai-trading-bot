@@ -326,7 +326,7 @@ def get_bnb_market_data():
             'bb_position': current_data['bb_position'],
             'sma_20': current_data['sma_20'],
             'sma_50': current_data['sma_50'],
-            # 时间序列（最近10个值）
+            # 时间序列（最近10个值，从旧→新）
             'rsi_series': df['rsi'].tail(10).tolist(),
             'macd_series': df['macd'].tail(10).tolist(),
             'atr_series': df['atr_14'].tail(10).tolist(),
@@ -410,7 +410,7 @@ def analyze_portfolio_with_ai(market_data, btc_data):
 - 波动幅度: {volatility:.2f}%"""
     
     # 构建历史K线文本
-    kline_text = "\n【历史16根K线】（从旧到新，共4小时）："
+    kline_text = "\n【历史16根K线】（按时间顺序：从旧→新，共4小时历史数据）："
     for i, kline in enumerate(market_data['historical_klines'], 1):
         open_p = float(kline[1])
         high_p = float(kline[2])
