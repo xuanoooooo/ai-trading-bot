@@ -38,6 +38,143 @@
 
 <br>
 
+## ⚠️ 使用前必读
+
+<div align="center">
+
+**🚨 重要！启动程序前必须完成以下设置，否则会导致交易失败或亏损！**
+
+</div>
+
+<br>
+
+<table>
+<tr>
+<td width="5%" align="center">🔴</td>
+<td width="25%"><b>必须设置单向持仓</b></td>
+<td width="70%">
+
+币安账户**必须设置为单向持仓模式（One-Way Mode）**
+
+❌ 双向持仓模式（Hedge Mode）会导致交易失败
+
+📍 设置路径：币安合约账户 → 偏好设置 → 持仓模式 → 单向持仓
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🔴</td>
+<td><b>必须查询最低交易数量</b></td>
+<td>
+
+**不同币种的最低交易数量不同（以币种数量计，不是USDT！）**
+
+- BNB/SOL: 最小 0.01 个
+- BTC/ETH: 最小 0.001 个  
+- DOGE: 最小 1 个
+
+📍 修改位置：`src/deepseekBNB.py` 第95行 `min_order_qty`
+
+🔗 查询方式：[币安API文档](https://binance-docs.github.io/apidocs/futures/cn/) 或在币安合约页面查看
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🔴</td>
+<td><b>必须设置API权限</b></td>
+<td>
+
+**币安API密钥必须开启"合约交易"权限**
+
+❌ 仅开启"现货交易"权限会导致所有交易失败
+
+📍 设置路径：币安 → API管理 → 编辑限制 → 启用合约
+
+⚠️ 建议启用IP白名单限制，提升安全性
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>建议先测试模式</b></td>
+<td>
+
+**强烈建议首次使用时开启测试模式**
+
+📍 修改位置：`src/deepseekBNB.py` 第99行 `'test_mode': True`
+
+✅ 测试模式下程序会正常分析但**不会实际下单**，可验证配置是否正确
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>确保账户余额充足</b></td>
+<td>
+
+**最低要求：账户至少有 10 USDT + 一笔最小订单的价值**
+
+例如交易BNB（价格600 USDT，最小数量0.01）：
+- 最小订单价值 = 600 × 0.01 = 6 USDT
+- 建议余额 ≥ 10 + 6 = **16 USDT**
+
+📍 修改最低余额限制：`src/deepseekBNB.py` 第705行和760行
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>避免低价币种</b></td>
+<td>
+
+**不建议交易单价低于1 USDT的币种**
+
+❌ 如 SHIB、PEPE 等（小数位过多，容易精度错误）
+
+✅ 推荐：BNB、ETH、SOL、BTC 等主流币种
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>网络访问要求</b></td>
+<td>
+
+**⚠️ 美国IP和中国大陆IP无法直接访问币安API**
+
+请自行解决网络问题（本项目不提供网络解决方案）
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟢</td>
+<td><b>推荐使用子账户</b></td>
+<td>
+
+**建议使用币安子账户进行交易，实现风险隔离**
+
+✅ 主账户资金安全 + 子账户专门用于AI交易
+
+📍 创建方式：币安 → 账户管理 → 子账户管理
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+---
+
+<br>
+
 ## 📦 开箱即用版（无编程基础用户专享）
 
 <div align="center">

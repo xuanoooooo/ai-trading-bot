@@ -20,6 +20,141 @@
 
 ---
 
+## ⚠️ Important - Read Before Use
+
+<div align="center">
+
+**🚨 Critical! Complete these settings before starting, or trading will fail or cause losses!**
+
+</div>
+
+<br>
+
+<table>
+<tr>
+<td width="5%" align="center">🔴</td>
+<td width="25%"><b>Must Use One-Way Mode</b></td>
+<td width="70%">
+
+Binance account **must be set to One-Way Position Mode**
+
+❌ Hedge Mode will cause trading failures
+
+📍 Path: Binance Futures → Preferences → Position Mode → One-Way Mode
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🔴</td>
+<td><b>Must Check Min Order Quantity</b></td>
+<td>
+
+**Different coins have different minimum order quantities (in coin amount, NOT USDT!)**
+
+- BNB/SOL: Min 0.01 coins
+- BTC/ETH: Min 0.001 coins  
+- DOGE: Min 1 coin
+
+📍 Modify at: `src/deepseekBNB.py` Line 95 `min_order_qty`
+
+🔗 Check at: [Binance API Docs](https://binance-docs.github.io/apidocs/futures/en/) or Binance Futures page
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🔴</td>
+<td><b>Must Enable API Permissions</b></td>
+<td>
+
+**Binance API key must have "Futures Trading" permission enabled**
+
+❌ Only "Spot Trading" permission will cause all trades to fail
+
+📍 Path: Binance → API Management → Edit Restrictions → Enable Futures
+
+⚠️ Recommend enabling IP whitelist for security
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>Recommend Test Mode First</b></td>
+<td>
+
+**Strongly recommend enabling test mode for first-time use**
+
+📍 Modify at: `src/deepseekBNB.py` Line 99 `'test_mode': True`
+
+✅ Test mode analyzes normally but **does NOT place actual orders**, verifies configuration
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>Ensure Sufficient Balance</b></td>
+<td>
+
+**Minimum requirement: At least 10 USDT + value of one minimum order**
+
+Example for BNB (price 600 USDT, min qty 0.01):
+- Min order value = 600 × 0.01 = 6 USDT
+- Recommended balance ≥ 10 + 6 = **16 USDT**
+
+📍 Modify min balance at: `src/deepseekBNB.py` Lines 705 and 760
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>Avoid Low-Price Coins</b></td>
+<td>
+
+**Not recommended for coins priced below 1 USDT**
+
+❌ Like SHIB, PEPE (too many decimals, precision errors)
+
+✅ Recommended: BNB, ETH, SOL, BTC and other major coins
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟡</td>
+<td><b>Network Access Required</b></td>
+<td>
+
+**⚠️ US IP and Mainland China IP cannot access Binance API directly**
+
+Please solve network issues yourself (this project does not provide network solutions)
+
+</td>
+</tr>
+
+<tr>
+<td align="center">🟢</td>
+<td><b>Recommend Using Sub-Account</b></td>
+<td>
+
+**Recommend using Binance sub-account for risk isolation**
+
+✅ Main account funds safe + sub-account dedicated to AI trading
+
+📍 Create at: Binance → Account Management → Sub-Account Management
+
+</td>
+</tr>
+
+</table>
+
+<br>
+
+---
+
 ## 📦 Easy Setup Version (For Non-Programmers)
 
 > **🎁 Foolproof deployment package for users without programming experience!**
