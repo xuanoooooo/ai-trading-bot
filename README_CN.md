@@ -180,8 +180,6 @@ AI交易机器人-开箱即用版/
 
 <br>
 
-### ⚙️ 开箱即用版 - 交易参数配置
-
 <details>
 <summary><h3 style="color: red; display: inline;">⚙️ 点击展开：详细配置教程</h3></summary>
 

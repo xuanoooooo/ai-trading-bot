@@ -95,8 +95,6 @@ AI Trading Bot - Easy Setup/
     └── 配置说明.txt                 # Detailed configuration tutorial (9 chapters)
 ```
 
-### ⚙️ Easy Setup - Trading Parameters Configuration
-
 <details>
 <summary><h3 style="color: red; display: inline;">⚙️ Click to Expand: Detailed Configuration Guide</h3></summary>
 
