@@ -1,3 +1,15 @@
+> **💭 Author's Note**  
+> *"After countless cycles of chasing pumps and panic selling, I completely lost faith in my own trading ability.*  
+> *Instead of being controlled by fear and greed, why not let AI make decisions—at least it won't lose sleep over market volatility.*  
+> *This project stems from a simple belief: No matter how imperfect AI is, it's still more rational than an emotionally-driven me."*
+> 
+> **⚠️ Important Reminder**  
+> AI trading **does NOT guarantee profits**. Markets are risky, invest wisely.  
+> This project is for educational purposes only. Users assume all trading risks.  
+> Approach AI decisions rationally, manage position sizes properly, and never blindly trust.
+
+---
+
 # 🤖 AI Trading Bot - Single Coin Per Instance (Run Multiple Instances for Multi-Coin Trading)
 
 ## 📖 Language Selection / 语言选择
