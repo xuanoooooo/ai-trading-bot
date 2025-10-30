@@ -246,7 +246,7 @@
 
 📦 从 [**Releases**](https://github.com/xuanoooooo/ai-trading-bot/releases) 页面下载最新版本
 
-**`AI交易机器人-开箱即用版.tar.gz`**
+**`ai-trading-bot-easy-setup-v2.3.0.tar.gz`**
 
 <sub>支持 Windows / Linux / Mac</sub>
 
@@ -280,7 +280,7 @@
 
 ```bash
 # 1️⃣ 解压
-tar -xzf AI交易机器人-开箱即用版.tar.gz
+tar -xzf ai-trading-bot-easy-setup-v2.3.0.tar.gz
 cd easy-setup
 
 # 2️⃣ 配置API密钥

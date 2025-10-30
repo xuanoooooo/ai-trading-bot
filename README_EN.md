@@ -187,7 +187,7 @@ If you are a user **without programming experience**, we have prepared a ready-t
 ### 📥 Download Easy Setup Version
 
 Download from [Releases](https://github.com/xuanoooooo/ai-trading-bot/releases) page:
-- **`AI交易机器人-开箱即用版.tar.gz`** (Recommended, supports Windows/Linux/Mac)
+- **`ai-trading-bot-easy-setup-v2.3.0.tar.gz`** (Recommended, supports Windows/Linux/Mac)
 
 Or get it directly from the project:
 ```bash
@@ -207,7 +207,7 @@ Or get it directly from the project:
 #### Linux/Mac Users:
 ```bash
 # 1. Extract
-tar -xzf AI交易机器人-开箱即用版.tar.gz
+tar -xzf ai-trading-bot-easy-setup-v2.3.0.tar.gz
 cd easy-setup
 
 # 2. Configure API Keys
