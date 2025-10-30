@@ -9,7 +9,8 @@
 > Approach AI decisions rationally, manage position sizes properly, and never blindly trust.
 
 ---
-
+There are no fees or referral codes. I'd be very grateful for a star on GitHub.
+-
 # 🤖 AI Trading Bot - Single Coin Per Instance (Run Multiple Instances for Multi-Coin Trading)
 
 ## 📖 Language Selection / 语言选择
