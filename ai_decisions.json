@@ -45,6 +45,15 @@
       "confidence": "MEDIUM",
       "position_value": 0,
       "risk_level": "MEDIUM"
+    },
+    {
+      "time": "2025-10-30T14:32:50.759898",
+      "coin": "BNB",
+      "action": "HOLD",
+      "reason": "K线：当前阳线在1110.84-1113.44区间震荡，历史K线显示价格在1100-1118区间内反复震荡，无明显趋势突破信号 | 指标：15分钟RSI 44.6处于中性偏弱区域，MACD负值但收窄显示动能减弱，价格略高于SMA20但布林带位置异常，1小时RSI 58.1中性，BTC大盘RSI 45.8同样震荡",
+      "confidence": "MEDIUM",
+      "position_value": 0,
+      "risk_level": "MEDIUM"
     }
   ]
 }

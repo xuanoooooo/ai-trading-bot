@@ -995,6 +995,23 @@ python src/deepseekBNB.py
 
 ---
 
+### How to Switch Terminal Output to English
+By default, terminal messages are in Chinese. To switch to English:
+1. Open the `.env` file in your project root directory.
+2. Find or add the line:
+   # BOT_LANG=EN
+3. Remove the '#' to uncomment:
+   BOT_LANG=EN
+4. Save the file and restart the bot.
+
+Or, launch from terminal with:
+
+    export BOT_LANG=EN; python3 src/deepseekBNB.py
+
+You can revert to Chinese at any time by commenting out this line or using BOT_LANG=CN.
+
+---
+
 ## 📸 Demo Screenshot
 
 <div align="center">

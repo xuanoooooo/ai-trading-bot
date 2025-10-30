@@ -1,0 +1,13 @@
+{
+  "decisions": [
+    {
+      "time": "2025-10-30T14:33:22.651484",
+      "coin": "BNB",
+      "action": "HOLD",
+      "reason": "K线：当前15分钟K线为小阳线，价格在布林带中轨附近震荡，历史K线显示近期在1110-1118区间整理 | 指标：15分钟RSI 44中性偏弱，MACD负值但收敛向上，1小时RSI 57.9中性偏强，BTC大盘RSI 45.5震荡",
+      "confidence": "MEDIUM",
+      "position_value": 0,
+      "risk_level": "MEDIUM"
+    }
+  ]
+}
