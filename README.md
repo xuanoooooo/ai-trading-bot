@@ -54,6 +54,27 @@
 
 ---
 
+## 💰 Support | 支持
+
+<div align="center">
+
+**If this helps you, consider supporting | 如果有帮助，欢迎支持**
+
+**Wallet (BEP20/BSC) | 钱包地址**
+```
+0x59B7c28c236E6017df28e7F376B84579872A4E33
+```
+
+**Your support motivates updates ❤️**  
+**您的支持是持续更新的动力 ❤️**
+
+**No fees, no referral codes, just asking for stars ⭐**  
+**没有收费也没有挂邀请码，只求各位给星星 ⭐**
+
+</div>
+
+---
+
 ## ⚠️ Important | 重要提醒
 
 <table>
@@ -241,14 +262,40 @@ nano .env  # Fill in your API keys | 填入API密钥
 nano config/coins_config.json
 ```
 
-**2. 添加新币种（例如添加 MATIC）：**
+**2. 默认配置（7个币种）：**
 ```json
 {
-  "symbol": "MATIC",
-  "binance_symbol": "MATICUSDT",
-  "precision": 0,
-  "price_precision": 4,
-  "min_order_value": 6
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, ...},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, ...},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, ...},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, ...},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, ...},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, ...},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, ...}
+  ]
+}
+```
+
+**添加 MATIC 后（8个币种）：**
+```json
+{
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", ...},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", ...},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", ...},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", ...},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", ...},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", ...},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", ...},
+    {
+      "symbol": "MATIC",
+      "binance_symbol": "MATICUSDT",
+      "precision": 0,
+      "price_precision": 4,
+      "min_order_value": 6
+    }
+  ]
 }
 ```
 
@@ -281,14 +328,40 @@ nano config/coins_config.json
 nano config/coins_config.json
 ```
 
-**2. Add new coin (e.g., add MATIC):**
+**2. Default config (7 coins):**
 ```json
 {
-  "symbol": "MATIC",
-  "binance_symbol": "MATICUSDT",
-  "precision": 0,
-  "price_precision": 4,
-  "min_order_value": 6
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, ...},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, ...},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, ...},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, ...},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, ...},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, ...},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, ...}
+  ]
+}
+```
+
+**After adding MATIC (8 coins):**
+```json
+{
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", ...},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", ...},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", ...},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", ...},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", ...},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", ...},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", ...},
+    {
+      "symbol": "MATIC",
+      "binance_symbol": "MATICUSDT",
+      "precision": 0,
+      "price_precision": 4,
+      "min_order_value": 6
+    }
+  ]
 }
 ```
 
