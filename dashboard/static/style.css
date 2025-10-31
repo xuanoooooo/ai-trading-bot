@@ -1,0 +1,476 @@
+/* 全局样式 - 暗黑终端风格 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', Consolas, monospace;
+    background: #0a0e27;
+    color: #00ff41;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* 价格固定显示条 */
+.price-ticker {
+    background: #000;
+    padding: 10px 0;
+    border-bottom: 2px solid #00ff41;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.ticker-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.ticker-item {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.ticker-symbol {
+    color: #00ff41;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.ticker-price {
+    color: #fff;
+    margin-right: 8px;
+}
+
+.ticker-change {
+    font-size: 12px;
+}
+
+.ticker-change.positive {
+    color: #00ff41;
+}
+
+.ticker-change.negative {
+    color: #ff4444;
+}
+
+.ticker-loading {
+    color: #888;
+}
+
+/* 主容器 */
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 标题 */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    border: none; /* 去掉外框 */
+    background: transparent; /* 去掉背景色 */
+}
+
+.header h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #00ff41;
+}
+
+.last-update {
+    color: #888;
+    font-size: 0.9em;
+}
+
+/* 运行状态卡片 */
+.runtime-card {
+    margin-bottom: 20px;
+    padding: 15px 20px;
+}
+
+.runtime-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.runtime-item {
+    text-align: center;
+}
+
+.runtime-label {
+    color: #888;
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+
+.runtime-value {
+    color: #00ff41;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+@media (max-width: 1200px) {
+    .runtime-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .runtime-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 卡片 */
+.card {
+    background: transparent; /* 完全透明，融入背景 */
+    border: none;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: none; /* 去掉阴影 */
+}
+
+.card h2 {
+    color: #00ff41;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1); /* 改为非常淡的线 */
+    font-size: 1.3em;
+}
+
+/* 账户统计网格 */
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    background: transparent; /* 完全透明，融入背景 */
+    padding: 15px;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    color: #00ff41;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.stat-value.pnl.positive {
+    color: #00ff41;
+}
+
+.stat-value.pnl.negative {
+    color: #ff4444;
+}
+
+/* 两栏布局 */
+.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: stretch; /* 让两列高度一致 */
+}
+
+/* 让两栏布局中的卡片高度一致 */
+.two-column .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 持仓列表 */
+.positions-list {
+    min-height: 750px; /* 确保6个币种完整显示 */
+    max-height: 850px;
+    overflow-y: auto;
+    flex: 1; /* 自动填充剩余空间 */
+}
+
+.position-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1); /* 只保留底部分隔线 */
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 0;
+}
+
+.position-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.position-coin {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #00ff41;
+}
+
+.position-side {
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.position-side.long {
+    background: #00ff41;
+    color: #000;
+}
+
+.position-side.short {
+    background: #ff4444;
+    color: #fff;
+}
+
+.position-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.9em;
+    color: #888;
+}
+
+.position-pnl {
+    grid-column: 1 / -1;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.position-pnl.positive {
+    color: #00ff41;
+}
+
+.position-pnl.negative {
+    color: #ff4444;
+}
+
+/* AI决策列表 */
+.decisions-list {
+    min-height: 750px; /* 与持仓列表保持一致 */
+    max-height: 850px;
+    overflow-y: auto;
+    flex: 1; /* 自动填充剩余空间 */
+}
+
+.decision-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.1); /* 只保留底部分隔线 */
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.decision-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.decision-action {
+    font-weight: bold;
+}
+
+.decision-action.OPEN_LONG {
+    color: #00ff41;
+}
+
+.decision-action.OPEN_SHORT {
+    color: #ff4444;
+}
+
+.decision-action.CLOSE {
+    color: #ffaa00;
+}
+
+.decision-action.ADD {
+    color: #00aaff;
+}
+
+.decision-time {
+    color: #666;
+    font-size: 0.85em;
+}
+
+.decision-reason {
+    color: #aaa;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.decision-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 8px;
+}
+
+/* 交易历史表格 */
+.trades-table {
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    flex: 1; /* 自动填充剩余空间 */
+}
+
+.trade-item {
+    display: grid;
+    grid-template-columns: 80px 80px 100px 100px 100px 120px 80px;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #00ff41;
+    align-items: center;
+}
+
+.trade-item:hover {
+    background: rgba(0, 255, 65, 0.05);
+}
+
+.trade-header {
+    font-weight: bold;
+    background: rgba(0, 255, 65, 0.1);
+    font-size: 0.9em; /* 缩小表头字体 */
+    text-align: center; /* 标题居中 */
+}
+
+.trade-coin {
+    font-weight: bold;
+    color: #00ff41;
+}
+
+.trade-side {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.trade-side.long {
+    background: rgba(0, 255, 65, 0.2);
+    color: #00ff41;
+}
+
+.trade-side.short {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+}
+
+.trade-pnl {
+    font-weight: bold;
+}
+
+.trade-pnl.positive {
+    color: #00ff41;
+}
+
+.trade-pnl.negative {
+    color: #ff4444;
+}
+
+/* 图表容器 */
+.chart-container {
+    position: relative;
+    height: 450px;
+    width: 100%;
+}
+
+/* 图表 */
+#pnlChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* 加载提示 */
+.loading {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+}
+
+.no-data {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+/* 页脚 */
+.footer {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    font-size: 0.9em;
+    border-top: 1px solid #00ff41;
+    margin-top: 30px;
+}
+
+.footer p {
+    margin: 5px 0;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0e27;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff41;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc33;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .two-column {
+        grid-template-columns: 1fr;
+    }
+    
+    .account-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .trade-item {
+        grid-template-columns: 1fr 1fr;
+        font-size: 0.85em;
+    }
+    
+    .trade-header {
+        display: none;
+    }
+}
+
