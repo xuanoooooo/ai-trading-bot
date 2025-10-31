@@ -109,7 +109,8 @@ bash scripts/start_dashboard.sh      # Start dashboard
 | Leverage | 3x | Conservative level |
 | Scan Interval | 5 minutes | Matches 15-min K-line |
 | AI Model | deepseek-chat | Fast & cheap |
-| Risk Control | Keep 10% cash | Reduce risk |
+| Cash Reserve | 10% | Keep 10% cash as buffer |
+| Max Per Coin | 100% (No limit) | AI decides position allocation |
 
 ### 💡 Usage Tips
 
