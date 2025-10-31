@@ -895,6 +895,12 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         reduceOnly=True
                     )
                     
+                    # 🆕 2.5. 平仓后立即清理该币种所有挂单（防止止盈止损单变孤儿）
+                    try:
+                        binance_client.futures_cancel_all_open_orders(symbol=symbol)
+                    except Exception as e:
+                        print(f"  ⚠️ 平仓后清理挂单失败: {str(e)[:100]}")
+                    
                     # 3. 记录平仓
                     portfolio_stats.record_trade_exit(coin, current_price, 'ai_decision')
                     print(f"✅ {coin} 平仓成功")
@@ -1143,11 +1149,69 @@ def sync_portfolio_positions_on_startup():
     print("="*60 + "\n")
 
 
+def clean_orphan_orders():
+    """
+    清理孤儿订单（有挂单但无持仓的情况）
+    防止止损/止盈单在仓位关闭后仍然触发导致反向开仓
+    """
+    try:
+        # 1. 获取所有持仓
+        positions = binance_client.futures_position_information()
+        
+        # 2. 获取所有挂单
+        open_orders = binance_client.futures_get_open_orders()
+        
+        if not open_orders:
+            return  # 没有挂单，直接返回
+        
+        # 3. 构建持仓币种集合（单向持仓模式，只需要 symbol）
+        position_symbols = set()
+        for pos in positions:
+            symbol = pos['symbol']
+            position_amt = float(pos['positionAmt'])
+            
+            # 如果有仓位（不为0），标记该币种
+            if abs(position_amt) > 0.0001:
+                position_symbols.add(symbol)
+        
+        # 4. 按币种分组挂单
+        orders_by_symbol = {}
+        for order in open_orders:
+            symbol = order['symbol']
+            if symbol not in orders_by_symbol:
+                orders_by_symbol[symbol] = []
+            orders_by_symbol[symbol].append(order)
+        
+        # 5. 检查并清理孤儿订单
+        orphan_count = 0
+        for symbol, orders in orders_by_symbol.items():
+            # 如果该币种有挂单但没有持仓
+            if symbol not in position_symbols and len(orders) > 0:
+                print(f"🧹 清理孤儿订单: {symbol} (有{len(orders)}个挂单但无持仓)")
+                
+                # 取消该币种的所有挂单
+                try:
+                    binance_client.futures_cancel_all_open_orders(symbol=symbol)
+                    orphan_count += len(orders)
+                except Exception as e:
+                    print(f"  ⚠️ 清理失败: {str(e)[:100]}")
+        
+        if orphan_count > 0:
+            print(f"✓ 清理完成：共清理 {orphan_count} 个孤儿订单")
+    
+    except Exception as e:
+        print(f"⚠️ 清理孤儿订单失败（继续执行）: {str(e)[:100]}")
+
+
 def portfolio_bot():
     """投资组合机器人主循环"""
     print("\n" + "="*60)
     print(f"⏰ 执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
+    
+    # 0. 清理孤儿订单（防止止损止盈单变孤儿后误触发）
+    print("🧹 [Step 0] 清理孤儿订单...")
+    clean_orphan_orders()
     
     # 1. 扫描市场（5分钟K线）
     print("📊 获取5分钟K线数据（短期技术指标）...")
