@@ -70,6 +70,20 @@ An automated cryptocurrency trading system based on **DeepSeek AI**, supporting 
 - ✅ **Market Scanning** - Scans market every 5 minutes to find best trading opportunities
 - ✅ **Web Dashboard** - Real-time view of all positions and returns
 
+### 🔬 Technical Advantages (What Makes Us Different)
+
+| Feature | Regular Bots | This Project |
+|---------|-------------|--------------|
+| **Timeframe Analysis** | Single period (e.g., 15-min only) | **15-min + 1-hour + 4-hour** triple cross-validation ✨ |
+| **Market Context** | Only individual coin data | **Always reference BTC market sentiment** 🎯 |
+| **Decision Basis** | Single-dimension judgment | **Short/Medium/Long-term combined**, avoid false breakouts 🛡️ |
+| **Reliability** | Easily fooled by short-term noise | **Multi-timeframe verification**, more robust 💪 |
+
+**Why Multi-Timeframe Analysis Matters:**
+- 📉 15-min shows uptrend → 1-hour reveals downtrend → AI stays cautious
+- 📈 15-min + 1-hour + 4-hour all bullish → BTC also rising → AI opens long with high confidence
+- 🎯 Dramatically reduces false signals, improves win rate
+
 ---
 
 ## 🎯 Core Features
@@ -80,12 +94,14 @@ An automated cryptocurrency trading system based on **DeepSeek AI**, supporting 
 - **Fully Autonomous** - AI independently analyzes technical indicators, no human intervention
 - **Portfolio Management** - Considers overall positions, avoids over-concentration
 
-### 📊 **Technical Analysis Engine**
+### 📊 **Technical Analysis Engine (Core Advantage)**
 
-- **Multi-Dimensional Indicators** - RSI, MACD, EMA20/50, Bollinger Bands, ATR volatility
-- **Multi-Timeframe Analysis** - 1-hour (medium-term) + 4-hour (long-term) cross-validation
-- **Candlestick Pattern Analysis** - 16 historical candles + current real-time candle
-- **Time Series Data** - Trend of last 10 indicator values (old → new)
+- **🌟 Multi-Timeframe Cross-Validation** - 15-min + 1-hour + 4-hour triple-period analysis
+- **🔥 Short/Medium/Long-Term Combined** - 15-min captures short-term opportunities, 1-hour grasps trends, 4-hour validates direction
+- **📊 BTC Market Sentiment** - Every decision references BTC movement, avoiding counter-trend trades
+- **🎯 Comprehensive Indicators** - RSI, MACD, EMA, Bollinger Bands, ATR volatility
+- **📈 Candlestick Pattern Analysis** - 16 historical candles + current real-time candle
+- AI makes data-driven decisions based on multi-dimensional analysis
 
 ### 🛡️ **Risk Management System**
 
@@ -206,17 +222,113 @@ Edit `config/coins_config.json`:
    - 24h volume should be > $100M
 5. ✅ **Recommended mix**: Large caps (BTC/ETH) + Mid caps (SOL/BNB)
 
-**How to add new coins:**
+**How to add new coins (e.g., MATIC):**
 
+**Before adding (7 default coins):**
 ```json
 {
-  "symbol": "MATIC",
-  "binance_symbol": "MATICUSDT",  // Must be USDT pair
-  "precision": 0,                 // Quantity decimals
-  "price_precision": 4,           // Price decimals
-  "min_order_value": 6            // Min order value (USDT)
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, "price_precision": 2, "min_order_value": 50},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, "price_precision": 2, "min_order_value": 24},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, "price_precision": 2, "min_order_value": 6},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, "price_precision": 2, "min_order_value": 12},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6}
+  ]
 }
 ```
+
+**After adding MATIC (8 coins):**
+```json
+{
+  "coins": [
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, "price_precision": 2, "min_order_value": 50},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, "price_precision": 2, "min_order_value": 24},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, "price_precision": 2, "min_order_value": 6},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, "price_precision": 2, "min_order_value": 12},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "MATIC", "binance_symbol": "MATICUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6}  ⬅️ New
+  ]
+}
+```
+
+**Parameter Explanation:**
+- `symbol`: Coin symbol (for display)
+- `binance_symbol`: Binance trading pair (must end with **USDT**)
+- `precision`: Quantity decimal places (check Binance futures page)
+- `price_precision`: Price decimal places
+- `min_order_value`: Minimum order value for this coin (USDT)
+
+**Coin Selection Rules:**
+- ✅ Must be USDT pairs
+- ✅ Coin price ≥ $1 (avoid SHIB, PEPE, etc.)
+- ✅ 24h trading volume > $100M
+- 💡 Recommended: AVAX, LINK, DOT, ATOM, LTC, UNI
+
+---
+
+**4.3 Risk Management Parameters**
+
+In `config/coins_config.json` under `portfolio_rules`:
+
+```json
+"portfolio_rules": {
+  "leverage": 3,                    // Leverage (1-5x, recommend 3x)
+  "min_cash_reserve_percent": 10,   // Min cash reserve % (10 = keep 10%)
+  "max_single_coin_percent": 100    // Max % per coin (100 = no limit)
+}
+```
+
+**Parameter Details:**
+
+**`leverage`**: Leverage multiplier
+- 3 = Use 3x leverage
+- Recommend 2-3x (higher leverage = higher risk)
+
+**`min_cash_reserve_percent`**: Minimum cash reserve percentage
+- 10 = Keep 10% of available balance reserved
+- Example: Total 100 USDT, set to 10, at least 10 USDT reserved, max 90 USDT for positions
+- Recommend: 10-20 (keep 10-20% as buffer)
+
+**`max_single_coin_percent`**: Max position size per coin
+- 100 = Allow single coin to use 100% of available balance (no limit)
+- 50 = Single coin max 50% of available balance
+- 30 = Single coin max 30% of available balance
+- AI will allocate within this limit
+
+**Suggested Configs:**
+- Conservative: `leverage: 2`, `min_cash_reserve_percent: 20`, `max_single_coin_percent: 30`
+- Balanced: `leverage: 3`, `min_cash_reserve_percent: 10`, `max_single_coin_percent: 50`
+- Aggressive: `leverage: 5`, `min_cash_reserve_percent: 10`, `max_single_coin_percent: 100`
+
+---
+
+**4.4 Other Important Parameters**
+
+In `src/portfolio_manager.py`, `PORTFOLIO_CONFIG` section:
+
+```python
+PORTFOLIO_CONFIG = {
+    'leverage': 3,                    # Leverage (keep consistent with coins_config.json)
+    'check_interval_minutes': 5,      # Scan interval (5 minutes)
+    'test_mode': False                # False=Live trading, True=Test mode
+}
+```
+
+**Parameter Explanation:**
+- `leverage`: Leverage multiplier (recommend keeping consistent with `coins_config.json`)
+- `check_interval_minutes`: AI analysis interval (**NOT recommended to modify**)
+  - Default: 5 minutes
+  - ⚠️ **Changing this will cause K-line data mismatch**: The program uses **15-min + 1-hour + 4-hour** multi-timeframe cross-validation. 5-minute interval perfectly captures 15-min K-line changes
+  - If changed to other values (e.g., 10 minutes), you'll miss critical K-line pattern changes
+- `test_mode`: Test mode switch
+  - `False`: Live mode, real orders
+  - `True`: Test mode, analysis only without real orders (recommended for beginners)
+
+---
 
 ### 5. Start Trading Program
 
