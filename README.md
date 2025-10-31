@@ -339,9 +339,9 @@ bash scripts/start_dashboard.sh
 # 创建名为"portfolio"的tmux会话
 tmux new -s portfolio
 
-# 在tmux中启动交易程序
-cd /root/ai-trading-bot/src
-python portfolio_manager.py
+# 在tmux中启动交易程序（注意：需要先cd到项目的src目录）
+cd ai-trading-bot/src
+python3 portfolio_manager.py
 ```
 
 **断开tmux（程序继续运行）**

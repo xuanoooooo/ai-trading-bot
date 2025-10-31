@@ -383,9 +383,9 @@ If you're running the trading program on a remote server via SSH, **tmux is high
 # Create a tmux session named "portfolio"
 tmux new -s portfolio
 
-# Start trading program in tmux
-cd /root/ai-trading-bot/src
-python portfolio_manager.py
+# Start trading program in tmux (Note: cd to project's src directory first)
+cd ai-trading-bot/src
+python3 portfolio_manager.py
 ```
 
 **Detach tmux (program continues running)**
