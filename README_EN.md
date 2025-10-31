@@ -27,6 +27,17 @@
 This project is for educational purposes only. Users assume all trading risks.  
 View AI's decision-making abilities rationally, control positions reasonably, and don't blindly trust.
 
+**⚠️ Binance Account Settings (Required):**
+- ✅ **One-way Mode** (Single Position)
+- ❌ Hedge Mode NOT supported
+- 💡 Path: Binance Futures → Settings → Position Mode
+
+**🛡️ Strongly Recommended: Use Sub-Account for Risk Isolation!**
+- ✅ **Create a dedicated sub-account** specifically for bot trading
+- ✅ **Transfer limited funds** (e.g., 100-500 USDT for testing)
+- ✅ **Main account stays safe**, even if the bot encounters issues
+- 💡 How to: Binance → User Center → Sub-Account Management → Create Sub-Account
+
 **No fees, no referral codes, just asking for stars** ⭐
 
 ---
