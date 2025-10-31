@@ -360,6 +360,79 @@ Then visit: **http://localhost:5000**
 
 ---
 
+## 💡 Advanced: Running with tmux (Recommended)
+
+**Why use tmux?**
+
+If you're running the trading program on a remote server via SSH, **tmux is highly recommended**:
+
+### ✅ tmux Advantages
+
+| Scenario | Without tmux | With tmux |
+|----------|-------------|-----------|
+| **SSH Disconnect** | ❌ Program stops | ✅ Program keeps running |
+| **View Logs** | ❌ Need tail -f | ✅ Direct terminal output |
+| **Reconnect** | ❌ Cannot recover | ✅ Resume exactly where you left off |
+| **Multi-window** | ❌ Need multiple SSH | ✅ Multiple windows in one SSH |
+
+### 📝 tmux Basic Usage
+
+**Start Trading Program (tmux version)**
+
+```bash
+# Create a tmux session named "portfolio"
+tmux new -s portfolio
+
+# Start trading program in tmux
+cd /root/ai-trading-bot/src
+python portfolio_manager.py
+```
+
+**Detach tmux (program continues running)**
+
+```bash
+# Press keyboard shortcut:
+Ctrl + B, then press D
+# Now you can safely close SSH, program still runs
+```
+
+**Reattach to view**
+
+```bash
+# After SSH reconnect, resume tmux session
+tmux attach -t portfolio
+# Instantly see real-time output, as if never disconnected
+```
+
+**Other useful commands**
+
+```bash
+# List all tmux sessions
+tmux ls
+
+# Stop program and exit tmux
+Ctrl + C (stop program)
+exit (exit tmux)
+
+# Or directly kill session
+tmux kill-session -t portfolio
+```
+
+### 🎯 Recommended Use Cases
+
+- ✅ **Server Deployment**: Program needs long-term running
+- ✅ **Remote Monitoring**: Check real-time logs anytime via SSH
+- ✅ **Debugging**: Convenient to observe AI decision process
+- ⚠️ **Production**: Can also use systemd service (more advanced)
+
+### ⚠️ Notes
+
+- tmux is not mandatory, you can also use Docker or systemd
+- For local running, direct terminal execution is fine
+- Dashboard usually doesn't need tmux, background running is sufficient
+
+---
+
 ## 📊 System Architecture
 
 ```

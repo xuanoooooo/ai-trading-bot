@@ -79,7 +79,7 @@ async function fetchStats() {
         
         const pnlElement = document.getElementById('totalPnl');
         const pnl = data.total_pnl || 0;
-        pnlElement.textContent = `${formatPnl(pnl)} USDC`;
+        pnlElement.textContent = `${formatPnl(pnl)} USDT`;
         pnlElement.className = `stat-value pnl ${pnl >= 0 ? 'positive' : 'negative'}`;
         
         updateLastUpdate();
@@ -95,8 +95,8 @@ async function fetchAccount() {
         if (response.ok) {
             const data = await response.json();
             
-            document.getElementById('totalBalance').textContent = `${formatNumber(data.total_balance)} USDC`;
-            document.getElementById('freeBalance').textContent = `${formatNumber(data.free_balance)} USDC`;
+            document.getElementById('totalBalance').textContent = `${formatNumber(data.total_balance)} USDT`;
+            document.getElementById('freeBalance').textContent = `${formatNumber(data.free_balance)} USDT`;
         }
     } catch (error) {
         console.error('获取账户信息失败:', error);
@@ -117,7 +117,7 @@ async function fetchPositions() {
         if (data.total_unrealized_pnl !== undefined) {
             const unrealizedPnlElement = document.getElementById('totalUnrealizedPnl');
             const unrealizedPnl = data.total_unrealized_pnl || 0;
-            unrealizedPnlElement.textContent = `${formatPnl(unrealizedPnl)} USDC`;
+            unrealizedPnlElement.textContent = `${formatPnl(unrealizedPnl)} USDT`;
             unrealizedPnlElement.className = `stat-value pnl ${unrealizedPnl >= 0 ? 'positive' : 'negative'}`;
         }
         
@@ -144,7 +144,7 @@ async function fetchPositions() {
                         ${pos.take_profit > 0 ? `<div style="color: #4caf50;">止盈: $${formatNumber(pos.take_profit)}</div>` : ''}
                     </div>
                     <div class="position-pnl ${pnlClass}">
-                        浮盈浮亏: ${formatPnl(pos.pnl)} USDC
+                        浮盈浮亏: ${formatPnl(pos.pnl)} USDT
                     </div>
                 </div>
             `;
@@ -232,7 +232,7 @@ async function fetchTrades() {
                     <div>$${formatNumber(trade.entry_price)}</div>
                     <div>$${formatNumber(trade.exit_price)}</div>
                     <div>${trade.amount}</div>
-                    <div class="trade-pnl ${pnlClass}">${formatPnl(trade.pnl)} USDC</div>
+                    <div class="trade-pnl ${pnlClass}">${formatPnl(trade.pnl)} USDT</div>
                     <div>${trade.duration_minutes || '--'}</div>
                 </div>
             `;
@@ -331,7 +331,7 @@ function updatePnlChart(trades) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: '累计盈亏 (USDC)',
+                    label: '累计盈亏 (USDT)',
                     data: pnlValues,
                     borderColor: '#00ff41',
                     backgroundColor: 'rgba(0, 255, 65, 0.2)',
@@ -395,7 +395,7 @@ function updatePnlChart(trades) {
                     y: {
                         title: {
                             display: true,
-                            text: '累计盈亏 (USDC)',
+                            text: '累计盈亏 (USDT)',
                             color: '#00ff41',
                             font: {
                                 size: 12

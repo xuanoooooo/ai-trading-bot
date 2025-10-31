@@ -316,6 +316,79 @@ bash scripts/start_dashboard.sh
 
 ---
 
+## 💡 进阶使用：tmux后台运行（推荐）
+
+**为什么使用tmux？**
+
+如果您需要通过SSH远程连接服务器运行交易程序，**强烈建议使用tmux**：
+
+### ✅ tmux的优势
+
+| 场景 | 不使用tmux | 使用tmux |
+|------|----------|---------|
+| **SSH断开** | ❌ 程序停止运行 | ✅ 程序继续运行 |
+| **查看日志** | ❌ 需要tail -f | ✅ 直接看终端输出 |
+| **重新连接** | ❌ 无法恢复 | ✅ 一键重连，回到原来的位置 |
+| **多窗口监控** | ❌ 需要多个SSH | ✅ 一个SSH内多个窗口 |
+
+### 📝 tmux基本使用
+
+**启动交易程序（tmux版）**
+
+```bash
+# 创建名为"portfolio"的tmux会话
+tmux new -s portfolio
+
+# 在tmux中启动交易程序
+cd /root/ai-trading-bot/src
+python portfolio_manager.py
+```
+
+**断开tmux（程序继续运行）**
+
+```bash
+# 按下快捷键：
+Ctrl + B，然后按 D
+# 这时候可以安全关闭SSH，程序依然运行
+```
+
+**重新连接查看**
+
+```bash
+# 重新SSH连接后，恢复tmux会话
+tmux attach -t portfolio
+# 立即看到程序实时输出，就像从未断开过
+```
+
+**其他常用命令**
+
+```bash
+# 查看所有tmux会话
+tmux ls
+
+# 停止程序并退出tmux
+Ctrl + C（停止程序）
+exit（退出tmux）
+
+# 或者直接杀死会话
+tmux kill-session -t portfolio
+```
+
+### 🎯 推荐使用场景
+
+- ✅ **服务器部署**：程序需要长期运行
+- ✅ **远程监控**：随时SSH连接查看实时日志
+- ✅ **调试阶段**：方便观察AI决策过程
+- ⚠️ **生产环境**：也可以使用systemd服务（更高级）
+
+### ⚠️ 注意事项
+
+- tmux不是必须的，如果您使用Docker或systemd也可以
+- 如果只是本地运行，直接在终端运行即可
+- 看板程序(dashboard)通常不需要tmux，后台运行即可
+
+---
+
 ## 📸 系统界面预览
 
 ### 🎨 Web可视化看板
