@@ -94,7 +94,7 @@
 
 📦 **直接下载压缩包（推荐）：**
 
-👉 [点击下载 ai-trading-bot-easy-setup-v2.3.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [点击下载 ai-trading-bot-easy-setup-v2.4.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
 
 或在项目页面找到 "Releases" → 下载最新版
 
