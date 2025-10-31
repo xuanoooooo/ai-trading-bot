@@ -31,6 +31,35 @@ View AI's decision-making abilities rationally, control positions reasonably, an
 
 ---
 
+## 📸 System Interface
+
+### 🎨 Web Dashboard Mode (Recommended)
+
+**Real-time visualization interface showing positions and AI decisions**
+
+![AI Trading Dashboard](docs/images/看板截图.png)
+
+**Dashboard Features:**
+- ✅ **Left Panel**: Real-time position list (entry price, current price, PnL, stop-loss/take-profit)
+- ✅ **Right Panel**: AI decision log (reasoning, technical indicators, risk assessment)
+- ✅ Dark theme, easy on the eyes
+- ✅ Auto-refresh every 30 seconds
+- ✅ Green for profit, red for loss - crystal clear
+
+### 💻 Terminal Log Mode
+
+**Suitable for server background running, view via SSH**
+
+![AI Trading Logs](docs/images/日志截图.png)
+
+**Terminal Features:**
+- ✅ Detailed trading execution logs
+- ✅ Real-time display of each AI analysis process
+- ✅ Perfect for remote SSH monitoring
+- ✅ Lightweight, minimal resource usage
+
+---
+
 ## 📖 Project Overview
 
 An automated cryptocurrency trading system based on **DeepSeek AI**, supporting **multi-coin portfolio management** and **real-time visualization dashboard**.
@@ -38,7 +67,7 @@ An automated cryptocurrency trading system based on **DeepSeek AI**, supporting 
 **Differences from Single-Coin Version**:
 - ✅ **Multi-Coin Management** - Simultaneously manage multiple coins (BTC, ETH, SOL, etc.)
 - ✅ **Smart Allocation** - AI automatically allocates funds and balances portfolio
-- ✅ **Market Scanning** - Hourly market scans to find best trading opportunities
+- ✅ **Market Scanning** - Scans market every 5 minutes to find best trading opportunities
 - ✅ **Web Dashboard** - Real-time view of all positions and returns
 
 ---
@@ -110,18 +139,82 @@ nano .env
   - ⚠️ Futures trading permission required
   - ⚠️ API trading permission required
 
-### 4. Configure Trading Coins
+### 4. Configure AI Model & Trading Coins
+
+**4.1 Configure AI Model (Important!)**
+
+Edit `src/portfolio_manager.py` line 648:
+
+```python
+response = deepseek_client.chat.completions.create(
+    model="deepseek-chat",  # Default: chat mode (Recommended)
+    # model="deepseek-reasoner",  # Reasoning mode (Slow & Expensive, NOT recommended)
+```
+
+**AI Model Comparison:**
+
+| Model | Speed | Cost | Use Case |
+|-------|-------|------|----------|
+| **deepseek-chat** ✅ | Fast (1-2s) | Cheap ($0.0001/call) | **Default, 5-min scan** |
+| deepseek-reasoner | Slow (10-30s) | 50x more ($0.005/call) | Not for high-frequency |
+
+**⚠️ Important:**
+- ✅ **Use `deepseek-chat` by default** (already configured)
+- ❌ **Don't use `deepseek-reasoner`**: Too expensive for 5-min scanning (Daily cost: $1.44 vs $0.03)
+
+---
+
+**4.2 Configure Trading Coins**
 
 Edit `config/coins_config.json`:
 
 ```json
 {
-  "default_coins": ["BTC", "ETH", "SOL", "BNB"],
-  "max_positions": 5,
-  "position_size_pct": 20.0,
-  "leverage": 3,
-  "stop_loss_pct": 3.0,
-  "take_profit_pct": 8.0
+  "coins": [
+    {
+      "symbol": "BTC",
+      "binance_symbol": "BTCUSDT",
+      "precision": 3,
+      "price_precision": 2,
+      "min_order_value": 50
+    }
+    // ... more coins
+  ]
+}
+```
+
+**Default Coins (Recommended):**
+
+| Coin | Pair | Risk | Notes |
+|------|------|------|-------|
+| **BTC** | BTCUSDT | Low | Market leader |
+| **ETH** | ETHUSDT | Low | Second largest |
+| **SOL** | SOLUSDT | Medium | High-performance |
+| **BNB** | BNBUSDT | Medium | Exchange token |
+| **XRP** | XRPUSDT | Medium | Cross-border |
+| **ADA** | ADAUSDT | Medium | Academic project |
+| **DOGE** | DOGEUSDT | High | High volatility |
+
+**⚠️ Coin Selection Tips:**
+
+1. ✅ **Strongly recommend using default config**
+2. ✅ **Must use USDT pairs** (not USDC - less liquidity)
+3. ❌ **Avoid coins < $1** (e.g., SHIB $0.00001):
+   - Precision issues
+   - Order size control problems
+4. ❌ **Avoid low-volume coins**:
+   - 24h volume should be > $100M
+5. ✅ **Recommended mix**: Large caps (BTC/ETH) + Mid caps (SOL/BNB)
+
+**How to add new coins:**
+
+```json
+{
+  "symbol": "MATIC",
+  "binance_symbol": "MATICUSDT",  // Must be USDT pair
+  "precision": 0,                 // Quantity decimals
+  "price_precision": 4,           // Price decimals
+  "min_order_value": 6            // Min order value (USDT)
 }
 ```
 
@@ -185,7 +278,7 @@ ai-trading-bot/
 
 ### Workflow:
 
-1. **Market Scan** (Hourly) → Scan configured coins, fetch K-lines and indicators
+1. **Market Scan** (Every 5 minutes) → Scan configured coins, fetch K-lines and indicators
 2. **AI Analysis** → DeepSeek analyzes market data and current portfolio
 3. **Decision Generation** → AI provides trading suggestions:
    - `OPEN_LONG` - Open long position

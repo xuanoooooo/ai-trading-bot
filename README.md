@@ -216,6 +216,16 @@ nano .env  # Fill in your API keys | 填入API密钥
 - DeepSeek: https://platform.deepseek.com/
 - Binance: https://www.binance.com/ (需要开通合约交易)
 
+**⚠️ Important | 重要提示:**
+- ✅ Default uses `deepseek-chat` (Fast & Cheap) | 默认使用 `deepseek-chat`（快速且便宜）
+- ✅ Default coins: BTC, ETH, SOL, BNB, XRP, ADA, DOGE (USDT pairs) | 默认币种（USDT交易对）
+- ✅ Recommend using default config | 建议使用默认配置
+- ❌ Don't use coins < $1 (e.g., SHIB) | 不要使用单价低于$1的币种
+
+📖 **Detailed config guide** | 详细配置指南:
+- [🇨🇳 中文完整说明](README_CN.md#步骤4配置交易币种和ai模型)
+- [🇺🇸 English Guide](README_EN.md#4-configure-ai-model--trading-coins)
+
 ### Step 4 | 步骤4: Start Trading | 启动交易
 
 ```bash
@@ -255,7 +265,7 @@ bash scripts/start_dashboard.sh
 ### 🇨🇳 工作流程
 
 ```
-1️⃣ 市场扫描（每小时）
+1️⃣ 市场扫描（每5分钟）
    ↓ 获取K线和技术指标
    
 2️⃣ AI分析
@@ -280,7 +290,7 @@ bash scripts/start_dashboard.sh
 ### 🇺🇸 Workflow
 
 ```
-1️⃣ Market Scan (Hourly)
+1️⃣ Market Scan (Every 5 min)
    ↓ Fetch K-lines & indicators
    
 2️⃣ AI Analysis

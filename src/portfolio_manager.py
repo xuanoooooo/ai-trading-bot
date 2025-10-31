@@ -177,13 +177,13 @@ def setup_exchange():
         
         # 获取余额
         account_info = binance_client.futures_account()
-        usdc_balance = 0
+        usdt_balance = 0
         for asset in account_info['assets']:
-            if asset['asset'] == 'USDC':
-                usdc_balance = float(asset['availableBalance'])
+            if asset['asset'] == 'USDT':
+                usdt_balance = float(asset['availableBalance'])
                 break
         
-        print(f"💰 当前USDC余额: {usdc_balance:.2f}")
+        print(f"💰 当前USDT余额: {usdt_balance:.2f}")
         return True
         
     except Exception as e:
@@ -265,9 +265,9 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     # 构建投资组合状态
     portfolio_text = f"""
 【投资组合状态】
-总资金: {account_info['total_balance']:.2f} USDC
-可用资金: {account_info['free_balance']:.2f} USDC (这是可用保证金)
-已用保证金: {account_info['used_margin']:.2f} USDC
+总资金: {account_info['total_balance']:.2f} USDT
+可用资金: {account_info['free_balance']:.2f} USDT (这是可用保证金)
+已用保证金: {account_info['used_margin']:.2f} USDT
 保证金占用率: {account_info['margin_ratio']:.1f}%
 当前杠杆: {PORTFOLIO_CONFIG['leverage']}x
 
@@ -286,7 +286,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             tp_text = f" | 止盈{format_price(tp, coin)}" if tp > 0 else ""
             roe_text = f"{roe:+.2f}%" if roe != 0 else "0.00%"
             portfolio_text += f"""
-- {coin}: {pos['side']}仓 | 保证金回报{roe_text} | 盈亏{pos['pnl']:+.2f} USDC | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
+- {coin}: {pos['side']}仓 | 保证金回报{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
             total_position_value += pos['value']
             total_unrealized_pnl += pos['pnl']
             position_count += 1
@@ -299,7 +299,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 持仓汇总:
 - 持仓币种数: {position_count}个
 - 总持仓价值: ${total_position_value:.2f}
-- 总未实现盈亏: {total_unrealized_pnl:+.2f} USDC"""
+- 总未实现盈亏: {total_unrealized_pnl:+.2f} USDT"""
     
     if total_position_value > 0:
         total_pnl_percent = (total_unrealized_pnl / total_position_value) * 100
@@ -317,7 +317,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             duration = sl['duration_minutes']
             coin = sl['coin']
             stop_loss_text += f"""
-- {coin} {sl['side'].upper()}仓 | 开仓{format_price(sl['entry_price'], coin)} → 止损{format_price(sl['stop_price'], coin)} | 盈亏{sl['pnl']:+.2f} USDC | 触发时间{trigger_time} (开仓后{duration}分钟)"""
+- {coin} {sl['side'].upper()}仓 | 开仓{format_price(sl['entry_price'], coin)} → 止损{format_price(sl['stop_price'], coin)} | 盈亏{sl['pnl']:+.2f} USDT | 触发时间{trigger_time} (开仓后{duration}分钟)"""
         portfolio_text += stop_loss_text
     
     # 构建各币种行情（包含1小时趋势）
@@ -443,10 +443,10 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
         
         market_text += f"""
 
-{coin}/USDC:
+{coin}/USDT:
 - 价格: ${price_display} | 24h: {data['change_24h']:+.2f}% | 15m: {data['change_15m']:+.2f}%
 - 资金费率: {funding_rate:.6f} ({funding_text}) | 持仓量: {open_interest:,.0f}
-- 最小开仓: {data['min_order_value']} USDC{current_kline_text}
+- 最小开仓: {data['min_order_value']} USDT{current_kline_text}
 
   5分钟周期:
   - RSI: {data['rsi']:.1f} | 序列: [{rsi_series_text}]
@@ -574,7 +574,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 2. 可开仓总金额 = 可用资金 × 杠杆倍数
 3. 单个币种可以使用全部可开仓金额（无上限）
 4. 保留至少10%可用资金
-5. 最小开仓金额：BNB 12 USDC | ETH 24 USDC | SOL/XRP/DOGE 6 USDC
+5. 最小开仓金额：BTC 50 USDT | ETH 24 USDT | BNB 12 USDT | SOL/XRP/ADA/DOGE 6 USDT
 
 📝 返回JSON格式（3种场景示例）：
 
@@ -631,7 +631,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 ⚠️ 注意：
 - 已有仓位时，可以选择HOLD、CLOSE或ADD，根据市场情况自主判断
 - 无仓位且无明确信号时，返回空的decisions数组
-- position_value 是持仓价值（USDC），HOLD和CLOSE时填0
+- position_value 是持仓价值（USDT），HOLD和CLOSE时填0
 - stop_loss 和 take_profit 必填（填具体价格，CLOSE时可填0）
 - HOLD时是否调整止损由你判断；无充分理由请保持原止损，价格有利时可考虑追踪止盈
 - HOLD时如不调整，请沿用上次的 stop_loss / take_profit，不要填0（只有CLOSE时可为0）
@@ -706,7 +706,7 @@ def calculate_position_size(coin, position_value, current_price, coin_config):
         min_order_value = coin_config['min_order_value']
         
         if position_value < min_order_value:
-            print(f"⚠️ {coin}: {position_value:.2f} USDC < 最小限制 {min_order_value} USDC")
+            print(f"⚠️ {coin}: {position_value:.2f} USDT < 最小限制 {min_order_value} USDT")
             return 0
         
         # 计算数量
@@ -786,7 +786,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
         print(f"决策 {i}/{len(decisions)}: {coin}")
         print(f"操作: {action}")
         print(f"理由: {reason}")
-        print(f"开仓金额: {position_value:.2f} USDC")
+        print(f"开仓金额: {position_value:.2f} USDT")
         if stop_loss > 0:
             print(f"止损: {format_price(stop_loss, coin)}")
         if take_profit > 0:
@@ -814,7 +814,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
             if action == 'HOLD':
                 if current_position:
                     print(f"💎 持仓: {current_position['amount']} {coin} ({current_position['side']})")
-                    print(f"   当前盈亏: {current_position.get('pnl', 0):.2f} USDC")
+                    print(f"   当前盈亏: {current_position.get('pnl', 0):.2f} USDT")
                     
                     # 检查止损价格是否变化（AI可能动态调整）
                     old_stop_loss = current_position.get('stop_loss', 0)

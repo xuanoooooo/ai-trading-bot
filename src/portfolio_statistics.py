@@ -237,7 +237,7 @@ class PortfolioStatistics:
         self.current_positions[coin] = None
         self.save()
         
-        print(f"📝 记录{coin}交易: {side} | 盈亏 {pnl:+.2f} USDC ({pnl_percent:+.2f}%) | 持续 {duration_minutes}分钟")
+        print(f"📝 记录{coin}交易: {side} | 盈亏 {pnl:+.2f} USDT ({pnl_percent:+.2f}%) | 持续 {duration_minutes}分钟")
     
     def get_runtime_info(self) -> Dict:
         """获取运行时长信息"""
@@ -343,9 +343,9 @@ class PortfolioStatistics:
     
     【投资组合整体表现】
     - 历史总交易: {self.total_trades}笔 (胜{self.win_trades}负{self.lose_trades})
-    - 历史总盈亏: {self.total_pnl:+.2f} USDC
+    - 历史总盈亏: {self.total_pnl:+.2f} USDT
     - 整体胜率: {(self.win_trades/self.total_trades*100) if self.total_trades > 0 else 0:.1f}%
-    - 最近24小时: {recent_stats['total']}笔交易，胜率{recent_stats['win_rate']:.1f}%，盈亏{recent_stats['total_pnl']:+.2f} USDC
+    - 最近24小时: {recent_stats['total']}笔交易，胜率{recent_stats['win_rate']:.1f}%，盈亏{recent_stats['total_pnl']:+.2f} USDT
     
     【各币种表现统计】"""
         
@@ -354,7 +354,7 @@ class PortfolioStatistics:
             perf = self.get_coin_performance(coin)
             if perf['total_trades'] > 0:
                 stats_text += f"""
-    {coin}: {perf['total_trades']}笔 | 胜率{perf['win_rate']:.1f}% | 盈亏{perf['total_pnl']:+.2f} USDC"""
+    {coin}: {perf['total_trades']}笔 | 胜率{perf['win_rate']:.1f}% | 盈亏{perf['total_pnl']:+.2f} USDT"""
             else:
                 stats_text += f"""
     {coin}: 暂无交易记录"""
@@ -370,7 +370,7 @@ class PortfolioStatistics:
                 coin = trade.get('coin', '?')
                 pnl_emoji = "✅" if trade['pnl'] > 0 else "❌"
                 stats_text += f"""
-    {i}. {time_str} | {coin} {side_emoji} | {pnl_emoji} {trade['pnl']:+.2f} USDC ({trade['pnl_percent']:+.2f}%)"""
+    {i}. {time_str} | {coin} {side_emoji} | {pnl_emoji} {trade['pnl']:+.2f} USDT ({trade['pnl_percent']:+.2f}%)"""
         
         # 当前持仓时长
         durations = self.get_position_durations()
@@ -397,7 +397,7 @@ class PortfolioStatistics:
 总交易数: {self.total_trades}笔
 盈利交易: {self.win_trades}笔 ({win_rate:.1f}%)
 亏损交易: {self.lose_trades}笔
-累计盈亏: {self.total_pnl:+.2f} USDC
+累计盈亏: {self.total_pnl:+.2f} USDT
 
 各币种表现:"""
         
@@ -405,7 +405,7 @@ class PortfolioStatistics:
             perf = self.get_coin_performance(coin)
             if perf['total_trades'] > 0:
                 summary += f"""
-  {coin}: {perf['total_trades']}笔 | 胜率{perf['win_rate']:.1f}% | 盈亏{perf['total_pnl']:+.2f} USDC"""
+  {coin}: {perf['total_trades']}笔 | 胜率{perf['win_rate']:.1f}% | 盈亏{perf['total_pnl']:+.2f} USDT"""
         
         summary += f"\n{'='*60}"
         return summary
@@ -436,7 +436,7 @@ class PortfolioStatistics:
         decimals = 4 if coin in ['DOGE', 'XRP'] else 2
         print(f"📋 止损触发记录已保存: {coin} {side.upper()} | "
               f"开仓${entry_price:.{decimals}f} → 止损${stop_price:.{decimals}f} | "
-              f"盈亏{pnl:+.2f} USDC | 持仓{duration_minutes}分钟")
+              f"盈亏{pnl:+.2f} USDT | 持仓{duration_minutes}分钟")
         
         self.save()
     

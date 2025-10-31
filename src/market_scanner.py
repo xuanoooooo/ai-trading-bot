@@ -328,12 +328,12 @@ class MarketScanner:
             import pandas as pd
             
             # 获取BTC当前价格
-            btc_ticker = self.binance_client.futures_ticker(symbol='BTCUSDC')
+            btc_ticker = self.binance_client.futures_ticker(symbol='BTCUSDT')
             btc_price = float(btc_ticker['lastPrice'])
             
             # 获取15分钟K线（用于计算技术指标）
             btc_klines_15m = self.binance_client.futures_klines(
-                symbol='BTCUSDC',
+                symbol='BTCUSDT',
                 interval='15m',
                 limit=96  # 24小时数据，足够计算技术指标
             )
@@ -356,7 +356,7 @@ class MarketScanner:
             
             # 获取1小时K线（用于中期趋势）
             btc_klines_1h = self.binance_client.futures_klines(
-                symbol='BTCUSDC',
+                symbol='BTCUSDT',
                 interval='1h',
                 limit=60  # 2.5天数据
             )
@@ -376,7 +376,7 @@ class MarketScanner:
             
             # 获取4小时K线（用于长期趋势，轻量级）
             btc_klines_4h = self.binance_client.futures_klines(
-                symbol='BTCUSDC',
+                symbol='BTCUSDT',
                 interval='4h',
                 limit=60  # 10天数据
             )
@@ -396,13 +396,13 @@ class MarketScanner:
             
             # 获取BTC的资金费率和持仓量
             try:
-                btc_funding = self.binance_client.futures_funding_rate(symbol='BTCUSDC', limit=1)
+                btc_funding = self.binance_client.futures_funding_rate(symbol='BTCUSDT', limit=1)
                 btc_funding_rate = float(btc_funding[0]['fundingRate'])
             except:
                 btc_funding_rate = 0.0
             
             try:
-                btc_oi = self.binance_client.futures_open_interest(symbol='BTCUSDC')
+                btc_oi = self.binance_client.futures_open_interest(symbol='BTCUSDT')
                 btc_open_interest = float(btc_oi['openInterest'])
             except:
                 btc_open_interest = 0.0
@@ -475,7 +475,7 @@ class MarketScanner:
                 position_amt = float(pos.get('positionAmt', 0))
                 if position_amt != 0:
                     symbol = pos.get('symbol', '')
-                    coin = symbol.replace('USDC', '')
+                    coin = symbol.replace('USDT', '')
                     
                     if coin in portfolio:
                         entry_price = float(pos.get('entryPrice', 0))
