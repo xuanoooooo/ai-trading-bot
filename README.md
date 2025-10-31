@@ -87,6 +87,10 @@
 
 本项目仅供学习交流使用。
 
+**⚠️ 币安账户必须设置：**
+- ✅ **单向持仓模式**（One-way Mode）
+- ❌ 不支持双向持仓（Hedge Mode）
+
 **没有收费也没有挂邀请码，只求各位给星星** ⭐
 
 </td>
@@ -97,6 +101,10 @@
 **Markets are risky, invest cautiously.**
 
 This project is for educational purposes only.
+
+**⚠️ Binance Account Settings Required:**
+- ✅ **One-way Mode** (Single Position)
+- ❌ Hedge Mode NOT supported
 
 **No fees, no referral codes, just asking for stars** ⭐
 
@@ -237,6 +245,11 @@ nano .env  # Fill in your API keys | 填入API密钥
 - DeepSeek: https://platform.deepseek.com/
 - Binance: https://www.binance.com/ (需要开通合约交易)
 
+**⚠️ 币安账户设置（重要！）：**
+- ✅ 必须使用 **单向持仓模式**（One-way Mode）
+- ❌ 不支持双向持仓（Hedge Mode）
+- 💡 设置路径：币安合约 → 偏好设置 → 持仓模式
+
 **⚠️ Important | 重要提示:**
 - ✅ Default uses `deepseek-chat` (Fast & Cheap) | 默认使用 `deepseek-chat`（快速且便宜）
 - ✅ Default coins: BTC, ETH, SOL, BNB, XRP, ADA, DOGE (USDT pairs) | 默认币种（USDT交易对）
@@ -245,34 +258,27 @@ nano .env  # Fill in your API keys | 填入API密钥
 
 ---
 
-### 🔧 How to Change Trading Coins | 如何更改交易币种
+### 🔧 配置说明 | Configuration Guide
 
-<table>
-<tr>
-<td width="50%">
+**📁 配置文件位置：** `config/coins_config.json`
 
-#### 🇨🇳 中文说明
+#### 1️⃣ 币种配置
 
-**默认币种：** BTC, ETH, SOL, BNB, XRP, ADA, DOGE
+**默认币种（7个）：** BTC, ETH, SOL, BNB, XRP, ADA, DOGE
 
-**如何添加/更换其他币种：**
+**如何添加新币种（例如添加 MATIC）：**
 
-**1. 编辑配置文件：**
-```bash
-nano config/coins_config.json
-```
-
-**2. 默认配置（7个币种）：**
+**添加前（默认7个币种）：**
 ```json
 {
   "coins": [
-    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, ...},
-    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, ...},
-    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, ...},
-    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, ...},
-    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, ...},
-    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, ...},
-    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, ...}
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, "price_precision": 2, "min_order_value": 50},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, "price_precision": 2, "min_order_value": 24},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, "price_precision": 2, "min_order_value": 6},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, "price_precision": 2, "min_order_value": 12},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6}
   ]
 }
 ```
@@ -281,108 +287,89 @@ nano config/coins_config.json
 ```json
 {
   "coins": [
-    {"symbol": "BTC", "binance_symbol": "BTCUSDT", ...},
-    {"symbol": "ETH", "binance_symbol": "ETHUSDT", ...},
-    {"symbol": "SOL", "binance_symbol": "SOLUSDT", ...},
-    {"symbol": "BNB", "binance_symbol": "BNBUSDT", ...},
-    {"symbol": "XRP", "binance_symbol": "XRPUSDT", ...},
-    {"symbol": "ADA", "binance_symbol": "ADAUSDT", ...},
-    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", ...},
-    {
-      "symbol": "MATIC",
-      "binance_symbol": "MATICUSDT",
-      "precision": 0,
-      "price_precision": 4,
-      "min_order_value": 6
-    }
+    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, "price_precision": 2, "min_order_value": 50},
+    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, "price_precision": 2, "min_order_value": 24},
+    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, "price_precision": 2, "min_order_value": 6},
+    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, "price_precision": 2, "min_order_value": 12},
+    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6},
+    {"symbol": "MATIC", "binance_symbol": "MATICUSDT", "precision": 0, "price_precision": 4, "min_order_value": 6}  ⬅️ 新增
   ]
 }
 ```
 
-**3. 如何确定参数：**
-- **precision**: 数量小数位（访问币安看订单簿）
-- **price_precision**: 价格小数位
-- **min_order_value**: 最小开仓金额（一般6-50 USDT）
+**参数说明：**
+- `symbol`: 币种简称（显示用）
+- `binance_symbol`: 币安交易对（必须是 **USDT** 结尾）
+- `precision`: 数量小数位（访问币安合约页面查看订单簿）
+- `price_precision`: 价格小数位
+- `min_order_value`: 该币种最小开仓金额（USDT）
 
-**4. 选币规则：**
-- ✅ 必须是 **USDT** 交易对
-- ✅ 币种单价 **≥ $1**（避免精度问题）
-- ✅ 24h交易量 **> 1亿美元**
-- ❌ 不要选 SHIB ($0.00001)、PEPE 等低价币
+**⚠️ 选币规则：**
+- ✅ 必须是 USDT 交易对
+- ✅ 币种单价 ≥ $1（避免 SHIB、PEPE 等低价币）
+- ✅ 24h 交易量 > 1亿美元
+- 💡 推荐：AVAX, LINK, DOT, ATOM, LTC, UNI
 
-**5. 常见币种示例：**
-- AVAXUSDT, LINKUSDT, DOTUSDT
-- ATOMUSDT, LTCUSDT, UNIUSDT
+---
 
-</td>
-<td width="50%">
+#### 2️⃣ 风控参数配置
 
-#### 🇺🇸 English Guide
+在 `config/coins_config.json` 的 `portfolio_rules` 部分：
 
-**Default coins:** BTC, ETH, SOL, BNB, XRP, ADA, DOGE
-
-**How to add/change coins:**
-
-**1. Edit config file:**
-```bash
-nano config/coins_config.json
-```
-
-**2. Default config (7 coins):**
 ```json
-{
-  "coins": [
-    {"symbol": "BTC", "binance_symbol": "BTCUSDT", "precision": 3, ...},
-    {"symbol": "ETH", "binance_symbol": "ETHUSDT", "precision": 3, ...},
-    {"symbol": "SOL", "binance_symbol": "SOLUSDT", "precision": 1, ...},
-    {"symbol": "BNB", "binance_symbol": "BNBUSDT", "precision": 2, ...},
-    {"symbol": "XRP", "binance_symbol": "XRPUSDT", "precision": 0, ...},
-    {"symbol": "ADA", "binance_symbol": "ADAUSDT", "precision": 0, ...},
-    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", "precision": 0, ...}
-  ]
+"portfolio_rules": {
+  "leverage": 3,                    // 杠杆倍数（1-5倍，建议3倍）
+  "min_cash_reserve_percent": 10,   // 最低保留资金百分比（10 表示保留10%）
+  "max_single_coin_percent": 100    // 单币种最大仓位百分比（100 表示不限制）
 }
 ```
 
-**After adding MATIC (8 coins):**
-```json
-{
-  "coins": [
-    {"symbol": "BTC", "binance_symbol": "BTCUSDT", ...},
-    {"symbol": "ETH", "binance_symbol": "ETHUSDT", ...},
-    {"symbol": "SOL", "binance_symbol": "SOLUSDT", ...},
-    {"symbol": "BNB", "binance_symbol": "BNBUSDT", ...},
-    {"symbol": "XRP", "binance_symbol": "XRPUSDT", ...},
-    {"symbol": "ADA", "binance_symbol": "ADAUSDT", ...},
-    {"symbol": "DOGE", "binance_symbol": "DOGEUSDT", ...},
-    {
-      "symbol": "MATIC",
-      "binance_symbol": "MATICUSDT",
-      "precision": 0,
-      "price_precision": 4,
-      "min_order_value": 6
-    }
-  ]
+**参数说明：**
+
+**`leverage`**: 杠杆倍数
+- 3 = 使用 3 倍杠杆
+- 建议 2-3 倍（过高风险大）
+
+**`min_cash_reserve_percent`**: 最低保留资金百分比
+- 10 = 保留 10% 可用资金不用于开仓
+- 例如：总资金 100 USDT，设为 10，则至少保留 10 USDT，最多用 90 USDT 开仓
+- 建议：10-20（保留 10-20% 作为缓冲）
+
+**`max_single_coin_percent`**: 单币种最大仓位百分比
+- 100 = 允许单币种使用 100% 可用资金（不限制）
+- 50 = 单币种最多用 50% 可用资金
+- 30 = 单币种最多用 30% 可用资金
+- AI会在此限制内自主分配
+
+**💡 建议配置：**
+- 保守型：`leverage: 2`, `min_cash_reserve_percent: 20`, `max_single_coin_percent: 30`
+- 均衡型：`leverage: 3`, `min_cash_reserve_percent: 10`, `max_single_coin_percent: 50`
+- 激进型：`leverage: 5`, `min_cash_reserve_percent: 10`, `max_single_coin_percent: 100`
+
+---
+
+#### 3️⃣ 其他重要参数
+
+在 `src/portfolio_manager.py` 的 `PORTFOLIO_CONFIG` 部分：
+
+```python
+PORTFOLIO_CONFIG = {
+    'initial_balance': 100.0,          # 初始资金（USDT）
+    'leverage': 3,                     # 杠杆倍数
+    'stop_loss_pct': 3.0,             # 止损百分比（3%）
+    'take_profit_pct': 8.0,           # 止盈百分比（8%）
+    'max_positions': 5,               # 最大持仓币种数
+    'check_interval_minutes': 5,      # 扫描间隔（5分钟）
 }
 ```
 
-**3. How to determine parameters:**
-- **precision**: Quantity decimals (check Binance order book)
-- **price_precision**: Price decimals
-- **min_order_value**: Min order size (usually 6-50 USDT)
-
-**4. Coin selection rules:**
-- ✅ Must be **USDT** pair
-- ✅ Coin price **≥ $1** (avoid precision issues)
-- ✅ 24h volume **> $100M**
-- ❌ Avoid SHIB ($0.00001), PEPE, etc.
-
-**5. Common coin examples:**
-- AVAXUSDT, LINKUSDT, DOTUSDT
-- ATOMUSDT, LTCUSDT, UNIUSDT
-
-</td>
-</tr>
-</table>
+**常用修改：**
+- `initial_balance`: 修改为你的实际资金
+- `stop_loss_pct`: 止损线（建议 3-5%）
+- `take_profit_pct`: 止盈线（建议 5-10%）
+- `max_positions`: 最多同时持有几个币种（建议 3-5 个）
 
 **📖 Detailed config guide | 详细配置指南:**
 - [🇨🇳 中文完整说明](README_CN.md#步骤4配置交易币种和ai模型)
