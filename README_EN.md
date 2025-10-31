@@ -54,7 +54,7 @@ We've prepared an easy-setup version that's ready to use out of the box!
 
 📦 **Download the package (Recommended):**
 
-👉 [Click to download ai-trading-bot-easy-setup-v2.4.2.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [Click to download ai-trading-bot-easy-setup-v2.4.3.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
 
 Or find "Releases" on the project page → Download latest version
 

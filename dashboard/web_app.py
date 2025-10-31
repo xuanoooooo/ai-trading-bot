@@ -10,16 +10,21 @@ from datetime import datetime
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 
-# 添加父目录到路径，以便导入market_scanner
+# 添加父目录到路径，以便导入src模块
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from market_scanner import MarketScanner
+    from src.market_scanner import MarketScanner
     from binance.client import Client
     from dotenv import load_dotenv
     
-    # 加载环境变量（使用duobizhong目录下的.env）
-    load_dotenv('/root/DS/duobizhong/.env')
+    # 加载环境变量（自动从当前目录或父目录查找.env文件）
+    load_dotenv()
+    
+    # 如果找不到，尝试从项目根目录加载
+    if not os.getenv('BINANCE_API_KEY'):
+        env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+        load_dotenv(env_path)
     
     # 初始化币安客户端（只用于获取公开市场数据）
     binance_client = Client(
@@ -27,8 +32,9 @@ try:
         api_secret=os.getenv('BINANCE_SECRET')
     )
     
-    # 初始化市场扫描器
-    market_scanner = MarketScanner(binance_client, '../config/coins_config.json')
+    # 配置文件路径（兼容不同运行目录）
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'coins_config.json')
+    market_scanner = MarketScanner(binance_client, config_path)
     SCANNER_AVAILABLE = True
 except Exception as e:
     print(f"⚠️ 警告: 市场扫描器初始化失败: {e}")
@@ -38,10 +44,11 @@ except Exception as e:
 app = Flask(__name__)
 CORS(app)
 
-# 配置
-STATS_FILE = '../portfolio_stats.json'
-AI_DECISIONS_FILE = '../ai_decisions.json'
-RUNTIME_FILE = '../current_runtime.json'
+# 配置 - 使用绝对路径定位数据文件（这些文件由src/portfolio_manager.py生成）
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATS_FILE = os.path.join(PROJECT_ROOT, 'portfolio_stats.json')
+AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'ai_decisions.json')
+RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'current_runtime.json')
 
 # 记录Web服务启动时间
 WEB_START_TIME = datetime.now()
@@ -49,10 +56,17 @@ WEB_START_TIME = datetime.now()
 def load_json_file(filepath):
     """安全地加载JSON文件"""
     try:
-        full_path = os.path.join(os.path.dirname(__file__), filepath)
+        # 如果是绝对路径，直接使用；否则相对于项目根目录
+        if os.path.isabs(filepath):
+            full_path = filepath
+        else:
+            full_path = os.path.join(PROJECT_ROOT, filepath)
+            
         if os.path.exists(full_path):
             with open(full_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
+        else:
+            print(f"⚠️ 文件不存在: {full_path}")
         return None
     except Exception as e:
         print(f"加载文件失败 {filepath}: {e}")
