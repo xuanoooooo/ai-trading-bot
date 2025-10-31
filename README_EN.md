@@ -31,6 +31,108 @@ View AI's decision-making abilities rationally, control positions reasonably, an
 
 ---
 
+## 🎁 Quick Start for Beginners (Recommended)
+
+**📢 No programming experience? No problem!**
+
+We've prepared an easy-setup version that's ready to use out of the box!
+
+### 🚀 Super Simple Start (3 Steps Only)
+
+#### Step 1: Download Easy-Setup Version
+
+📦 **Download the package (Recommended):**
+
+👉 [Click to download ai-trading-bot-easy-setup-v2.3.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+
+Or find "Releases" on the project page → Download latest version
+
+**After extraction:**
+```
+ai-trading-bot/
+├── 一键开箱版/          ← 👈 Open this folder!
+│   ├── start.bat                   ← Start trading (Windows)
+│   ├── start_dashboard.bat         ← Start dashboard (Windows)
+│   └── stop.bat                    ← Stop program (Windows)
+├── src/                 ← Program code
+├── config/              ← Configuration
+└── .env                 ← 👈 Need to edit this file
+```
+
+#### Step 2: Get API Keys
+
+**1. DeepSeek Key** (AI brain for analysis)
+- Visit https://platform.deepseek.com/
+- Register and get API Key
+
+**2. Binance Key** (Execute trades)
+- Visit https://www.binance.com/
+- API Management → Create Key
+- ⚠️ Must enable: Futures Trading + Enable Trading
+- ⚠️ Must set: **One-way Mode**
+
+#### Step 3: Configure and Start
+
+**1. Edit `.env` file**
+
+Find `.env` in project root, open with notepad, fill in 3 keys:
+
+```bash
+DEEPSEEK_API_KEY=sk-xxxxx        # 👈 Fill in DeepSeek key
+BINANCE_API_KEY=xxxxx            # 👈 Fill in Binance API Key  
+BINANCE_SECRET=xxxxx             # 👈 Fill in Binance Secret Key
+```
+
+Save and close.
+
+**2. Start Program**
+
+**Windows Users (Super Easy):**
+- Go to `一键开箱版/` folder
+- Double-click `start.bat` → Start trading
+- Double-click `start_dashboard.bat` → Start dashboard (optional)
+- Browser visit: http://localhost:5000
+
+**Linux/Mac Users:**
+```bash
+bash scripts/start_trading.sh        # Start trading
+bash scripts/start_dashboard.sh      # Start dashboard
+```
+
+### ✅ Default Configuration (No Need to Modify)
+
+**Optimized configuration, strongly recommended to use as-is:**
+
+| Config | Default | Description |
+|--------|---------|-------------|
+| Trading Pairs | BTC, ETH, SOL, BNB, XRP, ADA, DOGE | 7 major coins |
+| Leverage | 3x | Conservative level |
+| Scan Interval | 5 minutes | Matches 15-min K-line |
+| AI Model | deepseek-chat | Fast & cheap |
+| Risk Control | Keep 10% cash | Reduce risk |
+
+### 💡 Usage Tips
+
+**Minimum Capital:** 100 USDT (Recommend 200-500 USDT)  
+**First Use:** Observe for 1-3 days to understand AI logic  
+**Environment:** Cloud server is best (24/7 running)
+
+### 🆘 Common Issues
+
+**❓ Can't find files?**  
+→ Make sure you're in the `ai-trading-bot` folder
+
+**❓ API error?**  
+→ Check if keys in `.env` are correct (no spaces)
+
+**❓ Permission denied?**  
+→ Check if Binance API has "Futures Trading" permission
+
+**❓ Want more details?**  
+→ See `一键开箱版/README_开箱版.md` or continue reading full documentation below
+
+---
+
 ## 📸 System Interface
 
 ### 🎨 Web Dashboard Mode (Recommended)

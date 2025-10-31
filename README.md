@@ -82,6 +82,109 @@
 
 ---
 
+## 🎁 零基础快速上手（推荐新手）
+
+**📢 完全没有编程基础？不用担心！**
+
+我们为零基础用户准备了一键开箱版，开箱即用！
+
+### 🚀 超简单启动（只需3步）
+
+#### 第一步：下载开箱版
+
+📦 **直接下载压缩包（推荐）：**
+
+👉 [点击下载 ai-trading-bot-easy-setup-v2.3.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+
+或在项目页面找到 "Releases" → 下载最新版
+
+**解压后目录：**
+```
+ai-trading-bot/
+├── 一键开箱版/          ← 👈 打开这个文件夹！
+│   ├── 【点我开始】使用说明.txt    ← 👈 双击查看
+│   ├── start.bat                   ← 启动交易（Windows）
+│   ├── start_dashboard.bat         ← 启动看板（Windows）
+│   └── stop.bat                    ← 停止程序（Windows）
+├── src/                 ← 程序代码
+├── config/              ← 配置文件
+└── .env                 ← 👈 需要修改这个文件
+```
+
+#### 第二步：获取API密钥
+
+**1. DeepSeek密钥**（AI大脑，负责分析）
+- 访问 https://platform.deepseek.com/
+- 注册并登录后获取 API Key
+
+**2. Binance密钥**（执行交易）
+- 访问 https://www.binance.com/
+- API管理 → 创建密钥
+- ⚠️ 必须开通：合约交易 + 允许交易权限
+- ⚠️ 必须设置：**单向持仓模式**
+
+#### 第三步：配置并启动
+
+**1. 修改 `.env` 文件**
+
+找到项目根目录的 `.env` 文件，用记事本打开，填入3个密钥：
+
+```bash
+DEEPSEEK_API_KEY=sk-xxxxx        # 👈 填入DeepSeek密钥
+BINANCE_API_KEY=xxxxx            # 👈 填入币安API Key  
+BINANCE_SECRET=xxxxx             # 👈 填入币安Secret Key
+```
+
+保存并关闭。
+
+**2. 启动程序**
+
+**Windows用户（超简单）：**
+- 进入 `一键开箱版/` 文件夹
+- 双击 `start.bat` → 启动交易程序
+- 双击 `start_dashboard.bat` → 启动看板（可选）
+- 浏览器访问：http://localhost:5000
+
+**Linux/Mac用户：**
+```bash
+bash scripts/start_trading.sh        # 启动交易
+bash scripts/start_dashboard.sh      # 启动看板
+```
+
+### ✅ 默认配置（无需修改）
+
+**已为您优化配置，强烈建议直接使用：**
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| 交易币种 | BTC, ETH, SOL, BNB, XRP, ADA, DOGE | 7个主流币种 |
+| 杠杆倍数 | 3倍 | 稳健水平 |
+| 扫描间隔 | 5分钟 | 匹配15分钟K线 |
+| AI模型 | deepseek-chat | 快速且便宜 |
+| 风控 | 保留10%资金 | 降低风险 |
+
+### 💡 使用建议
+
+**最低资金：** 100 USDT（建议 200-500 USDT）  
+**首次使用：** 建议观察1-3天，了解AI决策逻辑  
+**运行环境：** 云服务器最佳（24/7运行）
+
+### 🆘 常见问题
+
+**❓ 找不到文件？**  
+→ 确保在 `ai-trading-bot` 文件夹内运行
+
+**❓ API错误？**  
+→ 检查 `.env` 文件中密钥是否正确（不要有空格）
+
+**❓ 权限不足？**  
+→ 检查币安API是否开通"合约交易"权限
+
+**❓ 想了解更多？**  
+→ 查看 `一键开箱版/README_开箱版.md` 或继续阅读下方完整文档
+
+---
+
 ## 🎯 项目亮点
 
 ### 🆚 单币种 VS 多币种
