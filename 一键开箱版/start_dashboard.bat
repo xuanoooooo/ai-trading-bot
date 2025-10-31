@@ -16,7 +16,7 @@ echo ✅ Python环境正常
 
 echo.
 echo [2/2] 启动看板程序...
-cd ../dashboard
+cd dashboard
 start "AI交易看板" python web_app.py
 
 echo.

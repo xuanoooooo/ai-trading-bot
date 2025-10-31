@@ -17,8 +17,8 @@ echo ✅ Python环境正常
 
 echo.
 echo [2/3] 检查依赖...
-if not exist "../src/portfolio_manager.py" (
-    echo ❌ 文件缺失，请确保在正确的目录下运行
+if not exist "src\portfolio_manager.py" (
+    echo ❌ 文件缺失，请确保在一键开箱版目录下运行
     pause
     exit /b 1
 )
@@ -26,7 +26,7 @@ echo ✅ 文件检查通过
 
 echo.
 echo [3/3] 启动交易程序...
-cd ../src
+cd src
 python portfolio_manager.py
 
 pause

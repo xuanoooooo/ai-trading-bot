@@ -31,7 +31,7 @@
 
 #### 1. 修改配置文件
 
-找到上一级目录的 **`.env`** 文件（用记事本打开）
+找到 **`.env.example`** 文件，复制一份并重命名为 **`.env`**（用记事本打开）
 
 只需填入3个密钥：
 
@@ -51,7 +51,6 @@ BINANCE_SECRET=xxxxx             # 填入币安Secret Key
 
 **Linux/Mac用户（终端运行）：**
 ```bash
-cd ..
 bash scripts/start_trading.sh        # 启动交易
 bash scripts/start_dashboard.sh      # 启动看板（可选）
 ```
@@ -109,8 +108,8 @@ bash scripts/start_dashboard.sh      # 启动看板（可选）
 
 **Linux/Mac用户：**
 ```bash
-cd .. && bash scripts/stop_trading.sh      # 停止交易
-bash scripts/stop_dashboard.sh             # 停止看板
+bash scripts/stop_trading.sh      # 停止交易
+bash scripts/stop_dashboard.sh    # 停止看板
 ```
 
 **或按键盘：**
