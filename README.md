@@ -232,62 +232,80 @@ nano .env  # Fill in your API keys | 填入API密钥
 
 #### 🇨🇳 中文说明
 
+**默认币种：** BTC, ETH, SOL, BNB, XRP, ADA, DOGE
+
+**如何添加/更换其他币种：**
+
 **1. 编辑配置文件：**
 ```bash
 nano config/coins_config.json
 ```
 
-**2. 币种配置格式：**
+**2. 添加新币种（例如添加 MATIC）：**
 ```json
 {
-  "symbol": "BTC",
-  "binance_symbol": "BTCUSDT",
-  "precision": 3,
-  "price_precision": 2,
-  "min_order_value": 50
+  "symbol": "MATIC",
+  "binance_symbol": "MATICUSDT",
+  "precision": 0,
+  "price_precision": 4,
+  "min_order_value": 6
 }
 ```
 
-**3. 重要规则：**
-- ✅ 必须用 **USDT** 交易对
-- ✅ 币种单价 **≥ $1**
-- ✅ 24h交易量 **> 1亿美元**
-- ❌ 不要用 SHIB、PEPE 等
+**3. 如何确定参数：**
+- **precision**: 数量小数位（访问币安看订单簿）
+- **price_precision**: 价格小数位
+- **min_order_value**: 最小开仓金额（一般6-50 USDT）
 
-**4. 查看精度：**
-- 访问币安合约页面
-- 观察订单簿的小数位数
+**4. 选币规则：**
+- ✅ 必须是 **USDT** 交易对
+- ✅ 币种单价 **≥ $1**（避免精度问题）
+- ✅ 24h交易量 **> 1亿美元**
+- ❌ 不要选 SHIB ($0.00001)、PEPE 等低价币
+
+**5. 常见币种示例：**
+- AVAXUSDT, LINKUSDT, DOTUSDT
+- ATOMUSDT, LTCUSDT, UNIUSDT
 
 </td>
 <td width="50%">
 
 #### 🇺🇸 English Guide
 
+**Default coins:** BTC, ETH, SOL, BNB, XRP, ADA, DOGE
+
+**How to add/change coins:**
+
 **1. Edit config file:**
 ```bash
 nano config/coins_config.json
 ```
 
-**2. Coin config format:**
+**2. Add new coin (e.g., add MATIC):**
 ```json
 {
-  "symbol": "BTC",
-  "binance_symbol": "BTCUSDT",
-  "precision": 3,
-  "price_precision": 2,
-  "min_order_value": 50
+  "symbol": "MATIC",
+  "binance_symbol": "MATICUSDT",
+  "precision": 0,
+  "price_precision": 4,
+  "min_order_value": 6
 }
 ```
 
-**3. Important rules:**
-- ✅ Must use **USDT** pairs
-- ✅ Coin price **≥ $1**
-- ✅ 24h volume **> $100M**
-- ❌ Avoid SHIB, PEPE, etc.
+**3. How to determine parameters:**
+- **precision**: Quantity decimals (check Binance order book)
+- **price_precision**: Price decimals
+- **min_order_value**: Min order size (usually 6-50 USDT)
 
-**4. Check precision:**
-- Visit Binance futures page
-- Check decimals in order book
+**4. Coin selection rules:**
+- ✅ Must be **USDT** pair
+- ✅ Coin price **≥ $1** (avoid precision issues)
+- ✅ 24h volume **> $100M**
+- ❌ Avoid SHIB ($0.00001), PEPE, etc.
+
+**5. Common coin examples:**
+- AVAXUSDT, LINKUSDT, DOTUSDT
+- ATOMUSDT, LTCUSDT, UNIUSDT
 
 </td>
 </tr>
