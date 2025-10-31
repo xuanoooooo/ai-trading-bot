@@ -243,16 +243,34 @@ bash scripts/start_dashboard.sh
 
 ---
 
-## 📸 Dashboard Preview | 看板预览
+## 📸 System Interface Preview | 系统界面预览
 
-![Dashboard](docs/images/dashboard-preview.png)
+### 🎨 Web Dashboard | Web可视化看板
 
-**Features | 功能:**
-- 💰 Account Overview | 账户总览
-- 📊 Current Positions | 当前持仓
-- 🤖 AI Decision Log | AI决策日志
-- 📈 Profit Curve | 收益曲线
-- 📋 Trade History | 交易历史
+**Real-time monitoring of positions and AI decisions | 实时监控持仓和AI决策**
+
+![Web Dashboard](docs/images/看板截图.png)
+
+**Features | 看板功能:**
+- 💰 **Left Panel | 左侧**: Current positions with real-time P&L | 当前持仓，实时盈亏
+- 🤖 **Right Panel | 右侧**: AI decision log with reasoning | AI决策日志，分析理由
+- 🎨 **Dark Theme | 深色主题**: Easy on the eyes | 护眼舒适
+- 🔄 **Auto Refresh | 自动刷新**: Updates every 30 seconds | 每30秒更新
+- 💚💔 **Color Coded | 颜色标识**: Green for profit, red for loss | 绿色盈利，红色亏损
+
+---
+
+### 💻 Terminal Mode | 终端日志模式
+
+**Detailed execution logs for server monitoring | 详细执行日志，适合服务器监控**
+
+![Terminal Logs](docs/images/日志截图.png)
+
+**Features | 日志功能:**
+- 📝 **Detailed Logs | 详细日志**: Every AI analysis and trade execution | 每次AI分析和交易执行
+- 🔍 **Real-time Display | 实时显示**: Live monitoring via SSH | SSH远程实时监控
+- 💡 **Lightweight | 轻量级**: Minimal resource usage | 资源占用极低
+- 📊 **Complete Info | 完整信息**: Market data, decisions, and results | 市场数据、决策、结果
 
 ---
 
