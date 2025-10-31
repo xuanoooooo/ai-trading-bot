@@ -263,20 +263,18 @@ nano .env  # 填入API密钥
 
 ```python
 PORTFOLIO_CONFIG = {
-    'initial_balance': 100.0,          # 初始资金（USDT）
-    'leverage': 3,                     # 杠杆倍数
-    'stop_loss_pct': 3.0,             # 止损百分比（3%）
-    'take_profit_pct': 8.0,           # 止盈百分比（8%）
-    'max_positions': 5,               # 最大持仓币种数
+    'leverage': 3,                    # 杠杆倍数（与 coins_config.json 中保持一致）
     'check_interval_minutes': 5,      # 扫描间隔（5分钟）
+    'test_mode': False                # False=实盘模式，True=测试模式
 }
 ```
 
-**常用修改：**
-- `initial_balance`: 修改为你的实际资金
-- `stop_loss_pct`: 止损线（建议 3-5%）
-- `take_profit_pct`: 止盈线（建议 5-10%）
-- `max_positions`: 最多同时持有几个币种（建议 3-5 个）
+**参数说明：**
+- `leverage`: 杠杆倍数（建议与 `coins_config.json` 中的 `leverage` 保持一致）
+- `check_interval_minutes`: AI分析间隔（5分钟，匹配5分钟K线周期）
+- `test_mode`: 测试模式开关
+  - `False`: 实盘模式，真实下单
+  - `True`: 测试模式，只分析不下单（推荐新手先用测试模式）
 
 **📖 更多配置详情：**
 - [中文完整说明](README_CN.md#步骤4配置交易币种和ai模型)
