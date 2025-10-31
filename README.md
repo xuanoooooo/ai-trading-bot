@@ -299,20 +299,67 @@ PORTFOLIO_CONFIG = {
 - [中文完整说明](README_CN.md#步骤4配置交易币种和ai模型)
 - [English Guide](README_EN.md#4-configure-ai-model--trading-coins)
 
-### 步骤4：启动交易
+### 步骤4：启动交易程序
+
+**使用脚本启动（推荐）**
 
 ```bash
+# 启动交易程序
 bash scripts/start_trading.sh
-# 或者
-cd src && python portfolio_manager.py
 ```
+
+**或手动启动**
+
+```bash
+cd src
+python3 portfolio_manager.py
+```
+
+**停止交易程序**
+
+```bash
+# 使用脚本停止（推荐）
+bash scripts/stop_trading.sh
+
+# 或手动停止
+pkill -f portfolio_manager.py
+```
+
+---
 
 ### 步骤5：启动看板（可选）
 
+**使用脚本启动（推荐）**
+
 ```bash
+# 启动看板
 bash scripts/start_dashboard.sh
+
 # 访问: http://localhost:5000
+# 或: http://服务器IP:5000
 ```
+
+**停止看板**
+
+```bash
+# 使用脚本停止（推荐）
+bash scripts/stop_dashboard.sh
+
+# 或手动停止
+pkill -f web_app.py
+```
+
+---
+
+### 📋 快速命令参考
+
+| 操作 | 命令 |
+|------|------|
+| 🚀 启动交易 | `bash scripts/start_trading.sh` |
+| 🛑 停止交易 | `bash scripts/stop_trading.sh` |
+| 🎨 启动看板 | `bash scripts/start_dashboard.sh` |
+| 🛑 停止看板 | `bash scripts/stop_dashboard.sh` |
+| 📊 查看日志 | `tail -f logs/portfolio_manager.log` |
 
 ---
 

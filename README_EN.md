@@ -332,31 +332,65 @@ PORTFOLIO_CONFIG = {
 
 ### 5. Start Trading Program
 
-```bash
-cd src
-python portfolio_manager.py
-```
-
-**Or use script:**
+**Using script (Recommended)**
 
 ```bash
+# Start trading program
 bash scripts/start_trading.sh
 ```
 
+**Or start manually**
+
+```bash
+cd src
+python3 portfolio_manager.py
+```
+
+**Stop trading program**
+
+```bash
+# Using script (Recommended)
+bash scripts/stop_trading.sh
+
+# Or stop manually
+pkill -f portfolio_manager.py
+```
+
+---
+
 ### 6. Start Dashboard (Optional)
 
-```bash
-cd dashboard
-python web_app.py
-```
-
-**Or use script:**
+**Using script (Recommended)**
 
 ```bash
+# Start dashboard
 bash scripts/start_dashboard.sh
+
+# Visit: http://localhost:5000
+# Or: http://your-server-ip:5000
 ```
 
-Then visit: **http://localhost:5000**
+**Stop dashboard**
+
+```bash
+# Using script (Recommended)
+bash scripts/stop_dashboard.sh
+
+# Or stop manually
+pkill -f web_app.py
+```
+
+---
+
+### 📋 Quick Command Reference
+
+| Action | Command |
+|--------|---------|
+| 🚀 Start Trading | `bash scripts/start_trading.sh` |
+| 🛑 Stop Trading | `bash scripts/stop_trading.sh` |
+| 🎨 Start Dashboard | `bash scripts/start_dashboard.sh` |
+| 🛑 Stop Dashboard | `bash scripts/stop_dashboard.sh` |
+| 📊 View Logs | `tail -f logs/portfolio_manager.log` |
 
 ---
 
