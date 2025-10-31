@@ -571,10 +571,14 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 
 ⚠️ 硬性限制（必须遵守）：
 1. position_value 是持仓价值（开仓后的名义价值）= 保证金 × 杠杆
-2. 可开仓总金额 = 可用资金 × 杠杆倍数
-3. 单个币种可以使用全部可开仓金额（无上限）
-4. 保留至少10%可用资金
-5. 最小开仓金额：BTC 50 USDT | ETH 24 USDT | BNB 12 USDT | SOL/XRP/ADA/DOGE 6 USDT
+2. **开仓保证金计算公式**：
+   - 当前可用资金：{account_info['free_balance']:.2f} USDT
+   - 保留10%资金：{account_info['free_balance'] * 0.1:.2f} USDT
+   - 可用于开仓的保证金：{account_info['free_balance'] * 0.9:.2f} USDT
+   - 最大持仓价值（position_value）：{account_info['free_balance'] * 0.9 * PORTFOLIO_CONFIG['leverage']:.2f} USDT
+3. ⚠️ **所有新开仓位的 position_value 总和必须 ≤ {account_info['free_balance'] * 0.9 * PORTFOLIO_CONFIG['leverage']:.2f} USDT**
+4. 单个币种可以使用全部可开仓额度（无单币种上限）
+5. 最小开仓金额（position_value）：BTC 50 USDT | ETH 24 USDT | BNB 12 USDT | SOL/XRP/ADA/DOGE 6 USDT
 
 📝 返回JSON格式（3种场景示例）：
 
@@ -1124,14 +1128,15 @@ def portfolio_bot():
     print(f"⏰ 执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
     
-    # 1. 扫描市场（5分钟）
+    # 1. 扫描市场（5分钟K线）
+    print("📊 获取5分钟K线数据（短期技术指标）...")
     market_data = market_scanner.scan_all_markets()
     if not market_data:
         print("❌ 市场数据获取失败")
         return
     
     # 2. 获取30分钟数据
-    print("📊 获取30分钟K线数据...")
+    print("📊 获取30分钟K线数据（中期趋势）...")
     long_term_data = {}
     for coin in market_scanner.coins:
         data_1h = market_scanner.get_coin_long_term_data(coin)
@@ -1141,8 +1146,8 @@ def portfolio_bot():
             price_decimals = 4 if coin in ['DOGE', 'XRP'] else 2
             print(f"   {coin}: SMA20 ${data_1h['sma_20']:.{price_decimals}f} | SMA50 ${data_1h['sma_50']:.{price_decimals}f} | RSI {data_1h['rsi']:.1f}")
     
-    # 2.5. 获取2小时数据（轻量级）
-    print("📊 获取2小时K线数据（轻量级）...")
+    # 3. 获取2小时数据（长期趋势）
+    print("📊 获取2小时K线数据（长期趋势）...")
     for coin in market_scanner.coins:
         data_4h = market_scanner.get_coin_4h_data(coin)
         if data_4h:
@@ -1151,16 +1156,16 @@ def portfolio_bot():
             price_decimals = 4 if coin in ['DOGE', 'XRP'] else 2
             print(f"   {coin}: SMA20 ${data_4h['sma_20']:.{price_decimals}f} | SMA50 ${data_4h['sma_50']:.{price_decimals}f} | RSI {data_4h['rsi']:.1f}")
     
-    # 3. 获取BTC背景
+    # 4. 获取BTC背景（15分钟+1小时+4小时）
     btc_data = market_scanner.get_btc_context()
     
-    # 4. 获取持仓
+    # 5. 获取持仓
     portfolio_positions = market_scanner.get_portfolio_positions()
     
-    # 5. 获取账户信息
+    # 6. 获取账户信息
     account_info = market_scanner.get_account_info()
     
-    # 6. AI分析
+    # 7. AI分析
     decisions_data = analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, account_info, long_term_data)
     
     # 7. 执行决策
