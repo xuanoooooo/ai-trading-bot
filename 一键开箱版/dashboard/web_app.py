@@ -184,13 +184,11 @@ def get_positions():
         
         # 币种映射（币安symbol转币种名）
         symbol_to_coin = {
-            'BTCUSDT': 'BTC',
-            'BNBUSDT': 'BNB',
-            'ETHUSDT': 'ETH',
-            'SOLUSDT': 'SOL',
-            'XRPUSDT': 'XRP',
-            'ADAUSDT': 'ADA',
-            'DOGEUSDT': 'DOGE'
+            'BNBUSDC': 'BNB',
+            'ETHUSDC': 'ETH',
+            'SOLUSDC': 'SOL',
+            'XRPUSDC': 'XRP',
+            'DOGEUSDC': 'DOGE'
         }
         
         # 遍历币安持仓
@@ -269,11 +267,14 @@ def get_prices():
     
     try:
         prices = {}
-        coins = ['BTC', 'BNB', 'ETH', 'SOL', 'XRP', 'ADA', 'DOGE']
+        coins = ['BTC', 'BNB', 'ETH', 'SOL', 'XRP', 'DOGE']
         
         for coin in coins:
             try:
-                ticker = binance_client.get_symbol_ticker(symbol=f'{coin}USDT')
+                if coin == 'BTC':
+                    ticker = binance_client.get_symbol_ticker(symbol='BTCUSDC')
+                else:
+                    ticker = binance_client.get_symbol_ticker(symbol=f'{coin}USDC')
                 
                 prices[coin] = {
                     'price': float(ticker['price']),
@@ -338,6 +339,6 @@ if __name__ == '__main__':
     print(f"⚠️  注意: 此服务只读取数据，不执行交易")
     print("=" * 60)
     
-    # 启动Flask应用（监听所有网络接口，使用服务器安全组控制访问）
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    # 启动Flask应用（仅监听本地）
+    app.run(host='127.0.0.1', port=5000, debug=False)
 

@@ -291,6 +291,33 @@ class PortfolioStatistics:
         """获取最近N笔交易"""
         return self.trade_history[-count:] if self.trade_history else []
     
+    def get_trading_frequency(self, hours: int = 1) -> Dict:
+        """获取最近N小时的交易频率"""
+        if not self.trade_history:
+            return {'trade_count': 0, 'frequency': 0.0, 'warning': ''}
+        
+        cutoff_time = datetime.now() - timedelta(hours=hours)
+        recent_trades = [
+            t for t in self.trade_history
+            if datetime.fromisoformat(t['exit_time']) > cutoff_time
+        ]
+        
+        trade_count = len(recent_trades)
+        frequency = trade_count / hours  # 笔/小时
+        
+        # 判断是否过度交易（每小时>2笔）
+        warning = ''
+        if frequency > 2:
+            warning = '⚠️ 交易过于频繁！'
+        elif frequency > 1.5:
+            warning = '⚠️ 交易较频繁'
+        
+        return {
+            'trade_count': trade_count,
+            'frequency': frequency,
+            'warning': warning
+        }
+    
     def get_win_rate(self, hours: int = 24) -> Dict:
         """获取最近N小时的胜率统计"""
         if not self.trade_history:
@@ -336,6 +363,9 @@ class PortfolioStatistics:
         # 最近24小时统计
         recent_stats = self.get_win_rate(24)
         
+        # 最近1小时交易频率
+        freq_stats = self.get_trading_frequency(1)
+        
         stats_text = f"""
     【系统运行统计】
     - 启动时间: {runtime['start_time']}
@@ -346,6 +376,11 @@ class PortfolioStatistics:
     - 历史总盈亏: {self.total_pnl:+.2f} USDT
     - 整体胜率: {(self.win_trades/self.total_trades*100) if self.total_trades > 0 else 0:.1f}%
     - 最近24小时: {recent_stats['total']}笔交易，胜率{recent_stats['win_rate']:.1f}%，盈亏{recent_stats['total_pnl']:+.2f} USDT
+    
+    ⏱️ 【交易频率监控】
+    - 最近1小时: {freq_stats['trade_count']}笔交易 (频率: {freq_stats['frequency']:.2f}笔/小时) {freq_stats['warning']}
+    - 建议标准: 每小时≤2笔 (监控6个币种)
+    - 优秀节奏: 开仓后持有30-60分钟以上
     
     【各币种表现统计】"""
         
