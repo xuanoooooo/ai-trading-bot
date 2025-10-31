@@ -222,7 +222,78 @@ nano .env  # Fill in your API keys | 填入API密钥
 - ✅ Recommend using default config | 建议使用默认配置
 - ❌ Don't use coins < $1 (e.g., SHIB) | 不要使用单价低于$1的币种
 
-📖 **Detailed config guide** | 详细配置指南:
+---
+
+### 🔧 How to Change Trading Coins | 如何更改交易币种
+
+<table>
+<tr>
+<td width="50%">
+
+#### 🇨🇳 中文说明
+
+**1. 编辑配置文件：**
+```bash
+nano config/coins_config.json
+```
+
+**2. 币种配置格式：**
+```json
+{
+  "symbol": "BTC",
+  "binance_symbol": "BTCUSDT",
+  "precision": 3,
+  "price_precision": 2,
+  "min_order_value": 50
+}
+```
+
+**3. 重要规则：**
+- ✅ 必须用 **USDT** 交易对
+- ✅ 币种单价 **≥ $1**
+- ✅ 24h交易量 **> 1亿美元**
+- ❌ 不要用 SHIB、PEPE 等
+
+**4. 查看精度：**
+- 访问币安合约页面
+- 观察订单簿的小数位数
+
+</td>
+<td width="50%">
+
+#### 🇺🇸 English Guide
+
+**1. Edit config file:**
+```bash
+nano config/coins_config.json
+```
+
+**2. Coin config format:**
+```json
+{
+  "symbol": "BTC",
+  "binance_symbol": "BTCUSDT",
+  "precision": 3,
+  "price_precision": 2,
+  "min_order_value": 50
+}
+```
+
+**3. Important rules:**
+- ✅ Must use **USDT** pairs
+- ✅ Coin price **≥ $1**
+- ✅ 24h volume **> $100M**
+- ❌ Avoid SHIB, PEPE, etc.
+
+**4. Check precision:**
+- Visit Binance futures page
+- Check decimals in order book
+
+</td>
+</tr>
+</table>
+
+**📖 Detailed config guide | 详细配置指南:**
 - [🇨🇳 中文完整说明](README_CN.md#步骤4配置交易币种和ai模型)
 - [🇺🇸 English Guide](README_EN.md#4-configure-ai-model--trading-coins)
 
