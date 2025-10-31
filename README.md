@@ -259,6 +259,25 @@ bash scripts/start_dashboard.sh      # 启动看板
 **❓ 权限不足？**  
 → 检查币安API是否开通"合约交易"权限
 
+**❓ 如何清理历史记录，从0开始？**  
+→ 删除统计文件即可重新开始：
+```bash
+# 停止程序
+pkill -f portfolio_manager.py
+pkill -f web_app.py
+
+# 删除历史数据文件
+rm portfolio_stats.json
+rm ai_decisions.json
+rm runtime.json
+
+# 重新启动
+cd src
+nohup python3 portfolio_manager.py > ../trading.log 2>&1 &
+cd ../dashboard
+nohup python3 web_app.py > ../web_app.log 2>&1 &
+```
+
 **❓ 想了解更多？**  
 → 查看 `一键开箱版/README_开箱版.md` 或继续阅读下方完整文档
 
@@ -547,6 +566,7 @@ pkill -f web_app.py
 | 🎨 启动看板 | `bash scripts/start_dashboard.sh` |
 | 🛑 停止看板 | `bash scripts/stop_dashboard.sh` |
 | 📊 查看日志 | `tail -f logs/portfolio_manager.log` |
+| 🧹 清理历史记录 | `rm portfolio_stats.json ai_decisions.json runtime.json` |
 
 ---
 
@@ -620,6 +640,129 @@ tmux kill-session -t portfolio
 - tmux不是必须的，如果您使用Docker或systemd也可以
 - 如果只是本地运行，直接在终端运行即可
 - 看板程序(dashboard)通常不需要tmux，后台运行即可
+
+---
+
+## 🧹 清理历史记录（从0开始统计）
+
+### 📋 使用场景
+
+- ✅ **测试后重新开始**：测试阶段结束，想要正式运行时清零
+- ✅ **调整策略后**：修改了配置（如杠杆、止损），希望重新统计效果
+- ✅ **遇到异常数据**：统计数据出现异常，需要清理重来
+- ✅ **定期归档**：每月/每季度备份旧数据后重新开始
+
+### 🔧 操作步骤
+
+#### 方法一：完全清理（推荐）
+
+```bash
+# 1. 停止所有程序
+pkill -f portfolio_manager.py
+pkill -f web_app.py
+
+# 2. 备份历史数据（可选，建议备份）
+mkdir -p backup_$(date +%Y%m%d)
+mv portfolio_stats.json backup_$(date +%Y%m%d)/ 2>/dev/null
+mv ai_decisions.json backup_$(date +%Y%m%d)/ 2>/dev/null
+mv runtime.json backup_$(date +%Y%m%d)/ 2>/dev/null
+mv trading.log backup_$(date +%Y%m%d)/ 2>/dev/null
+
+# 3. 删除历史记录文件
+rm -f portfolio_stats.json
+rm -f ai_decisions.json
+rm -f runtime.json
+
+# 4. 重新启动
+cd src
+nohup python3 portfolio_manager.py > ../trading.log 2>&1 &
+cd ../dashboard
+nohup python3 web_app.py > ../web_app.log 2>&1 &
+
+# 5. 确认重启成功
+tail -f ../trading.log
+```
+
+#### 方法二：只清理统计，保留配置
+
+```bash
+# 停止程序
+pkill -f portfolio_manager.py
+pkill -f web_app.py
+
+# 只删除统计文件（保留配置和日志）
+rm -f portfolio_stats.json
+rm -f ai_decisions.json
+rm -f runtime.json
+
+# 重启
+cd src && nohup python3 portfolio_manager.py > ../trading.log 2>&1 &
+cd ../dashboard && nohup python3 web_app.py > ../web_app.log 2>&1 &
+```
+
+#### 方法三：一键开箱版清理（Windows）
+
+```batch
+REM 停止程序
+stop.bat
+
+REM 删除历史记录
+del /f portfolio_stats.json
+del /f ai_decisions.json
+del /f runtime.json
+
+REM 重新启动
+start.bat
+start_dashboard.bat
+```
+
+### 📁 数据文件说明
+
+| 文件 | 说明 | 清理后影响 |
+|------|------|----------|
+| `portfolio_stats.json` | 交易历史、胜率、盈亏统计 | 清零统计数据 |
+| `ai_decisions.json` | AI历史决策记录 | 清空决策历史 |
+| `runtime.json` | 程序运行时间统计 | 重置运行时间 |
+| `trading.log` | 程序运行日志 | 清空日志（建议备份） |
+| `config/coins_config.json` | 币种配置 | ⚠️ **不要删除**，保留配置 |
+| `.env` | API密钥 | ⚠️ **不要删除**，保留密钥 |
+
+### ⚠️ 注意事项
+
+1. **不影响持仓**：清理历史记录不会平掉你的实际持仓
+2. **建议备份**：删除前建议备份重要数据
+3. **重启必须**：删除文件后必须重启程序
+4. **配置保留**：`.env` 和 `config/` 目录不要删除
+
+### 💡 高级技巧
+
+**定期自动归档脚本**：
+
+```bash
+# 创建自动归档脚本
+cat > auto_archive.sh << 'EOF'
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="backup_$DATE"
+
+echo "📦 开始归档..."
+mkdir -p "$BACKUP_DIR"
+
+# 备份数据
+cp portfolio_stats.json "$BACKUP_DIR/" 2>/dev/null
+cp ai_decisions.json "$BACKUP_DIR/" 2>/dev/null
+cp runtime.json "$BACKUP_DIR/" 2>/dev/null
+cp trading.log "$BACKUP_DIR/" 2>/dev/null
+
+echo "✅ 归档完成: $BACKUP_DIR"
+ls -lh "$BACKUP_DIR"
+EOF
+
+chmod +x auto_archive.sh
+
+# 使用方法
+./auto_archive.sh  # 归档但不删除
+```
 
 ---
 

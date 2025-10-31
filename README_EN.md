@@ -140,6 +140,25 @@ bash scripts/start_dashboard.sh      # Start dashboard
 **❓ Permission denied?**  
 → Check if Binance API has "Futures Trading" permission
 
+**❓ How to clear history and start from zero?**  
+→ Delete statistics files to restart:
+```bash
+# Stop programs
+pkill -f portfolio_manager.py
+pkill -f web_app.py
+
+# Delete history files
+rm portfolio_stats.json
+rm ai_decisions.json
+rm runtime.json
+
+# Restart
+cd src
+nohup python3 portfolio_manager.py > ../trading.log 2>&1 &
+cd ../dashboard
+nohup python3 web_app.py > ../web_app.log 2>&1 &
+```
+
 **❓ Want more details?**  
 → See `一键开箱版/README_开箱版.md` or continue reading full documentation below
 
