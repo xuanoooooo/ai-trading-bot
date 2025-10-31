@@ -42,46 +42,34 @@
 
 ---
 
-## 💭 Author's Note | 作者的话
+## 💭 作者的话
 
-> 🇨🇳 *"经历了生活的大亏损、在币圈也没获得什么结果，我对自己的水平彻底失望。*  
+> *"经历了生活的大亏损、在币圈也没获得什么结果，我对自己的水平彻底失望。*  
 > *与其每天假装看盘实则在赌，不如把决策交给AI——至少它不会因为行情波动而梭哈。*  
 > *这个项目源于一个简单的期望：AI再不完美也比我强。"*
 
-> 🇺🇸 *"After experiencing significant life losses and achieving little in crypto trading, I've completely lost confidence in my own abilities.*  
-> *Rather than pretending to analyze charts while essentially gambling, it's better to let AI make the decisions—at least it won't panic-sell during market swings.*  
-> *This project stems from a simple expectation: Even an imperfect AI is better than me."*
-
 ---
 
-## 💰 Support | 支持
+## 💰 支持项目
 
 <div align="center">
 
-**If this helps you, consider supporting | 如果有帮助，欢迎支持**
+**如果这个项目对你有帮助，欢迎支持**
 
-**Wallet (BEP20/BSC) | 钱包地址**
+**钱包地址 (BEP20/BSC)**
 ```
 0x59B7c28c236E6017df28e7F376B84579872A4E33
 ```
 
-**Your support motivates updates ❤️**  
-**您的支持是持续更新的动力 ❤️**
+您的支持是持续更新的动力 ❤️
 
-**No fees, no referral codes, just asking for stars ⭐**  
-**没有收费也没有挂邀请码，只求各位给星星 ⭐**
+**没有收费也没有挂邀请码，只求各位给星星** ⭐
 
 </div>
 
 ---
 
-## ⚠️ Important | 重要提醒
-
-<table>
-<tr>
-<td width="50%">
-
-### 🇨🇳 中文
+## ⚠️ 重要提醒
 
 **市场有风险，投资需谨慎。**
 
@@ -90,130 +78,49 @@
 **⚠️ 币安账户必须设置：**
 - ✅ **单向持仓模式**（One-way Mode）
 - ❌ 不支持双向持仓（Hedge Mode）
-
-**没有收费也没有挂邀请码，只求各位给星星** ⭐
-
-</td>
-<td width="50%">
-
-### 🇺🇸 English
-
-**Markets are risky, invest cautiously.**
-
-This project is for educational purposes only.
-
-**⚠️ Binance Account Settings Required:**
-- ✅ **One-way Mode** (Single Position)
-- ❌ Hedge Mode NOT supported
-
-**No fees, no referral codes, just asking for stars** ⭐
-
-</td>
-</tr>
-</table>
+- 💡 设置路径：币安合约 → 偏好设置 → 持仓模式
 
 ---
 
-## 🎯 What Makes This Special | 项目亮点
+## 🎯 项目亮点
 
-### 🆚 Single Coin vs Multi-Coin | 单币种 VS 多币种
+### 🆚 单币种 VS 多币种
 
-<table>
-<tr>
-<th width="33%">Feature | 特性</th>
-<th width="33%">Single Coin | 单币种</th>
-<th width="33%">Multi-Coin (This) | 多币种（本项目）</th>
-</tr>
-<tr>
-<td><b>Management | 管理方式</b></td>
-<td>Only 1 coin | 只交易1个币</td>
-<td><b>5-8 coins simultaneously | 同时管理5-8个币种</b> ✨</td>
-</tr>
-<tr>
-<td><b>Risk | 风险</b></td>
-<td>Concentrated | 集中风险</td>
-<td><b>Diversified | 分散风险</b> 🛡️</td>
-</tr>
-<tr>
-<td><b>Opportunity | 机会</b></td>
-<td>Limited | 单一机会</td>
-<td><b>Multiple markets | 多市场捕捉</b> 📈</td>
-</tr>
-<tr>
-<td><b>Returns | 收益</b></td>
-<td>Depends on 1 coin | 依赖单币</td>
-<td><b>More stable | 更稳定</b> 💪</td>
-</tr>
-</table>
+| 特性 | 单币种版本 | 多币种版本（本项目）|
+|------|----------|-----------------|
+| **管理方式** | 只交易1个币 | **同时管理5-8个币种** ✨ |
+| **风险** | 集中风险 | **分散风险** 🛡️ |
+| **机会** | 单一机会 | **多市场捕捉** 📈 |
+| **收益** | 依赖单币 | **更稳定** 💪 |
 
 ---
 
-## ✨ Key Features | 核心功能
+## ✨ 核心功能
 
-<table>
-<tr>
-<td width="50%">
-
-### 🇨🇳 中文版
-
-#### 🧠 AI全自动决策
+### 🧠 AI全自动决策
 - DeepSeek AI智能分析
 - 完全解放双手，24/7运行
 - 自动开仓、平仓、止损止盈
 
-#### 📊 多币种管理
+### 📊 多币种管理
 - 同时管理BTC、ETH、SOL等
 - 智能资金分配
 - 风险分散，不怕单币暴跌
 
-#### 🎨 实时看板
+### 🎨 实时看板
 - Web界面直观展示
 - 持仓、盈亏一目了然
 - AI决策记录可查询
 
-#### 🛡️ 风险控制
+### 🛡️ 风险控制
 - 单币种不超过20%
 - 自动止损3%、止盈8%
 - 最多持有5个币种
 
-#### 📈 技术分析
+### 📈 技术分析
 - RSI、MACD、EMA、布林带
 - 1小时+4小时双周期验证
 - AI有理有据做决策
-
-</td>
-<td width="50%">
-
-### 🇺🇸 English
-
-#### 🧠 AI Auto-Decision
-- DeepSeek AI analysis
-- Fully automated, 24/7 operation
-- Auto open/close positions & stop-loss
-
-#### 📊 Multi-Coin Management
-- Manage BTC, ETH, SOL simultaneously
-- Smart fund allocation
-- Risk diversification
-
-#### 🎨 Real-Time Dashboard
-- Web interface visualization
-- Clear position & P&L display
-- AI decision history
-
-#### 🛡️ Risk Control
-- Max 20% per coin
-- Auto stop-loss 3%, take-profit 8%
-- Max 5 positions
-
-#### 📈 Technical Analysis
-- RSI, MACD, EMA, Bollinger Bands
-- 1h + 4h dual timeframe validation
-- Data-driven AI decisions
-
-</td>
-</tr>
-</table>
 
 ---
 
