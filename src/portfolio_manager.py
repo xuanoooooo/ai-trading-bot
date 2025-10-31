@@ -95,7 +95,10 @@ if binance_client is None:
 
 # 初始化模块
 portfolio_stats = PortfolioStatistics('portfolio_stats.json', binance_client)
-market_scanner = MarketScanner(binance_client, 'config/coins_config.json')
+
+# 配置文件路径（兼容从项目根目录或src目录运行）
+config_path = 'config/coins_config.json' if os.path.exists('config/coins_config.json') else '../config/coins_config.json'
+market_scanner = MarketScanner(binance_client, config_path)
 
 # AI决策记录文件
 AI_DECISIONS_FILE = 'ai_decisions.json'
@@ -152,12 +155,30 @@ def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
     except Exception as e:
         print(f"⚠️ 保存AI决策失败: {e}")
 
-# 交易配置
-PORTFOLIO_CONFIG = {
-    'leverage': 3,
-    'check_interval_minutes': 5,  # 5分钟调用一次AI（分析5分钟K线数据）
-    'test_mode': False  # 实盘模式
-}
+# 交易配置（从配置文件读取）
+def load_portfolio_config():
+    """从coins_config.json加载投资组合配置"""
+    try:
+        portfolio_rules = market_scanner.coins_config.get('portfolio_rules', {})
+        return {
+            'leverage': portfolio_rules.get('leverage', 3),
+            'min_cash_reserve_percent': portfolio_rules.get('min_cash_reserve_percent', 10),
+            'max_single_coin_percent': portfolio_rules.get('max_single_coin_percent', 100),
+            'check_interval_minutes': 5,  # 5分钟调用一次AI（分析5分钟K线数据）
+            'test_mode': False  # 实盘模式
+        }
+    except Exception as e:
+        print(f"⚠️ 加载配置失败，使用默认值: {e}")
+        return {
+            'leverage': 3,
+            'min_cash_reserve_percent': 10,
+            'max_single_coin_percent': 100,
+            'check_interval_minutes': 5,
+            'test_mode': False
+        }
+
+PORTFOLIO_CONFIG = load_portfolio_config()
+print(f"📋 配置加载成功 - 杠杆: {PORTFOLIO_CONFIG['leverage']}x, 最低保留资金: {PORTFOLIO_CONFIG['min_cash_reserve_percent']}%, 单币最大: {PORTFOLIO_CONFIG['max_single_coin_percent']}%")
 
 
 def setup_exchange():
