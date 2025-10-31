@@ -1095,7 +1095,7 @@ def sync_portfolio_positions_on_startup():
             # 如果不是止损触发，按原逻辑处理
             if not stop_loss_triggered:
                 # 获取当前价格
-                market_data = market_scanner.scan_coin(coin, '15m', 10)
+                market_data = market_scanner.scan_coin(coin, '5m', 10)
                 if market_data:
                     current_price = market_data['price']
                     print(f"   → 按当前价格 ${current_price:.2f} 记录平仓到统计")
