@@ -177,14 +177,14 @@ An automated cryptocurrency trading system based on **DeepSeek AI**, supporting 
 
 | Feature | Regular Bots | This Project |
 |---------|-------------|--------------|
-| **Timeframe Analysis** | Single period (e.g., 15-min only) | **Multi-period cross-validation**: Coins 30m+2h, BTC 15m+1h+4h ✨ |
+| **Timeframe Analysis** | Single period (e.g., 15-min only) | **Multi-period cross-validation**: 5m patterns + 15m/30m/2h analysis + BTC 15m/1h/4h ✨ |
 | **Market Context** | Only individual coin data | **Always reference BTC market sentiment** 🎯 |
 | **Decision Basis** | Single-dimension judgment | **Short/Medium/Long-term combined**, avoid false breakouts 🛡️ |
 | **Reliability** | Easily fooled by short-term noise | **Multi-timeframe verification**, more robust 💪 |
 
 **Why Multi-Timeframe Analysis Matters:**
-- 📉 30-min shows uptrend → 2-hour reveals downtrend → AI stays cautious
-- 📈 Coin 30m+2h both bullish → BTC 15m+1h+4h also bullish → AI opens long with high confidence
+- 📉 5-min K-line shows uptrend → But 30-min/2-hour reveals downtrend → AI stays cautious
+- 📈 5m/15m/30m/2h all bullish → BTC 15m/1h/4h also bullish → AI opens long with high confidence
 - 🎯 Dramatically reduces false signals, improves win rate
 
 ---
@@ -200,7 +200,8 @@ An automated cryptocurrency trading system based on **DeepSeek AI**, supporting 
 ### 📊 **Technical Analysis Engine (Core Advantage)**
 
 - **🌟 Multi-Timeframe Cross-Validation**:
-  - Altcoin Analysis: 30-min + 2-hour dual period
+  - Coin K-line Patterns: 5-min K-line real-time monitoring (latest 24 candles, 2 hours)
+  - Coin Technical Analysis: 15-min (primary) + 30-min + 2-hour triple period
   - BTC Market Analysis: 15-min + 1-hour + 4-hour triple period
 - **🔥 Short/Medium/Long-Term Combined** - Short-term captures opportunities, medium-term grasps trends, long-term validates direction
 - **📊 BTC Market Sentiment** - Every decision references BTC movement, avoiding counter-trend trades
@@ -427,8 +428,8 @@ PORTFOLIO_CONFIG = {
 - `leverage`: Leverage multiplier (recommend keeping consistent with `coins_config.json`)
 - `check_interval_minutes`: AI analysis interval (**NOT recommended to modify**)
   - Default: 5 minutes
-  - ⚠️ **Changing this will cause K-line data mismatch**: The program uses **30m+2h** (coins) and **15m+1h+4h** (BTC) for multi-period cross-validation. 5-minute interval perfectly captures 15-min K-line changes
-  - If changed to other values (e.g., 10 minutes), you'll miss critical K-line pattern changes
+  - ⚠️ **Changing this will cause K-line data mismatch**: The program uses **5-min K-line patterns** + **15m/30m/2h technical analysis** (coins) and **15m/1h/4h** (BTC) for multi-period cross-validation. 5-minute interval perfectly matches the 5-min K-line cycle
+  - If changed to other values (e.g., 10 minutes), you'll miss critical 5-min K-line pattern changes
 - `test_mode`: Test mode switch
   - `False`: Live mode, real orders
   - `True`: Test mode, analysis only without real orders (recommended for beginners)
