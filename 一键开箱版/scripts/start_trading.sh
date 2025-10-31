@@ -50,8 +50,12 @@ tmux new-session -d -s $SESSION_NAME
 echo "📂 切换到工作目录..."
 tmux send-keys -t $SESSION_NAME "cd $SCRIPT_DIR" C-m
 
+echo "📦 安装依赖包（首次运行需要几分钟）..."
+tmux send-keys -t $SESSION_NAME "pip3 install -r requirements.txt -q" C-m
+sleep 3
+
 echo "🚀 启动投资组合管理器..."
-tmux send-keys -t $SESSION_NAME "python3 portfolio_manager.py" C-m
+tmux send-keys -t $SESSION_NAME "cd src && python3 portfolio_manager.py" C-m
 
 sleep 2
 

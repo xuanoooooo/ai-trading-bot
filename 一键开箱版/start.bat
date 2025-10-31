@@ -16,7 +16,7 @@ if %errorlevel% neq 0 (
 echo ✅ Python环境正常
 
 echo.
-echo [2/3] 检查依赖...
+echo [2/4] 检查文件...
 if not exist "src\portfolio_manager.py" (
     echo ❌ 文件缺失，请确保在一键开箱版目录下运行
     pause
@@ -25,7 +25,15 @@ if not exist "src\portfolio_manager.py" (
 echo ✅ 文件检查通过
 
 echo.
-echo [3/3] 启动交易程序...
+echo [3/4] 安装依赖包（首次运行需要几分钟）...
+pip install -r requirements.txt -q
+if %errorlevel% neq 0 (
+    echo ⚠️ 依赖安装可能有警告，但会尝试继续运行
+)
+echo ✅ 依赖安装完成
+
+echo.
+echo [4/4] 启动交易程序...
 cd src
 python portfolio_manager.py
 
