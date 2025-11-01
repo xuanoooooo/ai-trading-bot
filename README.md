@@ -103,13 +103,25 @@
 
 ---
 
-## 🆕 最近更新 (v2.4.5)
+## 🆕 最近更新 (v2.4.6)
 
 ### 🔥 重要修复与优化
 
 **日期：2025-11-01**
 
-#### 1. ⚠️ 孤儿订单清理机制 (v2.4.4)
+#### 1. 🐛 持仓获取防御性修复 (v2.4.6) ⭐ 最新
+- **问题**：币安API返回异常数据时程序崩溃
+  - 错误信息：`NoneType object has no attribute 'get'`
+  - 触发场景：网络波动、API限流、服务器异常
+- **修复**：
+  - ✅ 添加API返回值None检查
+  - ✅ 循环中跳过None元素
+  - ✅ 打印警告信息便于排查
+  - ✅ 程序不会崩溃，保持稳定运行
+- **影响**：所有用户在API异常时都可能遇到，建议立即更新
+- **详细说明**：见 `修复记录_v2.4.6.md`
+
+#### 2. ⚠️ 孤儿订单清理机制 (v2.4.4)
 - **问题**：止损/止盈订单独立，止损触发后止盈单成为"孤儿"，可能误触发导致反向开仓
 - **修复**：
   - ✅ 每个周期开始自动清理孤儿订单
@@ -117,7 +129,7 @@
   - ✅ 防止止损后的止盈单误触发
 - **影响**：严重安全问题已修复，强烈建议更新
 
-#### 2. 🎯 AI决策质量优化 (v2.4.5)
+#### 3. 🎯 AI决策质量优化 (v2.4.5)
 - **交易频率监控**：
   - ✅ 实时显示最近1小时交易频率
   - ✅ 标准：每小时≤2笔（监控6个币种）
@@ -131,7 +143,7 @@
   - ✅ 推荐持有2-3个币种分散风险
   - ✅ AI会根据信号质量灵活调整仓位
 
-#### 3. 📊 数据统计增强
+#### 4. 📊 数据统计增强
 - ✅ 新增交易频率实时统计功能
 - ✅ AI可以看到自己的交易频率并自我调节
 - ✅ 优化持仓时长和表现统计
@@ -172,7 +184,7 @@
 
 📦 **直接下载压缩包（推荐）：**
 
-👉 [点击下载 ai-trading-bot-easy-setup-v2.4.5.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [点击下载 ai-trading-bot-easy-setup-v2.4.6.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
 
 或在项目页面找到 "Releases" → 下载最新版
 
@@ -784,6 +796,129 @@ chmod +x auto_archive.sh
    
 5️⃣ 执行交易
    ↓ 通过币安API执行
+   
+6️⃣ 记录保存
+   ↓ 保存决策和交易记录
+```
+
+---
+
+## 🗂️ 项目结构
+
+```
+ai-trading-bot/
+├── src/                          # 核心代码
+│   ├── portfolio_manager.py     # 主程序
+│   ├── market_scanner.py        # 市场扫描
+│   └── portfolio_statistics.py  # 统计
+├── dashboard/                    # Web看板
+│   ├── web_app.py               # Flask应用
+│   ├── static/                  # 静态文件
+│   └── templates/               # 模板
+├── config/                       # 配置
+│   └── coins_config.json        # 币种配置
+├── scripts/                      # 脚本
+│   ├── install.sh               # 安装
+│   ├── start_trading.sh         # 启动交易
+│   └── start_dashboard.sh       # 启动看板
+├── .env.example                  # 环境模板
+└── requirements.txt              # 依赖
+```
+
+---
+
+## 📚 完整文档
+
+<table>
+<tr>
+<td width="50%" align="center">
+
+### 🇨🇳 中文文档
+
+**[📖 查看完整中文文档](README_CN.md)**
+
+包含：
+- 详细安装步骤
+- 配置说明
+- AI决策逻辑详解
+- 监控命令大全
+- 常见问题Q&A
+
+</td>
+<td width="50%" align="center">
+
+### 🇺🇸 English Docs
+
+**[📖 View Full English Docs](README_EN.md)**
+
+Including:
+- Detailed installation
+- Configuration guide
+- AI decision logic
+- Monitoring commands
+- FAQ
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🤝 贡献
+
+欢迎贡献！
+
+**开发计划：**
+- [ ] 支持更多交易所（OKX、Bybit）
+- [ ] Telegram通知
+- [ ] 回测功能
+- [ ] 移动端看板
+
+---
+
+## 💰 支持项目
+
+<div align="center">
+
+**如果这个项目对你有帮助，欢迎支持**
+
+**钱包地址 (BEP20/BSC)**
+```
+0x59B7c28c236E6017df28e7F376B84579872A4E33
+```
+
+您的支持是持续更新的动力 ❤️
+
+</div>
+
+---
+
+## 📄 许可证
+
+Apache 2.0 许可证
+
+---
+
+## 📞 相关链接
+
+- [🇨🇳 完整中文文档](README_CN.md)
+- [🇺🇸 Full English Docs](README_EN.md)
+- [📝 更新日志](CHANGELOG.md)
+- [🐛 Issues](https://github.com/xuanoooooo/ai-trading-bot/issues)
+- [🔀 Pull Requests](https://github.com/xuanoooooo/ai-trading-bot/pulls)
+
+---
+
+<div align="center">
+
+**如果有帮助请给星！** ⭐
+
+**没有收费，没有邀请码** 🌟
+
+Made with ❤️ by AI Trading Community
+
+</div>
+
    
 6️⃣ 记录保存
    ↓ 保存决策和交易记录
