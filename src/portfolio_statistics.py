@@ -491,11 +491,3 @@ class PortfolioStatistics:
         
         return recent
 
-
-        ]
-        
-        # 按时间倒序排列（最新的在前）
-        recent.sort(key=lambda x: x['timestamp'], reverse=True)
-        
-        return recent
-
