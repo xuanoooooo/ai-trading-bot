@@ -270,3 +270,49 @@ bash scripts/start_dashboard.sh
 git checkout single-coin-version
 git log
 ```
+
+
+# 配置API密钥 | Configure API keys
+cp .env.example .env
+nano .env
+
+# 启动交易 | Start trading
+bash scripts/start_trading.sh
+
+# 启动看板 | Start dashboard (optional)
+bash scripts/start_dashboard.sh
+```
+
+### ⚠️ 重要变化 | Breaking Changes
+
+1. **项目结构完全重构** | Complete project structure rewrite
+2. **配置文件格式变更** | Configuration file format changed
+3. **不再向后兼容单币种版本** | Not backward compatible with single-coin version
+
+### 🐛 已知问题 | Known Issues
+
+暂无 | None
+
+### 📅 下一步计划 | Roadmap
+
+- [ ] 支持更多交易所（OKX、Bybit）
+- [ ] Support more exchanges (OKX, Bybit)
+- [ ] 添加Telegram通知
+- [ ] Add Telegram notifications
+- [ ] 回测功能
+- [ ] Backtesting feature
+- [ ] 移动端看板
+- [ ] Mobile dashboard
+
+---
+
+## v1.x - Single Coin Version | 单币种版本
+
+**注意：单币种版本已迁移到 `single-coin-version` 分支**  
+**Note: Single-coin version moved to `single-coin-version` branch**
+
+查看历史版本 | View history:
+```bash
+git checkout single-coin-version
+git log
+```

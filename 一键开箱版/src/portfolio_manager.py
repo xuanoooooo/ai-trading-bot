@@ -164,9 +164,9 @@ def load_portfolio_config():
             'leverage': portfolio_rules.get('leverage', 3),
             'min_cash_reserve_percent': portfolio_rules.get('min_cash_reserve_percent', 10),
             'max_single_coin_percent': portfolio_rules.get('max_single_coin_percent', 100),
-            'check_interval_minutes': 5,  # 5分钟调用一次AI（分析5分钟K线数据）
-            'test_mode': False  # 实盘模式
-        }
+    'check_interval_minutes': 5,  # 5分钟调用一次AI（分析5分钟K线数据）
+    'test_mode': False  # 实盘模式
+}
     except Exception as e:
         print(f"⚠️ 加载配置失败，使用默认值: {e}")
         return {
@@ -587,8 +587,9 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 - OPEN_LONG: 开多仓
 - OPEN_SHORT: 开空仓
 - CLOSE: 平仓
-- ADD: 加仓
 - HOLD: 持仓观望（已有仓位时，如果判断应该继续持有，选择HOLD）
+
+⚠️ 重要：不支持加仓操作，每个币种只能持有一个方向的仓位
 
 ⚠️ 硬性限制（必须遵守）：
 1. position_value 是持仓价值（开仓后的名义价值）= 保证金 × 杠杆
@@ -654,9 +655,10 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 }}
 
 ⚠️ 注意：
-- 已有仓位时，可以选择HOLD、CLOSE或ADD，根据市场情况自主判断
+- 已有仓位时，可以选择HOLD或CLOSE，根据市场情况自主判断
 - 无仓位且无明确信号时，返回空的decisions数组
 - position_value 是持仓价值（USDT），HOLD和CLOSE时填0
+- **禁止加仓**：每个币种只能持有一个方向的仓位，如需调整请先平仓再开新仓
 - stop_loss 和 take_profit 必填（填具体价格，CLOSE时可填0）
 - HOLD时是否调整止损由你判断；无充分理由请保持原止损，价格有利时可考虑追踪止盈
 - HOLD时如不调整，请沿用上次的 stop_loss / take_profit，不要填0（只有CLOSE时可为0）
@@ -686,9 +688,10 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 
 【权限与理念】
 💼 您拥有完全的仓位控制权：
-   - 可以开仓、平仓、加仓任何币种
+   - 可以开仓、平仓任何币种
    - 可以同时持有多个币种
-   - 可以自由调整各币种的仓位大小（建议2-3个币种分散风险）
+   - 每个币种只能持有一个方向的仓位（禁止加仓）
+   - 如需调整仓位，请先平仓再开新仓（建议2-3个币种分散风险）
    - 可以根据市场变化随时调仓
 
 🎯 决策理念：
@@ -943,12 +946,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                 else:
                     print(f"⚠️ {coin} 无持仓，跳过平仓")
             
-            elif action in ['OPEN_LONG', 'OPEN_SHORT', 'ADD']:
+            elif action in ['OPEN_LONG', 'OPEN_SHORT']:
+                # 检查是否已有持仓（禁止加仓）
+                if current_position is not None:
+                    print(f"⚠️ {coin} 已有持仓，禁止加仓。请先平仓再开新仓。")
+                    continue
+                
                 amount = calculate_position_size(coin, position_value, current_price, coin_info)
                 
                 if amount > 0:
-                    if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
-                        print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: {amount} {coin} (${position_value:.2f})")
+                    if action == 'OPEN_LONG':
+                        print(f"📈 开多仓: {amount} {coin} (${position_value:.2f})")
                         
                         # 1. 开仓
                         binance_client.futures_create_order(
@@ -977,13 +985,12 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                        if action == 'OPEN_LONG':
-                            portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 多仓成功")
                     
-                    elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
-                        print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: {amount} {coin} (${position_value:.2f})")
+                    elif action == 'OPEN_SHORT':
+                        print(f"📉 开空仓: {amount} {coin} (${position_value:.2f})")
                         
                         # 1. 开仓
                         binance_client.futures_create_order(
@@ -1012,12 +1019,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                        if action == 'OPEN_SHORT':
-                            portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 空仓成功")
                 else:
                     print(f"⚠️ {coin} 数量计算为0，跳过")
+            
+            elif action == 'ADD':
+                print(f"⚠️ {coin} 不支持加仓操作。如需调整仓位，请先平仓再开新仓。")
+            
+            else:
+                print(f"⚠️ {coin} 未知操作: {action}")
             
             time.sleep(0.5)  # 避免API限流
             

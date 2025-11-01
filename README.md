@@ -103,13 +103,25 @@
 
 ---
 
-## 🆕 最近更新 (v2.4.6)
+## 🆕 最近更新 (v2.4.7)
 
 ### 🔥 重要修复与优化
 
 **日期：2025-11-01**
 
-#### 1. 🐛 持仓获取防御性修复 (v2.4.6) ⭐ 最新
+#### 1. 🔒 禁止加仓操作 (v2.4.7) ⭐ 最新
+- **问题**：原设计理念是"要么平仓要么开仓"，但程序允许AI加仓
+  - 可能导致单个币种仓位过大，风险集中
+  - 订单管理复杂，增加孤儿订单风险
+- **修复**：
+  - ✅ 移除AI提示词中的ADD操作
+  - ✅ 开仓前检查是否已有持仓
+  - ✅ 明确拒绝ADD操作并提示
+  - ✅ 每个币种只能持有一个方向的仓位
+- **影响**：回归简单清晰的仓位管理理念，降低风险
+- **详细说明**：见 `修复记录_v2.4.7.md`
+
+#### 2. 🐛 持仓获取防御性修复 (v2.4.6)
 - **问题**：币安API返回异常数据时程序崩溃
   - 错误信息：`NoneType object has no attribute 'get'`
   - 触发场景：网络波动、API限流、服务器异常
@@ -184,7 +196,7 @@
 
 📦 **直接下载压缩包（推荐）：**
 
-👉 [点击下载 ai-trading-bot-easy-setup-v2.4.6.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [点击下载 ai-trading-bot-easy-setup-v2.4.7.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
 
 或在项目页面找到 "Releases" → 下载最新版
 

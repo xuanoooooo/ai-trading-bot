@@ -706,3 +706,22 @@ This software is for educational and research purposes only. Users assume all re
 Made with ❤️ by AI Trading Community
 
 </div>
+
+
+## ⚖️ Disclaimer
+
+This software is for educational and research purposes only. Users assume all responsibility for profits and losses from live trading. The author is not responsible for any losses incurred from using this software.
+
+**Cryptocurrency trading carries high risks. Invest cautiously!**
+
+---
+
+<div align="center">
+
+**⭐ If this project helps you, please give it a Star! ⭐**
+
+**No fees, no referral codes, just asking for stars** 🌟
+
+Made with ❤️ by AI Trading Community
+
+</div>
