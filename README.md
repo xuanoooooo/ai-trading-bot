@@ -148,20 +148,28 @@
 
 ---
 
-### 🤖 v2.4.9 - OpenRouter多模型支持 (2025-11-02)
+### 🚀 v2.5.0 - 自定义AI API支持 (2025-11-02)
 
-#### 智能AI模型切换
+#### 完整的AI模型灵活性
 
-- **新增功能**：支持多种主流AI提供商
+- **核心更新**：完整支持自定义AI API
+  - ✅ **Ollama**本地部署（完全免费）
+  - ✅ **vLLM**自建服务（高性能）
+  - ✅ **LocalAI**开源方案
+  - ✅ 任何兼容OpenAI格式的API
+- **继续支持主流AI提供商**：
   - ✅ DeepSeek（默认，性价比高）
   - ✅ OpenRouter（统一接口，支持多种模型）
   - ✅ OpenAI（GPT系列）
   - ✅ Qwen（通义千问）
-- **智能检测**：
+- **新增配置文件**：
+  - ✅ `.env.example` - 完整配置模板
+  - ✅ `AI模型配置说明.md` - 详细配置文档
+- **智能检测与Fallback**：
   - ✅ 优先使用配置文件中指定的API Key
   - ✅ 自动Fallback：配置Key不存在时自动检测其他可用Key
   - ✅ 友好提示：明确显示正在使用哪个AI服务
-- **详细说明**：见 `修复记录_v2.4.9.md`
+- **详细说明**：见 `修复记录_v2.4.9.md` 和 `AI模型配置说明.md`
 
 ---
 
@@ -287,9 +295,9 @@
 
 📦 **直接下载压缩包（推荐）：**
 
-👉 [点击下载 ai-trading-bot-easy-setup-v2.4.9.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [点击下载 ai-trading-bot-easy-setup-v2.5.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
 
-> ⚠️ **重要**：v2.4.9 新增OpenRouter支持，建议更新！v2.4.8 修复了语法错误，v2.4.7及之前版本无法启动，请务必更新。
+> ⚠️ **重要**：v2.5.0 新增自定义API支持（Ollama/vLLM/LocalAI），建议更新！v2.4.8 修复了语法错误，v2.4.7及之前版本无法启动，请务必更新。
 
 或在项目页面找到 "Releases" → 下载最新版
 
