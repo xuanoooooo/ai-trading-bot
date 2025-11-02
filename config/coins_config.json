@@ -54,5 +54,14 @@
     "leverage": 3,
     "min_cash_reserve_percent": 10,
     "max_single_coin_percent": 100
+  },
+  "ai_config": {
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+    "api_base": "https://api.deepseek.com",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "temperature": 0.7,
+    "max_tokens": 4000,
+    "comment": "支持的provider: openrouter, deepseek, openai, qwen。OpenRouter示例: provider=openrouter, model=deepseek/deepseek-chat, api_base=https://openrouter.ai/api/v1, api_key_env=OPENROUTER_API_KEY"
   }
 }

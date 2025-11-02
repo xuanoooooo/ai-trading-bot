@@ -54,11 +54,88 @@ def format_price(price, coin):
     else:
         return f"${price:.2f}"
 
-# 初始化客户端
-deepseek_client = OpenAI(
-    api_key=os.getenv('DEEPSEEK_API_KEY'),
-    base_url="https://api.deepseek.com"
-)
+# 加载AI配置
+def load_ai_config():
+    """加载AI配置"""
+    config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'coins_config.json')
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            return config.get('ai_config', {
+                'provider': 'deepseek',
+                'model': 'deepseek-chat',
+                'api_base': 'https://api.deepseek.com',
+                'api_key_env': 'DEEPSEEK_API_KEY',
+                'temperature': 0.7,
+                'max_tokens': 4000
+            })
+    except Exception as e:
+        print(f"⚠️ 加载AI配置失败，使用默认配置: {e}")
+        return {
+            'provider': 'deepseek',
+            'model': 'deepseek-chat',
+            'api_base': 'https://api.deepseek.com',
+            'api_key_env': 'DEEPSEEK_API_KEY',
+            'temperature': 0.7,
+            'max_tokens': 4000
+        }
+
+def init_ai_client(config):
+    """初始化AI客户端，支持自动fallback"""
+    # 优先使用配置中指定的API Key
+    primary_key_env = config['api_key_env']
+    primary_key = os.getenv(primary_key_env)
+    
+    if primary_key:
+        print(f"🤖 AI配置: {config['provider']} - {config['model']}")
+        print(f"   使用API Key: {primary_key_env}")
+        return OpenAI(
+            api_key=primary_key,
+            base_url=config['api_base']
+        )
+    
+    # Fallback：自动检测可用的API Key
+    print(f"⚠️  未找到 {primary_key_env}，尝试自动检测其他可用API Key...")
+    
+    fallback_configs = [
+        ('DEEPSEEK_API_KEY', 'deepseek', 'deepseek-chat', 'https://api.deepseek.com'),
+        ('OPENROUTER_API_KEY', 'openrouter', 'deepseek/deepseek-chat', 'https://openrouter.ai/api/v1'),
+        ('OPENAI_API_KEY', 'openai', 'gpt-4o-mini', 'https://api.openai.com/v1'),
+        ('DASHSCOPE_API_KEY', 'qwen', 'qwen-max', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
+    ]
+    
+    for key_env, provider, model, api_base in fallback_configs:
+        if key_env == primary_key_env:  # 跳过已经尝试过的
+            continue
+        api_key = os.getenv(key_env)
+        if api_key:
+            print(f"✅ 自动使用: {provider} - {model}")
+            print(f"   使用API Key: {key_env}")
+            # 更新配置
+            config['provider'] = provider
+            config['model'] = model
+            config['api_base'] = api_base
+            config['api_key_env'] = key_env
+            return OpenAI(
+                api_key=api_key,
+                base_url=api_base
+            )
+    
+    # 如果没有任何可用的API Key
+    print("❌ 错误：未找到任何可用的AI API Key！")
+    print("   请在 .env 文件中配置以下任意一个：")
+    print("   - DEEPSEEK_API_KEY")
+    print("   - OPENROUTER_API_KEY")
+    print("   - OPENAI_API_KEY")
+    print("   - DASHSCOPE_API_KEY")
+    exit(1)
+
+# 初始化AI客户端
+AI_CONFIG = load_ai_config()
+ai_client = init_ai_client(AI_CONFIG)
+
+# 保持向后兼容
+deepseek_client = ai_client
 
 # 重试连接Binance（处理临时网络问题）
 print("🔗 正在连接Binance API...")
@@ -985,7 +1062,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                        portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
+                            portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 多仓成功")
                     
@@ -1019,7 +1096,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                        portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
+                            portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 空仓成功")
                 else:
