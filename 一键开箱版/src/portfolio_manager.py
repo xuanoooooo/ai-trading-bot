@@ -748,8 +748,10 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     """
     
     try:
-        response = deepseek_client.chat.completions.create(
-            model="deepseek-chat",
+        response = ai_client.chat.completions.create(
+            model=AI_CONFIG['model'],
+            temperature=AI_CONFIG.get('temperature', 0.7),
+            max_tokens=AI_CONFIG.get('max_tokens', 4000),
             messages=[
                 {"role": "system", "content": """您是一位经验丰富的专业投资组合经理(Portfolio Manager)。
 
@@ -815,8 +817,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 请基于专业分析自主判断，严格返回JSON格式。"""},
                 {"role": "user", "content": prompt}
             ],
-            stream=False,
-            temperature=0.3
+            stream=False
         )
         
         result = response.choices[0].message.content
