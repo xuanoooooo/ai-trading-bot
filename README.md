@@ -122,14 +122,14 @@
 - ✅ **智能降级**：主API不可用时自动切换备用
 - ✅ **完全兼容**：向后兼容，现有配置无需修改
 
-**快速配置示例（Ollama）**：
+**快速配置示例（OpenRouter）**：
 ```json
 {
   "ai_config": {
-    "provider": "ollama",
-    "model": "llama3.1:70b",
-    "api_base": "http://localhost:11434/v1",
-    "api_key_env": "CUSTOM_API_KEY"
+    "provider": "openrouter",
+    "model": "deepseek/deepseek-chat",
+    "api_base": "https://openrouter.ai/api/v1",
+    "api_key_env": "OPENROUTER_API_KEY"
   }
 }
 ```
