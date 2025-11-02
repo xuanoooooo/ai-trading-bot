@@ -67,7 +67,7 @@ def load_ai_config():
                 'api_base': 'https://api.deepseek.com',
                 'api_key_env': 'DEEPSEEK_API_KEY',
                 'temperature': 0.7,
-                'max_tokens': 4000
+                'max_tokens': 8000
             })
     except Exception as e:
         print(f"⚠️ 加载AI配置失败，使用默认配置: {e}")
@@ -77,7 +77,7 @@ def load_ai_config():
             'api_base': 'https://api.deepseek.com',
             'api_key_env': 'DEEPSEEK_API_KEY',
             'temperature': 0.7,
-            'max_tokens': 4000
+            'max_tokens': 8000
         }
 
 def init_ai_client(config):
@@ -751,7 +751,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
         response = ai_client.chat.completions.create(
             model=AI_CONFIG['model'],
             temperature=AI_CONFIG.get('temperature', 0.7),
-            max_tokens=AI_CONFIG.get('max_tokens', 4000),
+            max_tokens=AI_CONFIG.get('max_tokens', 8000),
             messages=[
                 {"role": "system", "content": """您是一位经验丰富的专业投资组合经理(Portfolio Manager)。
 
