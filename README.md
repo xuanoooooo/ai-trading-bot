@@ -280,9 +280,9 @@
 
 📦 **直接下载压缩包（推荐）：**
 
-👉 [点击下载 ai-trading-bot-easy-setup-v2.5.0.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/releases/latest)
+👉 [点击下载 ai-trading-bot-easy-setup-v2.5.1.tar.gz](https://github.com/xuanoooooo/ai-trading-bot/raw/main/%E4%B8%80%E9%94%AE%E5%BC%80%E7%AE%B1%E7%89%88/ai-trading-bot-easy-setup-v2.5.1.tar.gz)
 
-> ⚠️ **重要**：v2.5.0 新增自定义API支持（Ollama/vLLM/LocalAI），建议更新！v2.4.8 修复了语法错误，v2.4.7及之前版本无法启动，请务必更新。
+> ⚠️ **重要**：v2.5.1 优化AI提示词，提升决策质量！v2.5.0 新增自定义API支持。
 
 或在项目页面找到 "Releases" → 下载最新版
 
