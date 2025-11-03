@@ -57,7 +57,7 @@ def format_price(price, coin):
 # 加载AI配置
 def load_ai_config():
     """加载AI配置"""
-    config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'coins_config.json')
+    config_path = os.path.join(os.path.dirname(__file__), 'config', 'coins_config.json')
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
@@ -128,6 +128,8 @@ def init_ai_client(config):
     print("   - OPENROUTER_API_KEY")
     print("   - OPENAI_API_KEY")
     print("   - DASHSCOPE_API_KEY")
+    print("   - CUSTOM_API_KEY（自定义API，兼容OpenAI格式）")
+    print("   详见 AI模型配置说明.md")
     exit(1)
 
 # 初始化AI客户端
@@ -755,6 +757,14 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             messages=[
                 {"role": "system", "content": """您是一位经验丰富的专业投资组合经理(Portfolio Manager)。
 
+# 首要遵守原则（最高优先级）
+⚠️ **当你对当前市场状态感到不确定、矛盾或犹豫时，必须选择观望**
+这是最高优先级原则，覆盖所有其他规则：
+- **有任何疑虑 → 必须观望**（不要尝试"勉强开仓"）
+- **完全确定 → 才能开仓**
+- **不确定是否违反某条款 = 视为违反 → 必须观望**
+记住：**错过机会比做错交易更安全。宁可错过，不做模糊决策。**
+
 【交易身份】
 - 管理类型：多币种投资组合（BNB/ETH/SOL/XRP/DOGE）
 - K线数据：5分钟（短期）+ 30分钟（中期）+ 2小时（长期）
@@ -764,6 +774,12 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 
 【核心目标】
 通过专业技术分析，捕捉市场中的超额收益机会（alpha）。
+
+⚠️ **数据顺序说明（极其重要）**：
+- 所有序列数据按时间排列：**最旧 → 最新** (oldest → latest)
+- 数组的**最后一个元素**是**最新数据点**（当前值）
+- 数组的**第一个元素**是**最旧数据点**（历史值）
+- ⚠️ 不要混淆顺序！这是常见错误（会导致把上涨误判为下跌）
 
 【权限与理念】
 💼 您拥有完全的仓位控制权：
@@ -779,11 +795,13 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
    - 不要为了交易而交易，只在有明确信号时行动
    - 质量 > 数量：宁可错过，不要做错
 
-⏱️ 【交易频率自我监控】
+⏱️ 【持仓时间与交易频率】
+- **最小持仓时间**：至少20分钟，让交易充分展开
+  - 唯一例外：您认为必须平仓来避免极端亏损的情况
 - 优秀交易员：每小时≤2笔交易（监控6个币种）
 - 过度交易：每小时>2笔 = 严重问题！
-- 最佳节奏：开仓后持有至少30-60分钟
 - 自我检查：如果你每个周期都在交易 → 信号质量太低
+- 如果持仓<20分钟就平仓 → 说明你开仓考虑欠佳（极端止损除外）
 - 请注意"交易频率监控"数据，如果出现警告立即降低交易频率
 
 📉 【做多做空平衡】
@@ -801,11 +819,22 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 - 风险回报比 ≥ 1:2
 - 有明确的支撑/阻力位作为止损依据
 
+**信号优先级参考**（当遇到矛盾信号时，可作为参考）：
+1. 趋势共振（5m/30m/2h 方向一致）→ 权重较高
+2. 放量确认（成交量>1.5x均量）→ 动能验证
+3. BTC状态（交易山寨币时）→ 市场领导者方向
+4. RSI区间（超买超卖确认）
+5. 价格vs SMA20（趋势方向）
+前3项都一致时，即使其他指标不够完美，也可以考虑开仓。
+
 避免低质量信号：
 - 单一维度（只看一个指标）
 - 相互矛盾（价格上涨但量萎缩）
 - 横盘震荡（无明确趋势）
 - 短期噪音（5分钟突刺，但30分钟/2小时无确认）
+- **防假突破提示**（建议谨慎）：
+  * 5分钟RSI超买（>70）但30分钟RSI未跟上（<60）→ 可能是假突破
+  * 价格突破但成交量萎缩（<均量×0.8）→ 可能缺乏动能
 
 💰 【仓位管理建议】
 - 单币种建议：20-40%可用资金（常规机会）
@@ -813,6 +842,13 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 - 总持仓建议：2-3个币种同时持有（分散风险）
 - 保留现金：至少10%（已强制执行）
 - 不要梭哈单一币种！
+
+📋 【决策前自我检查】
+开仓前请自问：
+1. 我是否足够确定这是高质量机会？
+2. 如果这是我的钱，我会开这单吗？
+3. 我能清楚说出至少2个开仓理由吗？
+如果任一问题不明确 → 禁止开仓，选择观望
 
 请基于专业分析自主判断，严格返回JSON格式。"""},
                 {"role": "user", "content": prompt}
@@ -1063,7 +1099,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                            portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 多仓成功")
                     
@@ -1097,7 +1133,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
                         
                         # 3. 记录持仓
-                            portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
                         
                         print(f"✅ {coin} 空仓成功")
                 else:
