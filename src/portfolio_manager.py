@@ -18,6 +18,7 @@ import math
 from portfolio_statistics import PortfolioStatistics
 from market_scanner import MarketScanner
 from dry_run_executor import DryRunFuturesAdapter
+from telegram_service import TelegramService, TelegramTradePayload
 
 # 加载环境变量（明确指定路径）
 load_dotenv()
@@ -184,6 +185,9 @@ if binance_client is None:
     print("❌ 初始化失败，程序退出")
     exit(1)
 
+# Telegram 服务（稍后初始化）
+telegram_service = None
+
 # AI决策记录文件
 AI_DECISIONS_FILE = 'ai_decisions.json'
 
@@ -318,6 +322,18 @@ portfolio_stats.set_coins(coins_for_stats)
 
 if hasattr(binance_client, 'attach_statistics'):
     binance_client.attach_statistics(portfolio_stats)
+
+notifications_config = (project_config.get('notifications', {}).get('telegram', {}) if project_config else {})
+if notifications_config.get('enabled'):
+    telegram_service = TelegramService(
+        config=notifications_config,
+        portfolio_stats=portfolio_stats,
+        market_scanner=market_scanner,
+        dry_run_mode=PORTFOLIO_CONFIG['execution_mode'] == 'dry_run'
+    )
+    telegram_service.start()
+else:
+    telegram_service = None
 
 
 def setup_exchange():
@@ -1081,7 +1097,22 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         print(f"  ⚠️ 平仓后清理挂单失败: {str(e)[:100]}")
                     
                     # 3. 记录平仓
-                    portfolio_stats.record_trade_exit(coin, current_price, 'ai_decision')
+                    trade_record = portfolio_stats.record_trade_exit(coin, current_price, 'ai_decision')
+                    if telegram_service and trade_record:
+                        telegram_service.notify_trade(
+                            'close',
+                            TelegramTradePayload(
+                                coin=coin,
+                                side=trade_record.get('side', ''),
+                                amount=trade_record.get('amount', 0),
+                                price=current_price,
+                                position_value=current_price * trade_record.get('amount', 0),
+                                leverage=PORTFOLIO_CONFIG['leverage'],
+                                pnl=trade_record.get('pnl', 0),
+                                pnl_percent=trade_record.get('pnl_percent', 0),
+                                exit_reason='ai_decision'
+                            )
+                        )
                     print(f"✅ {coin} 平仓成功")
                 else:
                     print(f"⚠️ {coin} 无持仓，跳过平仓")
@@ -1097,70 +1128,86 @@ def execute_portfolio_decisions(decisions_data, market_data):
                 if amount > 0:
                     if action == 'OPEN_LONG':
                         print(f"📈 开多仓: {amount} {coin} (${position_value:.2f})")
-                        
-                        # 1. 开仓
                         binance_client.futures_create_order(
                             symbol=symbol,
                             side='BUY',
                             type='MARKET',
                             quantity=amount
                         )
-                        
-                        # 2. 立即下止损单（如果AI设置了止损价格）
                         stop_order_id = 0
-                        if action == 'OPEN_LONG' and stop_loss > 0:
+                        if stop_loss > 0:
                             try:
                                 price_precision = coin_info.get('price_precision', 2)
                                 stop_order = binance_client.futures_create_order(
                                     symbol=symbol,
-                                    side='SELL',  # 多仓止损用SELL
+                                    side='SELL',
                                     type='STOP_MARKET',
-                                    stopPrice=round(stop_loss, price_precision),  # 触发价格
+                                    stopPrice=round(stop_loss, price_precision),
                                     quantity=amount,
-                                    reduceOnly=True  # 只减仓
+                                    reduceOnly=True
                                 )
                                 stop_order_id = stop_order.get('orderId', 0)
                                 print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                             except Exception as e:
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
-                        
-                        # 3. 记录持仓
-                            portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
-                        
+                        portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        if telegram_service:
+                            telegram_service.notify_trade(
+                                'open',
+                                TelegramTradePayload(
+                                    coin=coin,
+                                    side='long',
+                                    amount=amount,
+                                    price=current_price,
+                                    position_value=position_value,
+                                    leverage=PORTFOLIO_CONFIG['leverage'],
+                                    reason=reason,
+                                    stop_loss=stop_loss,
+                                    take_profit=take_profit,
+                                )
+                            )
                         print(f"✅ {coin} 多仓成功")
                     
                     elif action == 'OPEN_SHORT':
                         print(f"📉 开空仓: {amount} {coin} (${position_value:.2f})")
-                        
-                        # 1. 开仓
                         binance_client.futures_create_order(
                             symbol=symbol,
                             side='SELL',
                             type='MARKET',
                             quantity=amount
                         )
-                        
-                        # 2. 立即下止损单（如果AI设置了止损价格）
                         stop_order_id = 0
-                        if action == 'OPEN_SHORT' and stop_loss > 0:
+                        if stop_loss > 0:
                             try:
                                 price_precision = coin_info.get('price_precision', 2)
                                 stop_order = binance_client.futures_create_order(
                                     symbol=symbol,
-                                    side='BUY',  # 空仓止损用BUY
+                                    side='BUY',
                                     type='STOP_MARKET',
-                                    stopPrice=round(stop_loss, price_precision),  # 触发价格
+                                    stopPrice=round(stop_loss, price_precision),
                                     quantity=amount,
-                                    reduceOnly=True  # 只减仓
+                                    reduceOnly=True
                                 )
                                 stop_order_id = stop_order.get('orderId', 0)
                                 print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                             except Exception as e:
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
-                        
-                        # 3. 记录持仓
-                            portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
-                        
+                        portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
+                        if telegram_service:
+                            telegram_service.notify_trade(
+                                'open',
+                                TelegramTradePayload(
+                                    coin=coin,
+                                    side='short',
+                                    amount=amount,
+                                    price=current_price,
+                                    position_value=position_value,
+                                    leverage=PORTFOLIO_CONFIG['leverage'],
+                                    reason=reason,
+                                    stop_loss=stop_loss,
+                                    take_profit=take_profit,
+                                )
+                            )
                         print(f"✅ {coin} 空仓成功")
                 else:
                     print(f"⚠️ {coin} 数量计算为0，跳过")
@@ -1294,7 +1341,7 @@ def sync_portfolio_positions_on_startup():
                         
                         # 记录到止损触发历史
                         entry_time = datetime.fromisoformat(stats_pos['entry_time'])
-                        portfolio_stats.record_stop_loss_triggered(
+                        stop_record = portfolio_stats.record_stop_loss_triggered(
                             coin=coin,
                             side=stats_pos['side'],
                             entry_price=entry_price,
@@ -1306,7 +1353,36 @@ def sync_portfolio_positions_on_startup():
                         )
                         
                         # 记录平仓到交易历史
-                        portfolio_stats.record_trade_exit(coin, avg_price, 'stop_loss_triggered')
+                        trade_record = portfolio_stats.record_trade_exit(coin, avg_price, 'stop_loss_triggered')
+                        if telegram_service:
+                            if stop_record:
+                                telegram_service.notify_trade(
+                                    'stop',
+                                    TelegramTradePayload(
+                                        coin=coin,
+                                        side=stop_record.get('side', stats_pos['side']),
+                                        amount=stop_record.get('amount', amount),
+                                        price=stop_record.get('stop_price', avg_price),
+                                        position_value=entry_price * amount,
+                                        leverage=PORTFOLIO_CONFIG['leverage'],
+                                        pnl=stop_record.get('pnl', pnl)
+                                    )
+                                )
+                            if trade_record:
+                                telegram_service.notify_trade(
+                                    'close',
+                                    TelegramTradePayload(
+                                        coin=coin,
+                                        side=trade_record.get('side', stats_pos['side']),
+                                        amount=trade_record.get('amount', amount),
+                                        price=avg_price,
+                                        position_value=avg_price * amount,
+                                        leverage=PORTFOLIO_CONFIG['leverage'],
+                                        pnl=trade_record.get('pnl', 0),
+                                        pnl_percent=trade_record.get('pnl_percent', 0),
+                                        exit_reason='stop_loss_triggered'
+                                    )
+                                )
                         
                 except Exception as e:
                     print(f"   ⚠️ 查询止损单状态失败: {e}")
@@ -1318,7 +1394,22 @@ def sync_portfolio_positions_on_startup():
                 if market_data:
                     current_price = market_data['price']
                     print(f"   → 按当前价格 ${current_price:.2f} 记录平仓到统计")
-                    portfolio_stats.record_trade_exit(coin, current_price, 'manual_close_detected')
+                    trade_record = portfolio_stats.record_trade_exit(coin, current_price, 'manual_close_detected')
+                    if telegram_service and trade_record:
+                        telegram_service.notify_trade(
+                            'close',
+                            TelegramTradePayload(
+                                coin=coin,
+                                side=trade_record.get('side', stats_pos.get('side', '')),
+                                amount=trade_record.get('amount', stats_pos.get('amount', 0)),
+                                price=current_price,
+                                position_value=current_price * trade_record.get('amount', 0),
+                                leverage=PORTFOLIO_CONFIG['leverage'],
+                                pnl=trade_record.get('pnl', 0),
+                                pnl_percent=trade_record.get('pnl_percent', 0),
+                                exit_reason='manual_close_detected'
+                            )
+                        )
                 else:
                     print(f"   → 无法获取当前价格，清除统计记录")
                     portfolio_stats.current_positions[coin] = None

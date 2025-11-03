@@ -471,6 +471,34 @@ python web_app.py
 
 ---
 
+#### 步骤7：开启 Telegram 通知（可选）
+
+> 💬 想随时获知交易动态？可以启用内置的 Telegram 机器人，实时接收开仓、平仓、止损推送，并通过命令查询账户概况。
+
+1. 在 `config/coins_config.json` 中开启：
+   ```json
+   "notifications": {
+     "telegram": {
+       "enabled": true,
+       "bot_token_env": "TELEGRAM_BOT_TOKEN",
+       "chat_ids_env": "TELEGRAM_CHAT_IDS"
+     }
+   }
+   ```
+2. 在 `.env` 中填写凭据（多位 Chat ID 逗号分隔，群聊为负数 ID）：
+   ```env
+   TELEGRAM_BOT_TOKEN=123456:bot-token-from-botfather
+   TELEGRAM_CHAT_IDS=123456789,-987654321
+   ```
+3. 重启动交易程序，机器人会自动推送 📈 开仓 / 📉 平仓 / 🛡️ 止损 信息。
+4. 支持的命令（带 Emoji 格式化）：
+   - `/overview` —— 账户概览、运行时长、胜率
+   - `/positions` —— 当前持仓表格（含浮盈）
+   - `/pnl` —— 近24小时盈亏与最近交易表现
+   - `/recent` —— 最近10笔成交明细
+
+---
+
 ## 🧠 AI决策逻辑详解
 
 ### 🔄 完整工作流程

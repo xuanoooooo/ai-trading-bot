@@ -519,6 +519,34 @@ pkill -f web_app.py
 
 ---
 
+### 7. Telegram Alerts (Optional)
+
+> 💬 Want instant alerts? Turn on the built-in Telegram bot to receive trade notifications and query live stats.
+
+1. Enable the feature in `config/coins_config.json`:
+   ```json
+   "notifications": {
+     "telegram": {
+       "enabled": true,
+       "bot_token_env": "TELEGRAM_BOT_TOKEN",
+       "chat_ids_env": "TELEGRAM_CHAT_IDS"
+     }
+   }
+   ```
+2. Provide credentials in `.env`:
+   ```env
+   TELEGRAM_BOT_TOKEN=123456:bot-token-from-botfather
+   TELEGRAM_CHAT_IDS=123456789,-987654321
+   ```
+3. Restart the trading service. The bot sends 📈 open/📉 close/🛡️ stop-loss alerts automatically.
+4. Available commands (reply with rich emoji formatting):
+   - `/overview` — account summary, runtime, win rate
+   - `/positions` — current holdings table with PnL
+   - `/pnl` — recent performance and 24h stats
+   - `/recent` — last 10 closed trades
+
+---
+
 ### 📋 Quick Command Reference
 
 | Action | Command |

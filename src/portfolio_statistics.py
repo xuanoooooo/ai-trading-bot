@@ -252,6 +252,7 @@ class PortfolioStatistics:
         self.save()
         
         print(f"📝 记录{coin}交易: {side} | 盈亏 {pnl:+.2f} USDT ({pnl_percent:+.2f}%) | 持续 {duration_minutes}分钟")
+        return trade_record
     
     def get_runtime_info(self) -> Dict:
         """获取运行时长信息"""
@@ -488,6 +489,7 @@ class PortfolioStatistics:
               f"盈亏{pnl:+.2f} USDT | 持仓{duration_minutes}分钟")
         
         self.save()
+        return record
     
     def get_recent_stop_losses(self, minutes: int = 30) -> List[Dict]:
         """获取最近N分钟内的止损触发记录"""

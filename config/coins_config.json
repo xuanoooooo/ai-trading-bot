@@ -61,6 +61,16 @@
       "slippage": 0.0005
     }
   },
+  "notifications": {
+    "telegram": {
+      "enabled": true,
+      "bot_token_env": "TELEGRAM_BOT_TOKEN",
+      "chat_ids": [],
+      "chat_ids_env": "TELEGRAM_CHAT_IDS",
+      "allow_unauthorized": false,
+      "parse_mode": "HTML"
+    }
+  },
   "ai_config": {
     "provider": "openrouter",
     "model": "deepseek/deepseek-chat-v3.1:free",
