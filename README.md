@@ -4,6 +4,19 @@
 
 **让AI替你盯盘交易**
 
+## 🔥 最新更新 v2.5.1 (2025-11-04)
+
+**提示词优化 - 提升AI决策质量**
+
+✅ **首要遵守原则**：不确定时强制观望，避免模糊决策  
+✅ **数据序列说明**：明确时间顺序（最旧→最新），防止AI误判趋势  
+✅ **持仓时间约束**：最小持仓≥20分钟，减少冲动平仓  
+✅ **信号优先级参考**：5个维度权重排序，矛盾信号有依据  
+✅ **防假突破提示**：RSI背离、成交量萎缩预警  
+✅ **决策前自我检查**：3个问题强制确认，提高开仓质量
+
+---
+
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Binance](https://img.shields.io/badge/Exchange-Binance-yellow.svg)](https://www.binance.com/)
