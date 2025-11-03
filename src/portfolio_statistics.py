@@ -11,7 +11,7 @@ from typing import List, Dict, Optional
 class PortfolioStatistics:
     """投资组合统计类 - 管理多币种交易历史和性能指标"""
     
-    def __init__(self, stats_file='portfolio_stats.json', binance_client=None):
+    def __init__(self, stats_file='portfolio_stats.json', binance_client=None, coins: Optional[List[str]] = None):
         self.stats_file = stats_file
         self.binance_client = binance_client  # 用于取消止损单
         self.start_time = None
@@ -21,7 +21,8 @@ class PortfolioStatistics:
         self.total_pnl = 0.0
         
         # 多币种支持
-        self.coins = ['BNB', 'ETH', 'SOL', 'XRP', 'DOGE']
+        default_coins = coins if coins else ['BNB', 'ETH', 'SOL', 'XRP', 'DOGE']
+        self.coins = list(dict.fromkeys(default_coins))
         self.current_positions = {coin: None for coin in self.coins}
         self.trade_history = []  # 所有交易历史
         self.trade_history_by_coin = {coin: [] for coin in self.coins}  # 按币种分类
@@ -43,6 +44,9 @@ class PortfolioStatistics:
                     self.total_pnl = data.get('total_pnl', 0.0)
                     self.current_positions = data.get('current_positions', {coin: None for coin in self.coins})
                     self.stop_loss_history = data.get('stop_loss_history', [])  # 加载止损历史
+                    saved_coins = data.get('coins', [])
+                    if saved_coins:
+                        self.coins = list(dict.fromkeys(saved_coins))
                     
                     # 重建按币种分类的历史
                     self.trade_history_by_coin = {coin: [] for coin in self.coins}
@@ -50,6 +54,15 @@ class PortfolioStatistics:
                         coin = trade.get('coin')
                         if coin in self.trade_history_by_coin:
                             self.trade_history_by_coin[coin].append(trade)
+                        elif coin:
+                            # 保留历史币种记录
+                            if coin not in self.trade_history_by_coin:
+                                self.trade_history_by_coin[coin] = [trade]
+                    
+                    # 确保币种结构完整
+                    for coin in self.coins:
+                        self.current_positions.setdefault(coin, None)
+                        self.trade_history_by_coin.setdefault(coin, [])
                     
                 print(f"✅ 加载投资组合统计数据成功: {len(self.trade_history)}笔历史交易")
             except Exception as e:
@@ -90,6 +103,7 @@ class PortfolioStatistics:
                 'total_pnl': self.total_pnl,
                 'current_positions': self.current_positions,
                 'stop_loss_history': filtered_stop_losses,  # 保存止损历史（7天）
+                'coins': self.coins,
                 'last_update': datetime.now().isoformat()
             }
             with open(self.stats_file, 'w', encoding='utf-8') as f:
@@ -491,3 +505,14 @@ class PortfolioStatistics:
         
         return recent
 
+    def set_coins(self, coins: List[str], save: bool = False):
+        """更新统计模块支持的币种"""
+        if not coins:
+            return
+        normalized = list(dict.fromkeys(coins))
+        for coin in normalized:
+            self.current_positions.setdefault(coin, None)
+            self.trade_history_by_coin.setdefault(coin, [])
+        self.coins = normalized
+        if save:
+            self.save()

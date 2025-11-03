@@ -467,6 +467,8 @@ PORTFOLIO_CONFIG = {
 
 ### 5. Start Trading Program
 
+> 💡 To simulate trades locally, set `portfolio_rules.execution_mode` to `dry_run` in `config/coins_config.json`, and adjust `portfolio_rules.dry_run` (initial balance / fee / slippage) to match your target exchange. Indicators still come from Binance, but orders settle in the local simulator and the dashboard will surface simulated balances/positions instead of live account data.
+
 **Using script (Recommended)**
 
 ```bash

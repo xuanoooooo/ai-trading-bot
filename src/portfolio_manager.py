@@ -17,6 +17,7 @@ import math
 
 from portfolio_statistics import PortfolioStatistics
 from market_scanner import MarketScanner
+from dry_run_executor import DryRunFuturesAdapter
 
 # 加载环境变量（明确指定路径）
 load_dotenv()
@@ -54,31 +55,44 @@ def format_price(price, coin):
     else:
         return f"${price:.2f}"
 
+_CONFIG_CACHE = None
+
+
+def read_project_config():
+    """读取项目配置并缓存"""
+    global _CONFIG_CACHE
+    if _CONFIG_CACHE is None:
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'coins_config.json')
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                _CONFIG_CACHE = json.load(f)
+        except Exception as e:
+            print(f"⚠️ 加载项目配置失败: {e}")
+            _CONFIG_CACHE = {}
+    return _CONFIG_CACHE
+
 # 加载AI配置
 def load_ai_config():
     """加载AI配置"""
-    config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'coins_config.json')
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            return config.get('ai_config', {
-                'provider': 'deepseek',
-                'model': 'deepseek-chat',
-                'api_base': 'https://api.deepseek.com',
-                'api_key_env': 'DEEPSEEK_API_KEY',
-                'temperature': 0.7,
-                'max_tokens': 8000
-            })
-    except Exception as e:
-        print(f"⚠️ 加载AI配置失败，使用默认配置: {e}")
-        return {
+    config = read_project_config()
+    if config:
+        return config.get('ai_config', {
             'provider': 'deepseek',
             'model': 'deepseek-chat',
             'api_base': 'https://api.deepseek.com',
             'api_key_env': 'DEEPSEEK_API_KEY',
             'temperature': 0.7,
             'max_tokens': 8000
-        }
+        })
+    print("⚠️ 加载AI配置失败，使用默认配置")
+    return {
+        'provider': 'deepseek',
+        'model': 'deepseek-chat',
+        'api_base': 'https://api.deepseek.com',
+        'api_key_env': 'DEEPSEEK_API_KEY',
+        'temperature': 0.7,
+        'max_tokens': 8000
+    }
 
 def init_ai_client(config):
     """初始化AI客户端，支持自动fallback"""
@@ -170,13 +184,6 @@ if binance_client is None:
     print("❌ 初始化失败，程序退出")
     exit(1)
 
-# 初始化模块
-portfolio_stats = PortfolioStatistics('portfolio_stats.json', binance_client)
-
-# 配置文件路径（兼容从项目根目录或src目录运行）
-config_path = 'config/coins_config.json' if os.path.exists('config/coins_config.json') else '../config/coins_config.json'
-market_scanner = MarketScanner(binance_client, config_path)
-
 # AI决策记录文件
 AI_DECISIONS_FILE = 'ai_decisions.json'
 
@@ -236,14 +243,25 @@ def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
 def load_portfolio_config():
     """从coins_config.json加载投资组合配置"""
     try:
-        portfolio_rules = market_scanner.coins_config.get('portfolio_rules', {})
+        config = read_project_config()
+        portfolio_rules = config.get('portfolio_rules', {}) if config else {}
+        dry_run_defaults = {
+            'initial_balance': 2000,
+            'fee_rate': 0.0004,
+            'slippage': 0.0005
+        }
+        dry_run_config = dry_run_defaults.copy()
+        dry_run_config.update(portfolio_rules.get('dry_run', {}))
+        execution_mode = portfolio_rules.get('execution_mode', 'live').lower()
         return {
             'leverage': portfolio_rules.get('leverage', 3),
             'min_cash_reserve_percent': portfolio_rules.get('min_cash_reserve_percent', 10),
             'max_single_coin_percent': portfolio_rules.get('max_single_coin_percent', 100),
-    'check_interval_minutes': 5,  # 5分钟调用一次AI（分析5分钟K线数据）
-    'test_mode': False  # 实盘模式
-}
+            'check_interval_minutes': portfolio_rules.get('check_interval_minutes', 5),
+            'execution_mode': execution_mode,
+            'dry_run': dry_run_config,
+            'test_mode': portfolio_rules.get('test_mode', False)
+        }
     except Exception as e:
         print(f"⚠️ 加载配置失败，使用默认值: {e}")
         return {
@@ -251,11 +269,55 @@ def load_portfolio_config():
             'min_cash_reserve_percent': 10,
             'max_single_coin_percent': 100,
             'check_interval_minutes': 5,
+            'execution_mode': 'live',
+            'dry_run': {
+                'initial_balance': 2000,
+                'fee_rate': 0.0004,
+                'slippage': 0.0005
+            },
             'test_mode': False
         }
 
 PORTFOLIO_CONFIG = load_portfolio_config()
-print(f"📋 配置加载成功 - 杠杆: {PORTFOLIO_CONFIG['leverage']}x, 最低保留资金: {PORTFOLIO_CONFIG['min_cash_reserve_percent']}%, 单币最大: {PORTFOLIO_CONFIG['max_single_coin_percent']}%")
+mode_label = "dry-run" if PORTFOLIO_CONFIG['execution_mode'] == 'dry_run' else "live"
+print(f"📋 配置加载成功 - 模式: {mode_label} | 杠杆: {PORTFOLIO_CONFIG['leverage']}x | "
+      f"最低保留资金: {PORTFOLIO_CONFIG['min_cash_reserve_percent']}% | 单币最大: {PORTFOLIO_CONFIG['max_single_coin_percent']}%")
+
+project_config = read_project_config()
+coin_symbol_map = {}
+if project_config:
+    coin_symbol_map = {
+        coin_cfg.get('symbol'): coin_cfg.get('binance_symbol')
+        for coin_cfg in project_config.get('coins', [])
+        if coin_cfg.get('symbol') and coin_cfg.get('binance_symbol')
+    }
+
+if PORTFOLIO_CONFIG['execution_mode'] == 'dry_run':
+    dry_cfg = PORTFOLIO_CONFIG.get('dry_run', {})
+    binance_client = DryRunFuturesAdapter(
+        binance_client,
+        leverage=PORTFOLIO_CONFIG['leverage'],
+        initial_balance=dry_cfg.get('initial_balance', 2000),
+        fee_rate=dry_cfg.get('fee_rate', 0.0004),
+        slippage=dry_cfg.get('slippage', 0.0005),
+    )
+    if coin_symbol_map:
+        binance_client.register_symbols(coin_symbol_map)
+    print(f"🧪 Dry-Run模式启用：初始资金 {dry_cfg.get('initial_balance', 2000)} USDT | "
+          f"手续费率 {dry_cfg.get('fee_rate', 0.0004)} | 滑点 {dry_cfg.get('slippage', 0.0005)}")
+else:
+    print("🚨 Live模式：将直接在交易所执行订单")
+
+# 配置文件路径（兼容从项目根目录或src目录运行）
+config_path = 'config/coins_config.json' if os.path.exists('config/coins_config.json') else '../config/coins_config.json'
+market_scanner = MarketScanner(binance_client, config_path)
+
+coins_for_stats = [coin for coin in coin_symbol_map.keys()] or market_scanner.coins
+portfolio_stats = PortfolioStatistics('portfolio_stats.json', binance_client, coins=coins_for_stats)
+portfolio_stats.set_coins(coins_for_stats)
+
+if hasattr(binance_client, 'attach_statistics'):
+    binance_client.attach_statistics(portfolio_stats)
 
 
 def setup_exchange():
@@ -1345,6 +1407,9 @@ def portfolio_bot():
     if not market_data:
         print("❌ 市场数据获取失败")
         return
+
+    if hasattr(binance_client, 'sync_with_market_data'):
+        binance_client.sync_with_market_data(market_data, portfolio_stats)
     
     # 2. 获取30分钟数据
     print("📊 获取30分钟K线数据（中期趋势）...")
@@ -1392,7 +1457,10 @@ def main():
     print(f"杠杆倍数: {PORTFOLIO_CONFIG['leverage']}x")
     print(f"检查间隔: {PORTFOLIO_CONFIG['check_interval_minutes']}分钟")
     
-    if PORTFOLIO_CONFIG['test_mode']:
+    if PORTFOLIO_CONFIG['execution_mode'] == 'dry_run':
+        dry_cfg = PORTFOLIO_CONFIG.get('dry_run', {})
+        print(f"🧪 当前为Dry-Run模式，本地模拟成交（初始资金 {dry_cfg.get('initial_balance', 2000)} USDT）")
+    elif PORTFOLIO_CONFIG.get('test_mode'):
         print("🧪 当前为测试模式，不会真实下单")
     else:
         print("🚨 实盘交易模式，请谨慎操作！")
@@ -1425,4 +1493,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

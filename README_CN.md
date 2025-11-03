@@ -410,6 +410,8 @@ response = deepseek_client.chat.completions.create(
 
 #### 步骤5：启动交易程序
 
+> 💡 如需本地仿真，可在 `config/coins_config.json` 中将 `portfolio_rules.execution_mode` 设置为 `dry_run`，并根据实际需求调整 `portfolio_rules.dry_run`（初始资金 / 手续费 / 滑点）。系统仍从币安获取指标数据，但实际下单在本地模拟执行，可视化看板也会自动展示模拟账户的仓位与余额。
+
 **方式1：使用启动脚本（推荐）**
 
 ```bash

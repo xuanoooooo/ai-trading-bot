@@ -11,7 +11,59 @@ from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 
 # 添加父目录到路径，以便导入src模块
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
+
+# 配置文件路径与执行模式
+CONFIG_PATH = os.path.join(PROJECT_ROOT, 'config', 'coins_config.json')
+CONFIG_DATA = {}
+PORTFOLIO_RULES = {}
+EXECUTION_MODE = 'live'
+COIN_SYMBOL_MAP = {}
+SYMBOL_TO_COIN = {}
+
+def _load_config():
+    global CONFIG_DATA, PORTFOLIO_RULES, EXECUTION_MODE, COIN_SYMBOL_MAP, SYMBOL_TO_COIN
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            CONFIG_DATA = json.load(f)
+            PORTFOLIO_RULES = CONFIG_DATA.get('portfolio_rules', {}) or {}
+            EXECUTION_MODE = PORTFOLIO_RULES.get('execution_mode', 'live').lower()
+            COIN_SYMBOL_MAP = {}
+            SYMBOL_TO_COIN = {}
+            for coin_cfg in CONFIG_DATA.get('coins', []):
+                coin = coin_cfg.get('symbol')
+                symbol = coin_cfg.get('binance_symbol')
+                if coin and symbol:
+                    COIN_SYMBOL_MAP[coin] = symbol
+                    SYMBOL_TO_COIN[symbol] = coin
+                    if symbol.endswith('USDT'):
+                        SYMBOL_TO_COIN.setdefault(symbol.replace('USDT', 'USDC'), coin)
+    except Exception as e:
+        print(f"⚠️ 无法加载配置文件 {CONFIG_PATH}: {e}")
+        CONFIG_DATA = {}
+        PORTFOLIO_RULES = {}
+        EXECUTION_MODE = 'live'
+        COIN_SYMBOL_MAP = {}
+        SYMBOL_TO_COIN = {}
+
+_load_config()
+
+if not COIN_SYMBOL_MAP:
+    default_map = {
+        'BTC': 'BTCUSDT',
+        'ETH': 'ETHUSDT',
+        'BNB': 'BNBUSDT',
+        'SOL': 'SOLUSDT',
+        'XRP': 'XRPUSDT',
+        'ADA': 'ADAUSDT',
+        'DOGE': 'DOGEUSDT'
+    }
+    COIN_SYMBOL_MAP.update(default_map)
+    for coin, symbol in default_map.items():
+        SYMBOL_TO_COIN.setdefault(symbol, coin)
+        if symbol.endswith('USDT'):
+            SYMBOL_TO_COIN.setdefault(symbol.replace('USDT', 'USDC'), coin)
 
 try:
     from src.market_scanner import MarketScanner
@@ -33,8 +85,7 @@ try:
     )
     
     # 配置文件路径（兼容不同运行目录）
-    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'coins_config.json')
-    market_scanner = MarketScanner(binance_client, config_path)
+    market_scanner = MarketScanner(binance_client, CONFIG_PATH)
     SCANNER_AVAILABLE = True
 except Exception as e:
     print(f"⚠️ 警告: 市场扫描器初始化失败: {e}")
@@ -46,9 +97,9 @@ CORS(app)
 
 # 配置 - 使用绝对路径定位数据文件（这些文件由src/portfolio_manager.py生成）
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATS_FILE = os.path.join(PROJECT_ROOT, 'portfolio_stats.json')
-AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'ai_decisions.json')
-RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'current_runtime.json')
+STATS_FILE = os.path.join(PROJECT_ROOT, 'src/portfolio_stats.json')
+AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'src/ai_decisions.json')
+RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'src/current_runtime.json')
 
 # 记录Web服务启动时间
 WEB_START_TIME = datetime.now()
@@ -71,6 +122,21 @@ def load_json_file(filepath):
     except Exception as e:
         print(f"加载文件失败 {filepath}: {e}")
         return None
+
+
+def fetch_mark_price(symbol: str) -> float:
+    """获取合约标记价格（用于dry-run计算盈亏）"""
+    if not symbol or not SCANNER_AVAILABLE:
+        return 0.0
+    try:
+        mark = binance_client.futures_mark_price(symbol=symbol)
+        return float(mark.get('markPrice', 0))
+    except Exception:
+        try:
+            ticker = binance_client.futures_symbol_ticker(symbol=symbol)
+            return float(ticker.get('price', 0))
+        except Exception:
+            return 0.0
 
 @app.route('/')
 def index():
@@ -167,80 +233,101 @@ def get_stats():
 
 @app.route('/api/positions')
 def get_positions():
-    """获取当前持仓 - 直接从币安API读取"""
+    """获取当前持仓"""
+    stats = load_json_file(STATS_FILE)
+    local_positions = stats.get('current_positions', {}) if stats else {}
+    
+    if EXECUTION_MODE == 'dry_run':
+        positions = []
+        total_unrealized_pnl = 0.0
+        for coin, pos in (local_positions or {}).items():
+            if not pos:
+                continue
+            symbol = COIN_SYMBOL_MAP.get(coin, f"{coin}USDT")
+            entry_price = float(pos.get('entry_price', 0) or 0)
+            amount = float(pos.get('amount', 0) or 0)
+            side = pos.get('side', '')
+            mark_price = fetch_mark_price(symbol) or entry_price
+            
+            pnl = 0.0
+            if entry_price and amount:
+                if side == 'long':
+                    pnl = (mark_price - entry_price) * amount
+                elif side == 'short':
+                    pnl = (entry_price - mark_price) * amount
+            
+            total_unrealized_pnl += pnl
+            price_decimals = 5 if coin in ['DOGE', 'XRP'] else 2
+            positions.append({
+                'coin': coin,
+                'side': side,
+                'entry_price': round(entry_price, price_decimals),
+                'amount': round(amount, 8),
+                'entry_time': pos.get('entry_time', ''),
+                'pnl': round(pnl, 2),
+                'current_price': round(mark_price, price_decimals),
+                'stop_loss': pos.get('stop_loss', 0),
+                'take_profit': pos.get('take_profit', 0),
+                'stop_order_id': pos.get('stop_order_id', 0)
+            })
+        
+        return jsonify({
+            'positions': positions,
+            'total_unrealized_pnl': round(total_unrealized_pnl, 2),
+            'mode': 'dry_run'
+        })
+    
     if not SCANNER_AVAILABLE:
         return jsonify({'error': '币安客户端不可用'}), 503
     
     try:
-        # 直接调用币安API获取持仓信息
         binance_positions = binance_client.futures_position_information()
-        
-        # 加载本地记录（用于获取止损止盈信息）
-        stats = load_json_file(STATS_FILE)
-        local_positions = stats.get('current_positions', {}) if stats else {}
-        
         positions = []
-        total_unrealized_pnl = 0
-        
-        # 币种映射（币安symbol转币种名）
-        symbol_to_coin = {
-            'BNBUSDC': 'BNB',
-            'ETHUSDC': 'ETH',
-            'SOLUSDC': 'SOL',
-            'XRPUSDC': 'XRP',
-            'DOGEUSDC': 'DOGE'
-        }
-        
-        # 遍历币安持仓
+        total_unrealized_pnl = 0.0
         for pos in binance_positions:
-            amount = float(pos['positionAmt'])
-            if abs(amount) > 0:  # 有持仓
-                symbol = pos['symbol']
-                coin = symbol_to_coin.get(symbol)
-                
-                if coin:  # 如果是我们关注的币种
-                    entry_price = float(pos['entryPrice'])
-                    pnl = float(pos['unRealizedProfit'])
-                    mark_price = float(pos['markPrice'])
-                    
-                    total_unrealized_pnl += pnl
-                    
-                    # 从本地记录获取止损止盈和开仓时间
-                    local_pos = local_positions.get(coin, {})
-                    if local_pos:
-                        stop_loss = local_pos.get('stop_loss', 0)
-                        take_profit = local_pos.get('take_profit', 0)
-                        stop_order_id = local_pos.get('stop_order_id', 0)
-                        entry_time = local_pos.get('entry_time', '')
-                    else:
-                        stop_loss = 0
-                        take_profit = 0
-                        stop_order_id = 0
-                        entry_time = ''
-                    
-                    # 根据币种设置合适的价格精度
-                    # DOGE和XRP价格低，需要更多小数位
-                    if coin in ['DOGE', 'XRP']:
-                        price_decimals = 5
-                    else:
-                        price_decimals = 2
-                    
-                    positions.append({
-                        'coin': coin,
-                        'side': 'long' if amount > 0 else 'short',
-                        'entry_price': round(entry_price, price_decimals),
-                        'amount': abs(amount),
-                        'entry_time': entry_time,
-                        'pnl': round(pnl, 2),
-                        'current_price': round(mark_price, price_decimals),
-                        'stop_loss': stop_loss,
-                        'take_profit': take_profit,
-                        'stop_order_id': stop_order_id
-                    })
+            amount = float(pos.get('positionAmt', 0))
+            if abs(amount) < 1e-8:
+                continue
+            symbol = pos.get('symbol')
+            coin = SYMBOL_TO_COIN.get(symbol)
+            if not coin:
+                # 兼容 symbol → coin 匹配失败的情况
+                if symbol and symbol.endswith('USDT'):
+                    coin = symbol.replace('USDT', '')
+                elif symbol and symbol.endswith('USDC'):
+                    coin = symbol.replace('USDC', '')
+            if not coin:
+                continue
+            
+            entry_price = float(pos.get('entryPrice', 0))
+            pnl = float(pos.get('unRealizedProfit', 0))
+            mark_price = float(pos.get('markPrice', entry_price))
+            total_unrealized_pnl += pnl
+            
+            local_pos = local_positions.get(coin, {}) if local_positions else {}
+            stop_loss = local_pos.get('stop_loss', 0)
+            take_profit = local_pos.get('take_profit', 0)
+            stop_order_id = local_pos.get('stop_order_id', 0)
+            entry_time = local_pos.get('entry_time', '')
+            
+            price_decimals = 5 if coin in ['DOGE', 'XRP'] else 2
+            positions.append({
+                'coin': coin,
+                'side': 'long' if amount > 0 else 'short',
+                'entry_price': round(entry_price, price_decimals),
+                'amount': abs(amount),
+                'entry_time': entry_time,
+                'pnl': round(pnl, 2),
+                'current_price': round(mark_price, price_decimals),
+                'stop_loss': stop_loss,
+                'take_profit': take_profit,
+                'stop_order_id': stop_order_id
+            })
         
         return jsonify({
             'positions': positions,
-            'total_unrealized_pnl': round(total_unrealized_pnl, 2)
+            'total_unrealized_pnl': round(total_unrealized_pnl, 2),
+            'mode': 'live'
         })
     except Exception as e:
         print(f"❌ 获取持仓信息失败: {e}")
@@ -267,18 +354,12 @@ def get_prices():
     
     try:
         prices = {}
-        coins = ['BTC', 'BNB', 'ETH', 'SOL', 'XRP', 'DOGE']
-        
-        for coin in coins:
+        for coin, symbol in COIN_SYMBOL_MAP.items():
             try:
-                if coin == 'BTC':
-                    ticker = binance_client.get_symbol_ticker(symbol='BTCUSDC')
-                else:
-                    ticker = binance_client.get_symbol_ticker(symbol=f'{coin}USDC')
-                
+                ticker = binance_client.get_symbol_ticker(symbol=symbol)
                 prices[coin] = {
                     'price': float(ticker['price']),
-                    'symbol': coin
+                    'symbol': symbol
                 }
             except:
                 pass
@@ -301,27 +382,66 @@ def get_ai_decisions():
 
 @app.route('/api/account')
 def get_account():
-    """获取账户信息 - 直接从币安API读取"""
-    if not SCANNER_AVAILABLE:
-        return jsonify({'error': '币安客户端不可用'}), 503
+    """获取账户信息"""
+    stats = load_json_file(STATS_FILE)
     
-    try:
-        # 直接调用币安API获取账户信息
-        account = binance_client.futures_account()
+    if EXECUTION_MODE == 'dry_run':
+        if not stats:
+            return jsonify({'error': 'dry_run 统计数据不可用'}), 500
         
-        # 提取关键信息
-        total_balance = float(account.get('totalWalletBalance', 0))
-        available_balance = float(account.get('availableBalance', 0))
-        used_margin = float(account.get('totalInitialMargin', 0))
+        dry_cfg = PORTFOLIO_RULES.get('dry_run', {}) if PORTFOLIO_RULES else {}
+        initial_balance = float(dry_cfg.get('initial_balance', 2000))
+        leverage = float(PORTFOLIO_RULES.get('leverage', 3)) if PORTFOLIO_RULES else 3.0
+        leverage = leverage if leverage > 0 else 1.0
         
-        # 计算保证金占用率
-        margin_ratio = (used_margin / total_balance * 100) if total_balance > 0 else 0
+        current_positions = stats.get('current_positions', {}) or {}
+        total_pnl = float(stats.get('total_pnl', 0) or 0)
+        
+        used_margin = 0.0
+        unrealized = 0.0
+        for coin, pos in current_positions.items():
+            if not pos:
+                continue
+            entry_price = float(pos.get('entry_price', 0) or 0)
+            amount = float(pos.get('amount', 0) or 0)
+            if entry_price <= 0 or amount <= 0:
+                continue
+            symbol = COIN_SYMBOL_MAP.get(coin, f"{coin}USDT")
+            mark_price = fetch_mark_price(symbol) or entry_price
+            side = pos.get('side', 'long')
+            used_margin += (entry_price * amount) / leverage
+            if side == 'long':
+                unrealized += (mark_price - entry_price) * amount
+            else:
+                unrealized += (entry_price - mark_price) * amount
+        
+        total_balance = initial_balance + total_pnl + unrealized
+        available_balance = max(total_balance - used_margin, 0.0)
+        margin_ratio = (used_margin / total_balance * 100) if total_balance > 0 else 0.0
         
         return jsonify({
             'total_balance': round(total_balance, 2),
             'free_balance': round(available_balance, 2),
             'used_margin': round(used_margin, 2),
-            'margin_ratio': round(margin_ratio, 1)
+            'margin_ratio': round(margin_ratio, 1),
+            'mode': 'dry_run'
+        })
+    
+    if not SCANNER_AVAILABLE:
+        return jsonify({'error': '币安客户端不可用'}), 503
+    
+    try:
+        account = binance_client.futures_account()
+        total_balance = float(account.get('totalWalletBalance', 0))
+        available_balance = float(account.get('availableBalance', 0))
+        used_margin = float(account.get('totalInitialMargin', 0))
+        margin_ratio = (used_margin / total_balance * 100) if total_balance > 0 else 0
+        return jsonify({
+            'total_balance': round(total_balance, 2),
+            'free_balance': round(available_balance, 2),
+            'used_margin': round(used_margin, 2),
+            'margin_ratio': round(margin_ratio, 1),
+            'mode': 'live'
         })
     except Exception as e:
         print(f"❌ 获取账户信息失败: {e}")
@@ -340,5 +460,4 @@ if __name__ == '__main__':
     print("=" * 60)
     
     # 启动Flask应用（仅监听本地）
-    app.run(host='127.0.0.1', port=5000, debug=False)
-
+    app.run(host='0.0.0.0', port=5000, debug=False)
