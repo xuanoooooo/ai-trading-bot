@@ -436,8 +436,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
         
         # 计算5分钟ATR百分比
         coin_price = data['price']
-        atr_15m = data.get('atr', 0)
-        atr_15m_pct = (atr_15m / coin_price * 100) if coin_price > 0 else 0
+        atr_5m = data.get('atr', 0)
+        atr_5m_pct = (atr_5m / coin_price * 100) if coin_price > 0 else 0
         
         # 获取30分钟数据
         long_term = long_term_data.get(coin, {})
@@ -551,7 +551,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
   5分钟周期:
   - RSI: {data['rsi']:.1f} | 序列: [{rsi_series_text}]
   - MACD: {data['macd']:.4f} | 序列: [{macd_series_text}]
-  - ATR（15分钟）: ${atr_15m:.2f} ({atr_15m_pct:.2f}%) | 序列: [{atr_series_text}]
+  - ATR（5分钟）: ${atr_5m:.2f} ({atr_5m_pct:.2f}%) | 序列: [{atr_series_text}]
   - SMA20: ${data['sma_20']:.2f} | SMA50: ${data['sma_50']:.2f}
   - 布林带位置: {data['bb_position']:.2%}{trend_1h_text}{trend_4h_text}{kline_text}"""
     
