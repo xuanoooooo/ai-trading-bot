@@ -481,8 +481,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
                 symbol = coin_info['binance_symbol']
                 klines = market_scanner.binance_client.futures_klines(
                     symbol=symbol,
-                    interval='5m',
-                    limit=25  # 获取最近25根（最后一根是当前未完成的）
+                    interval='30m',
+                    limit=25  # 获取最近25根30分钟K线（最后一根是当前未完成的）
                 )
                 
                 # 获取当前K线（最后一根，未完成）
@@ -495,7 +495,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
                     current_volume = float(current_kline[5])
                     current_change = ((current_close - current_open) / current_open * 100) if current_open > 0 else 0
                     kline_start_time = datetime.fromtimestamp(int(current_kline[0])/1000)
-                    kline_end_time = kline_start_time + timedelta(minutes=5)
+                    kline_end_time = kline_start_time + timedelta(minutes=30)
                     elapsed_min = (current_time - kline_start_time).total_seconds() / 60
                     
                     # 判断K线状态
@@ -514,8 +514,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
                     
                     current_kline_text = f"""
   
-  【当前K线实时状态】（5分钟周期进行中）
-  - ⏰ 时间窗口: {kline_start_time.strftime('%H:%M')} - {kline_end_time.strftime('%H:%M')} (已运行 {elapsed_min:.0f}/5分钟)
+  【当前K线实时状态】（30分钟周期进行中）
+  - ⏰ 时间窗口: {kline_start_time.strftime('%H:%M')} - {kline_end_time.strftime('%H:%M')} (已运行 {elapsed_min:.0f}/30分钟)
   - 💰 开盘价: ${current_open:.{price_decimals}f}
   - 📈 当前价: ${current_close:.{price_decimals}f}
   - 📊 本K最高: ${current_high:.{price_decimals}f}
@@ -524,8 +524,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
   - 📈 K线状态: {kline_body} ({current_change:+.2f}%)
   - ⚡ 波动幅度: {volatility:.2f}%"""
                     
-                    # 获取历史24根K线
-                    kline_text = "\n  最近24根K线（从旧到新，共2小时）："
+                    # 获取历史24根30分钟K线
+                    kline_text = "\n  最近24根K线（30分钟周期，从旧到新，共12小时）："
                     for i, kline in enumerate(klines[-25:-1], 1):  # 取倒数第25到第2根（不含当前K线）
                         open_p = float(kline[1])
                         high_p = float(kline[2])
