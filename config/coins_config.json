@@ -1,0 +1,58 @@
+{
+  "coins": [
+    {
+      "symbol": "BTC",
+      "binance_symbol": "BTCUSDT",
+      "precision": 3,
+      "price_precision": 2,
+      "min_order_value": 50
+    },
+    {
+      "symbol": "ETH",
+      "binance_symbol": "ETHUSDT",
+      "precision": 3,
+      "price_precision": 2,
+      "min_order_value": 24
+    },
+    {
+      "symbol": "SOL",
+      "binance_symbol": "SOLUSDT",
+      "precision": 1,
+      "price_precision": 2,
+      "min_order_value": 13
+    },
+    {
+      "symbol": "BNB",
+      "binance_symbol": "BNBUSDT",
+      "precision": 2,
+      "price_precision": 2,
+      "min_order_value": 13
+    },
+    {
+      "symbol": "XRP",
+      "binance_symbol": "XRPUSDT",
+      "precision": 0,
+      "price_precision": 4,
+      "min_order_value": 13
+    },
+    {
+      "symbol": "ADA",
+      "binance_symbol": "ADAUSDT",
+      "precision": 0,
+      "price_precision": 4,
+      "min_order_value": 13
+    },
+    {
+      "symbol": "DOGE",
+      "binance_symbol": "DOGEUSDT",
+      "precision": 0,
+      "price_precision": 4,
+      "min_order_value": 13
+    }
+  ],
+  "portfolio_rules": {
+    "leverage": 5,
+    "min_cash_reserve_percent": 10,
+    "check_interval_minutes": 5
+  }
+}
