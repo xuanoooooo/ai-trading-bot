@@ -1,0 +1,27 @@
+# Environment and secrets
+.env
+*.env
+.env.*
+
+# Logs and runtime state
+*.log
+ai_decisions.json
+portfolio_stats.json
+current_runtime.json
+
+# Python cache/compiled
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+
+# Node (in case web frontend is included later)
+node_modules/
+
+
+# Local backups
+backups/
