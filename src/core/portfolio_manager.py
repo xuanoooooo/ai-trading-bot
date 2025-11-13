@@ -18,17 +18,25 @@ import math
 from portfolio_statistics import PortfolioStatistics
 from market_scanner import MarketScanner
 
+# 配置项目根目录
+import os
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # 加载环境变量（明确指定路径）
-load_dotenv()
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
 # 记录程序启动时间和调用次数
 PROGRAM_START_TIME = datetime.now()
 INVOCATION_COUNT = 0
-RUNTIME_FILE = 'current_runtime.json'  # 保存当前运行状态
+
+# 使用绝对路径定义文件（按项目结构存储在data目录）
+RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'data', 'current_runtime.json')
+PORTFOLIO_STATS_FILE = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
+AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'data', 'ai_decisions.json')
 
 # 配置日志
 log_handler = RotatingFileHandler(
-    'portfolio_manager.log',
+    os.path.join(PROJECT_ROOT, 'portfolio_manager.log'),
     maxBytes=10*1024*1024,
     backupCount=3,
     encoding='utf-8'
@@ -93,15 +101,12 @@ if binance_client is None:
     print("❌ 初始化失败，程序退出")
     exit(1)
 
-# 初始化模块
-portfolio_stats = PortfolioStatistics('portfolio_stats.json', binance_client)
+# 初始化模块（使用全局定义的路径常量）
+portfolio_stats = PortfolioStatistics(PORTFOLIO_STATS_FILE, binance_client)
 
-# 配置文件路径（兼容从项目根目录或src目录运行）
-config_path = 'config/coins_config.json' if os.path.exists('config/coins_config.json') else '../config/coins_config.json'
+# 配置文件路径
+config_path = os.path.join(PROJECT_ROOT, 'config', 'coins_config.json')
 market_scanner = MarketScanner(binance_client, config_path)
-
-# AI决策记录文件
-AI_DECISIONS_FILE = 'ai_decisions.json'
 
 def save_current_runtime():
     """保存当前运行状态到文件"""
@@ -476,7 +481,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     # 加载外部提示词（策略和理念）
     external_prompt = ""
     try:
-        with open('/root/DS/duobizhong/prompts/default.txt', 'r', encoding='utf-8') as f:
+        prompt_file = os.path.join(PROJECT_ROOT, 'prompts', 'default.txt')
+        with open(prompt_file, 'r', encoding='utf-8') as f:
             external_prompt = f.read()
     except FileNotFoundError:
         print("⚠️ 外部提示词文件不存在，使用默认配置")

@@ -7,11 +7,15 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 
+# 配置项目根目录
+import os
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 class PortfolioStatistics:
     """投资组合统计类 - 管理多币种交易历史和性能指标"""
     
-    def __init__(self, stats_file='portfolio_stats.json', binance_client=None):
+    def __init__(self, stats_file='data/portfolio_stats.json', binance_client=None):
         self.stats_file = stats_file
         self.binance_client = binance_client  # 用于取消止损单
         self.start_time = None

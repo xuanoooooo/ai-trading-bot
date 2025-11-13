@@ -107,9 +107,9 @@
 
 ---
 
-#### 外部可修改提示词（/prompts/default.txt）
+#### 外部可修改提示词（prompts/default.txt）
 
-位置：`/root/DS/duobizhong/prompts/default.txt`（236行）
+位置：`prompts/default.txt`（外部交易策略文件）
 
 **包含内容**：
 - 📋 交易身份与定位（日内交易者、多币种管理）
@@ -125,19 +125,19 @@
 **如何修改策略**：
 ```bash
 # 1. 编辑外部提示词文件
-vim /root/DS/duobizhong/prompts/default.txt
+vim prompts/default.txt
 
 # 2. 创建多个策略版本
 cp prompts/default.txt prompts/aggressive.txt   # 激进策略
 cp prompts/default.txt prompts/conservative.txt # 保守策略
 
 # 3. 切换策略（修改代码中的文件路径）
-vim portfolio_manager.py  # Line 463: 修改文件路径
+vim src/core/portfolio_manager.py  # 修改文件路径
 # 或者直接替换 default.txt 内容
 
 # 4. 重启程序生效
 pkill -f portfolio_manager.py
-./start_portfolio.sh
+./scripts/start_portfolio.sh
 ```
 
 ---
@@ -307,22 +307,28 @@ DOGE: 误差 1.00%  ✅
 
 ```
 duobizhong/
-├── config/
-│   └── coins_config.json         # 币种配置(精度、最小金额)
-├── prompts/                       # ⭐NEW 外部提示词目录
+├── src/core/                      # ⭐NEW 核心交易逻辑
+│   ├── portfolio_manager.py       # 投资组合管理主程序
+│   ├── market_scanner.py          # 市场数据扫描器
+│   └── portfolio_statistics.py    # 投资组合统计模块
+├── web/                           # ⭐NEW Web可视化界面
+│   ├── web_app.py                 # Flask后端应用
+│   ├── templates/index.html       # 前端页面模板
+│   ├── static/                    # CSS/JS资源
+│   └── start_web.sh               # Web服务启动脚本
+├── scripts/                       # ⭐NEW 脚本目录
+│   ├── start_portfolio.sh         # 交易程序启动脚本
+│   └── 清理历史记录.sh            # 历史记录清理脚本
+├── data/                          # ⭐NEW 数据文件目录
+│   ├── ai_decisions.json          # AI决策历史记录
+│   ├── portfolio_stats.json      # 投资组合统计数据
+│   └── current_runtime.json       # 当前运行状态
+├── config/                        # 配置文件目录
+│   └── coins_config.json          # 币种配置(精度、最小金额)
+├── prompts/                       # 提示词目录
 │   └── default.txt                # 默认交易策略（完全外置）
-├── portfolio_manager.py           # 交易主程序
-├── portfolio_statistics.py        # 统计模块
-├── market_scanner.py              # 市场数据获取
-├── start_portfolio.sh             # 启动交易程序
-├── 清理历史记录.sh                # ⭐NEW 清理历史记录（AI从零开始）
-├── portfolio_stats.json           # 统计数据文件
-├── ai_decisions.json              # AI决策历史
-└── keshihua/                      # 可视化看板
-    ├── web_app.py                 # Flask后端
-    ├── templates/index.html       # 前端页面
-    ├── static/                    # CSS/JS
-    └── start_web.sh               # 启动看板
+└── docs/                          # 文档目录
+    └── ...
 ```
 
 ## 🚀 快速启动
@@ -330,18 +336,18 @@ duobizhong/
 ### 交易程序
 
 ```bash
-cd /root/DS/duobizhong
-./start_portfolio.sh              # 启动
-tmux attach -t portfolio          # 查看
-pkill -f portfolio_manager.py     # 停止
+cd /root/ziyong/duobizhong
+./scripts/start_portfolio.sh       # 启动
+tmux attach -t portfolio           # 查看
+pkill -f portfolio_manager.py      # 停止
 ```
 
 ### 可视化看板
 
 ```bash
-cd /root/DS/duobizhong/keshihua
+cd /root/ziyong/duobizhong/web
 ./start_web.sh                    # 启动(后台运行)
-pkill -f web_app.py               # 停止
+pkill -f web_app.py              # 停止
 
 # SSH隧道访问(本地安全)
 ssh -L 5000:localhost:5000 user@server
@@ -360,22 +366,28 @@ ssh -L 5000:localhost:5000 user@server
 
 ```
 duobizhong/
-├── config/
-│   └── coins_config.json         # 币种配置(精度、最小金额)
-├── prompts/                       # ⭐NEW 外部提示词目录
+├── src/core/                      # ⭐NEW 核心交易逻辑
+│   ├── portfolio_manager.py       # 投资组合管理主程序
+│   ├── market_scanner.py          # 市场数据扫描器
+│   └── portfolio_statistics.py    # 投资组合统计模块
+├── web/                           # ⭐NEW Web可视化界面
+│   ├── web_app.py                 # Flask后端应用
+│   ├── templates/index.html       # 前端页面模板
+│   ├── static/                    # CSS/JS资源
+│   └── start_web.sh               # Web服务启动脚本
+├── scripts/                       # ⭐NEW 脚本目录
+│   ├── start_portfolio.sh         # 交易程序启动脚本
+│   └── 清理历史记录.sh            # 历史记录清理脚本
+├── data/                          # ⭐NEW 数据文件目录
+│   ├── ai_decisions.json          # AI决策历史记录
+│   ├── portfolio_stats.json      # 投资组合统计数据
+│   └── current_runtime.json       # 当前运行状态
+├── config/                        # 配置文件目录
+│   └── coins_config.json          # 币种配置(精度、最小金额)
+├── prompts/                       # 提示词目录
 │   └── default.txt                # 默认交易策略（完全外置）
-├── portfolio_manager.py           # 交易主程序
-├── portfolio_statistics.py        # 统计模块
-├── market_scanner.py              # 市场数据获取
-├── start_portfolio.sh             # 启动交易程序
-├── 清理历史记录.sh                # ⭐NEW 清理历史记录（AI从零开始）
-├── portfolio_stats.json           # 统计数据文件
-├── ai_decisions.json              # AI决策历史
-└── keshihua/                      # 可视化看板
-    ├── web_app.py                 # Flask后端
-    ├── templates/index.html       # 前端页面
-    ├── static/                    # CSS/JS
-    └── start_web.sh               # 启动看板
+└── docs/                          # 文档目录
+    └── ...
 ```
 
 ## 🚀 快速启动
@@ -383,18 +395,18 @@ duobizhong/
 ### 交易程序
 
 ```bash
-cd /root/DS/duobizhong
-./start_portfolio.sh              # 启动
-tmux attach -t portfolio          # 查看
-pkill -f portfolio_manager.py     # 停止
+cd /root/ziyong/duobizhong
+./scripts/start_portfolio.sh       # 启动
+tmux attach -t portfolio           # 查看
+pkill -f portfolio_manager.py      # 停止
 ```
 
 ### 可视化看板
 
 ```bash
-cd /root/DS/duobizhong/keshihua
+cd /root/ziyong/duobizhong/web
 ./start_web.sh                    # 启动(后台运行)
-pkill -f web_app.py               # 停止
+pkill -f web_app.py              # 停止
 
 # SSH隧道访问(本地安全)
 ssh -L 5000:localhost:5000 user@server
@@ -532,7 +544,7 @@ tmux attach -t portfolio           # 连接会话
 pkill -f portfolio_manager.py      # 停止程序
 
 # 看板
-tail -f keshihua/web_app.log       # 查看日志
+tail -f web/web_app.log       # 查看日志
 pkill -f web_app.py                # 停止看板
 ```
 
@@ -547,8 +559,8 @@ pkill -f web_app.py                # 停止看板
 
 **运行方法**：
 ```bash
-cd /root/DS/duobizhong
-./清理历史记录.sh
+cd /root/ziyong/duobizhong
+./scripts/清理历史记录.sh
 ```
 
 **脚本会做什么**：
@@ -664,7 +676,7 @@ cp backups/backup_20251111_134530/* .
 cp portfolio_stats.json portfolio_stats_backup_$(date +%Y%m%d_%H%M%S).json
 
 # 删除
-rm portfolio_stats.json ai_decisions.json current_runtime.json
+rm data/portfolio_stats.json data/ai_decisions.json data/current_runtime.json
 ```
 
 ## 🐛 常见问题
@@ -673,7 +685,7 @@ rm portfolio_stats.json ai_decisions.json current_runtime.json
 启动时自动同步，以币安为准。详见 `持仓同步说明.md`
 
 ### 看板显示"加载失败"
-检查：1) Web服务是否运行 2) 重启: `pkill -f web_app.py && cd keshihua && ./start_web.sh`
+检查：1) Web服务是否运行 2) 重启: `pkill -f web_app.py && cd web && ./start_web.sh`
 
 ### 盈亏曲线闪烁
 已优化：仅在新交易时更新，不再每5秒刷新
@@ -701,8 +713,8 @@ rm portfolio_stats.json ai_decisions.json current_runtime.json
 - `清理历史记录.sh`: **清理脚本** ⭐让AI从零开始，自动备份旧记录
 - `持仓同步说明.md`: 同步机制详解
 - `快速开始交易程序.md`: 启动/停止命令
-- `keshihua/快速开始看板.md`: 看板命令
-- `keshihua/SSH隧道使用说明.md`: 安全访问方法
+- `web/快速开始看板.md`: 看板命令
+- `web/SSH隧道使用说明.md`: 安全访问方法
 
 ### portfolio_stats.json 数据结构
 ```json
@@ -734,7 +746,7 @@ pkill -f portfolio_manager.py
 pkill -f web_app.py
 
 # 2. 备份重要数据（可选，如果想保留历史）
-cd /root/DS/duobizhong
+cd /root/ziyong/duobizhong
 tar -czf backup_$(date +%Y%m%d_%H%M%S).tar.gz \
   portfolio_stats.json \
   ai_decisions.json \
@@ -743,11 +755,11 @@ tar -czf backup_$(date +%Y%m%d_%H%M%S).tar.gz \
   .env
 
 # 3. 打包整个项目
-cd /root/DS
+cd /root/ziyong
 tar -czf duobizhong_migration.tar.gz duobizhong/
 
 # 4. 下载到本地
-# scp root@old-server:/root/DS/duobizhong_migration.tar.gz ./
+# scp root@old-server:/root/ziyong/duobizhong_migration.tar.gz ./
 ```
 
 ---
@@ -795,7 +807,7 @@ ls -lh duobizhong/
 
 #### 3️⃣ **配置环境变量**
 ```bash
-cd /root/DS/duobizhong
+cd /root/ziyong/duobizhong
 
 # 创建或编辑 .env 文件
 vim .env
@@ -828,7 +840,7 @@ import os
 from binance.client import Client
 from dotenv import load_dotenv
 
-load_dotenv('/root/DS/duobizhong/.env')
+load_dotenv('/root/ziyong/duobizhong/.env')
 client = Client(os.getenv('BINANCE_API_KEY'), os.getenv('BINANCE_SECRET'))
 ticker = client.futures_ticker(symbol='BTCUSDT')
 print(f"✅ 币安API连接成功！BTC价格: ${float(ticker['lastPrice']):,.2f}")
@@ -837,10 +849,10 @@ EOF
 
 #### 4️⃣ **启动脚本权限**
 ```bash
-cd /root/DS/duobizhong
-chmod +x start_portfolio.sh
+cd /root/ziyong/duobizhong
+chmod +x scripts/start_portfolio.sh
 
-cd keshihua
+cd web
 chmod +x start_web.sh
 ```
 
@@ -848,8 +860,8 @@ chmod +x start_web.sh
 
 **选项A：全新开始（推荐）**
 ```bash
-cd /root/DS/duobizhong
-rm -f ai_decisions.json portfolio_stats.json current_runtime.json
+cd /root/ziyong/duobizhong
+rm -f data/ai_decisions.json data/portfolio_stats.json data/current_runtime.json
 # 程序启动时会自动创建新文件
 ```
 
@@ -862,14 +874,14 @@ rm -f ai_decisions.json portfolio_stats.json current_runtime.json
 #### 6️⃣ **启动程序**
 ```bash
 # 启动交易程序
-cd /root/DS/duobizhong
-./start_portfolio.sh
+cd /root/ziyong/duobizhong
+./scripts/start_portfolio.sh
 
 # 查看启动日志（前30行）
 tmux attach -t portfolio
 
 # 启动Web看板（可选）
-cd /root/DS/duobizhong/keshihua
+cd /root/ziyong/duobizhong/web
 ./start_web.sh
 ```
 
@@ -882,13 +894,16 @@ cd /root/DS/duobizhong/keshihua
 ps aux | grep portfolio_manager.py
 
 # 2. 检查日志是否正常
-tail -20 /root/DS/duobizhong/portfolio_manager.log
+tail -20 /root/ziyong/duobizhong/portfolio_manager.log
 
 # 3. 检查是否能获取市场数据
-grep "扫描市场数据" /root/DS/duobizhong/portfolio_manager.log
+grep "扫描市场数据" /root/ziyong/duobizhong/portfolio_manager.log
 
 # 4. 检查AI是否正常调用
-grep "AI决策" /root/DS/duobizhong/portfolio_manager.log
+grep "AI决策" /root/ziyong/duobizhong/portfolio_manager.log
+
+# 5. 检查数据文件是否正确创建
+ls -la /root/ziyong/duobizhong/data/
 ```
 
 ---
@@ -897,14 +912,14 @@ grep "AI决策" /root/DS/duobizhong/portfolio_manager.log
 
 | 文件 | 路径 | 作用 | 是否需要备份 |
 |------|------|------|-------------|
-| `.env` | `/root/DS/duobizhong/.env` | API密钥配置（OpenAI + 币安） | ✅ **必须** |
-| `coins_config.json` | `/root/DS/duobizhong/config/` | 币种精度、最小金额、杠杆配置 | ✅ 推荐 |
-| `default.txt` | `/root/DS/duobizhong/prompts/` | 交易策略（外部提示词） | ✅ **必须** |
-| `portfolio_stats.json` | `/root/DS/duobizhong/` | 历史统计数据 | 📊 可选 |
-| `ai_decisions.json` | `/root/DS/duobizhong/` | AI决策日志 | 📊 可选 |
-| `portfolio_manager.py` | `/root/DS/duobizhong/` | 主程序 | ✅ **必须** |
-| `market_scanner.py` | `/root/DS/duobizhong/` | 市场数据模块 | ✅ **必须** |
-| `web_app.py` | `/root/DS/duobizhong/keshihua/` | 可视化看板 | ✅ **必须** |
+| `.env` | `/root/ziyong/duobizhong/.env` | API密钥配置（OpenAI + 币安） | ✅ **必须** |
+| `coins_config.json` | `/root/ziyong/duobizhong/config/` | 币种精度、最小金额、杠杆配置 | ✅ 推荐 |
+| `default.txt` | `/root/ziyong/duobizhong/prompts/` | 交易策略（外部提示词） | ✅ **必须** |
+| `portfolio_stats.json` | `/root/ziyong/duobizhong/data/` | 历史统计数据 | 📊 可选 |
+| `ai_decisions.json` | `/root/ziyong/duobizhong/data/` | AI决策日志 | 📊 可选 |
+| `portfolio_manager.py` | `/root/ziyong/duobizhong/src/core/` | 主程序 | ✅ **必须** |
+| `market_scanner.py` | `/root/ziyong/duobizhong/src/core/` | 市场数据模块 | ✅ **必须** |
+| `web_app.py` | `/root/ziyong/duobizhong/web/` | 可视化看板 | ✅ **必须** |
 
 ---
 
@@ -951,7 +966,7 @@ grep "AI决策" /root/DS/duobizhong/portfolio_manager.log
    - 主程序：`portfolio_manager.py`（3分钟调用一次AI，可灵活调整）
    - 数据模块：`market_scanner.py`（获取K线+技术指标）
    - 统计模块：`portfolio_statistics.py`（跟踪盈亏）
-   - Web看板：`keshihua/web_app.py`（Flask可视化）
+   - Web看板：`web/web_app.py`（Flask可视化）
 
 2. **系统依赖**（必须）：
    ```bash
@@ -965,7 +980,7 @@ grep "AI决策" /root/DS/duobizhong/portfolio_manager.log
 3. **必须配置**：
    - `.env` 文件中的 `BINANCE_API_KEY`、`BINANCE_SECRET`
    - OpenAI 兼容 API：`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL_NAME`
-   - 确保 `.env` 路径是 `/root/DS/duobizhong/.env`
+   - 确保 `.env` 路径是 `/root/ziyong/duobizhong/.env`
    - 支持所有 OpenAI 兼容格式的 API 服务商（DeepSeek/SiliconFlow/Groq等）
 
 4. **核心设计**：
@@ -984,7 +999,7 @@ grep "AI决策" /root/DS/duobizhong/portfolio_manager.log
 6. **快速测试**：
    ```bash
    # 测试币安API
-   python3 -c "from binance.client import Client; import os; from dotenv import load_dotenv; load_dotenv('/root/DS/duobizhong/.env'); c = Client(os.getenv('BINANCE_API_KEY'), os.getenv('BINANCE_SECRET')); print(c.futures_ticker(symbol='BTCUSDT')['lastPrice'])"
+   python3 -c "from binance.client import Client; import os; from dotenv import load_dotenv; load_dotenv('/root/ziyong/duobizhong/.env'); c = Client(os.getenv('BINANCE_API_KEY'), os.getenv('BINANCE_SECRET')); print(c.futures_ticker(symbol='BTCUSDT')['lastPrice'])"
    ```
 
 ---
@@ -999,6 +1014,76 @@ ssh -L 5000:localhost:5000 root@new-server-ip
 # 浏览器访问
 http://localhost:5000
 ```
+
+---
+
+### 🛠️ 路径配置错误修复 (v2.9.0) ⭐NEW
+
+**问题发现**：项目中存在硬编码路径错误，导致文件访问失败
+
+**修复内容**：
+
+#### 🔧 核心模块路径标准化
+
+**1. 项目根目录统一配置**
+```python
+# 在 portfolio_manager.py 和 market_scanner.py 中添加
+import os
+PROJECT_ROOT = '/root/ziyong/duobizhong'
+```
+
+**2. 文件路径统一使用 os.path.join()**
+```python
+# 修复前（硬编码错误路径）
+stats_file = '/root/DS/duobizhong/data/portfolio_stats.json'
+
+# 修复后（标准路径）
+stats_file = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
+```
+
+**3. 外部提示词文件路径修正**
+- 修复：`/root/DS/duobizhong/prompts/default.txt` → `/root/ziyong/duobizhong/prompts/default.txt`
+- 确保AI提示词加载正常
+
+#### 📁 数据文件目录标准化
+
+**目录结构调整**：
+- 将JSON数据文件从项目根目录移动到 `data/` 目录
+- 符合项目架构规范：`src/`、`config/`、`data/`、`prompts/` 分离
+
+**修复的文件路径**：
+1. `portfolio_stats.json` → `data/portfolio_stats.json`
+2. `ai_decisions.json` → `data/ai_decisions.json`
+3. `current_runtime.json` → `data/current_runtime.json`
+
+#### 🔄 导入错误修复
+
+**相对导入问题**：
+```python
+# 修复前（相对导入失败）
+from .portfolio_statistics import PortfolioStatistics
+
+# 修复后（绝对导入）
+from portfolio_statistics import PortfolioStatistics
+```
+
+**优势**：
+- ✅ 解决Python模块导入错误
+- ✅ 统一项目路径管理
+- ✅ 提高代码可移植性
+- ✅ 符合Python项目最佳实践
+
+#### 📋 修复的技术问题
+
+1. **脚本执行权限**：为 `start_portfolio.sh` 添加执行权限
+2. **Python导入系统**：解决相对导入无父包错误
+3. **文件路径标准化**：消除硬编码路径依赖
+4. **跨平台兼容性**：使用 `os.path.join()` 确保路径正确
+
+**代码位置**：
+- `portfolio_manager.py`: 第18行导入修复，第50行PROJECT_ROOT定义
+- `market_scanner.py`: 第9行导入修复，第12行PROJECT_ROOT定义
+- 文件路径统一使用 `os.path.join(PROJECT_ROOT, ...)`
 
 ---
 

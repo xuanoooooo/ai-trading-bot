@@ -5,7 +5,7 @@
       "binance_symbol": "BTCUSDT",
       "precision": 3,
       "price_precision": 2,
-      "min_order_value": 50
+      "min_order_value": 110
     },
     {
       "symbol": "ETH",
@@ -53,6 +53,6 @@
   "portfolio_rules": {
     "leverage": 5,
     "min_cash_reserve_percent": 10,
-    "check_interval_minutes": 5
+    "check_interval_minutes": 3
   }
 }

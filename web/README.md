@@ -28,14 +28,14 @@
 ### 1. 启动交易程序（必须先启动）
 
 ```bash
-cd /root/DS/duobizhong
-./start_portfolio.sh
+cd /root/ziyong/duobizhong
+./scripts/start_portfolio.sh
 ```
 
 ### 2. 启动Web服务
 
 ```bash
-cd /root/DS/duobizhong/keshihua
+cd /root/ziyong/duobizhong/web
 ./start_web.sh
 ```
 
@@ -59,7 +59,7 @@ http://localhost:5000
 ## 📁 文件说明
 
 ```
-keshihua/
+web/
 ├── web_app.py              # Flask后端服务
 ├── templates/
 │   └── index.html          # HTML模板

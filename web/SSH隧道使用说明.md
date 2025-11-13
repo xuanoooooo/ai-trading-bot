@@ -42,7 +42,7 @@ ssh -L 5000:localhost:5000 root@your-server-ip
 
 1. 安装"Remote - SSH"插件
 2. 连接到服务器
-3. 在终端执行：`cd /root/DS/duobizhong/keshihua && ./start_web.sh`
+3. 在终端执行：`cd /root/ziyong/duobizhong/web && ./start_web.sh`
 4. VSCode会自动创建端口转发
 5. 浏览器访问 `http://localhost:5000`
 
@@ -63,7 +63,7 @@ ssh -L 5000:localhost:5000 root@your-server-ip
 ### 步骤1：在服务器上启动Web服务
 
 ```bash
-cd /root/DS/duobizhong/keshihua
+cd /root/ziyong/duobizhong/web
 ./start_web.sh
 ```
 

@@ -8,10 +8,10 @@ echo "🗑️  AI历史记录清理工具"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "⚠️  此操作将删除以下文件："
-echo "   - ai_decisions.json       (AI决策历史)"
-echo "   - portfolio_stats.json    (持仓和交易统计)"
-echo "   - current_runtime.json    (运行时状态)"
-echo "   - portfolio_manager.log   (程序日志)"
+echo "   - data/ai_decisions.json       (AI决策历史)"
+echo "   - data/portfolio_stats.json    (持仓和交易统计)"
+echo "   - data/current_runtime.json    (运行时状态)"
+echo "   - portfolio_manager.log       (程序日志)"
 echo ""
 echo "📦 删除前会自动备份到 backups/ 目录"
 echo ""
@@ -61,16 +61,22 @@ echo "📁 备份目录: $BACKUP_DIR"
 
 # 备份文件列表
 FILES_TO_BACKUP=(
-    "ai_decisions.json"
-    "portfolio_stats.json"
-    "current_runtime.json"
+    "data/ai_decisions.json"
+    "data/portfolio_stats.json"
+    "data/current_runtime.json"
     "portfolio_manager.log"
 )
 
 BACKUP_COUNT=0
 for file in "${FILES_TO_BACKUP[@]}"; do
     if [ -f "$file" ]; then
-        cp "$file" "$BACKUP_DIR/"
+        # 确保备份目录有对应结构
+        if [[ "$file" == data/* ]]; then
+            mkdir -p "$BACKUP_DIR/data"
+            cp "$file" "$BACKUP_DIR/$file"
+        else
+            cp "$file" "$BACKUP_DIR/"
+        fi
         echo "   ✅ 已备份: $file"
         ((BACKUP_COUNT++))
     fi
@@ -157,10 +163,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "✅ 程序已启动！"
     echo "📊 查看运行状态: tmux attach -t portfolio"
-    echo "📈 启动可视化看板: cd keshihua && ./start_web.sh"
+    echo "📈 启动可视化看板: cd web && ./start_web.sh"
 else
     echo ""
-    echo "ℹ️  稍后可手动启动: ./start_portfolio.sh"
+    echo "ℹ️  稍后可手动启动: ./scripts/start_portfolio.sh"
 fi
 
 echo ""

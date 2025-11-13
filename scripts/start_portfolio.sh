@@ -3,7 +3,7 @@
 # AI多币种投资组合管理系统启动脚本
 
 SESSION_NAME="portfolio"
-SCRIPT_DIR="/root/DS/duobizhong"
+SCRIPT_DIR="/root/ziyong/duobizhong"
 
 echo "=========================================="
 echo "🚀 AI多币种投资组合管理系统"
@@ -51,7 +51,7 @@ echo "📂 切换到工作目录..."
 tmux send-keys -t $SESSION_NAME "cd $SCRIPT_DIR" C-m
 
 echo "🚀 启动投资组合管理器..."
-tmux send-keys -t $SESSION_NAME "python3 portfolio_manager.py" C-m
+tmux send-keys -t $SESSION_NAME "python3 src/core/portfolio_manager.py" C-m
 
 sleep 2
 

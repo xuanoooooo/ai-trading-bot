@@ -2,10 +2,15 @@
 市场扫描器 - 获取所有币种的市场数据和技术指标
 复用 deepseekBNB_stats.py 的技术指标计算逻辑
 """
+import os
 import pandas as pd
 from binance.client import Client
 from typing import Dict, List
 import json
+
+# 配置项目根目录
+import os
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def calculate_technical_indicators(df, timeframe='5m'):
@@ -600,7 +605,7 @@ class MarketScanner:
             try:
                 import json
                 import os
-                stats_file = os.path.join(os.path.dirname(__file__), 'portfolio_stats.json')
+                stats_file = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
                 if os.path.exists(stats_file):
                     with open(stats_file, 'r', encoding='utf-8') as f:
                         stats = json.load(f)

@@ -14,7 +14,7 @@ from flask_cors import CORS
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from market_scanner import MarketScanner
+    from src.core.market_scanner import MarketScanner
     from binance.client import Client
     from dotenv import load_dotenv
     
@@ -46,9 +46,9 @@ CORS(app)
 
 # 配置 - 使用绝对路径定位数据文件（这些文件由portfolio_manager.py生成）
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATS_FILE = os.path.join(PROJECT_ROOT, 'portfolio_stats.json')
-AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'ai_decisions.json')
-RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'current_runtime.json')
+STATS_FILE = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
+AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'data', 'ai_decisions.json')
+RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'data', 'current_runtime.json')
 
 # 记录Web服务启动时间
 WEB_START_TIME = datetime.now()
