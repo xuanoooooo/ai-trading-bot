@@ -305,7 +305,7 @@ class MarketScanner:
             print(f"❌ 获取{coin}的15分钟K线失败: {e}")
             return None
 
-    def scan_coin(self, coin: str, timeframe='5m', limit=96) -> Dict:
+    def scan_coin(self, coin: str, timeframe='5m', limit=300) -> Dict:
         """扫描单个币种的市场数据（5分钟周期）"""
         try:
             # 找到币种配置

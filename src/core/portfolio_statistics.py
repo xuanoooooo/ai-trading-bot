@@ -15,7 +15,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 class PortfolioStatistics:
     """投资组合统计类 - 管理多币种交易历史和性能指标"""
     
-    def __init__(self, stats_file='data/portfolio_stats.json', binance_client=None):
+    def __init__(self, stats_file='data/portfolio_stats.json', binance_client=None, config_file=None):
         self.stats_file = stats_file
         self.binance_client = binance_client  # 用于取消止损单
         self.start_time = None
@@ -25,13 +25,32 @@ class PortfolioStatistics:
         self.total_pnl = 0.0
         
         # 多币种支持
-        self.coins = ['BNB', 'ETH', 'SOL', 'XRP', 'DOGE']
+        if config_file is None:
+            config_file = os.path.join(PROJECT_ROOT, 'config', 'coins_config.json')
+        self.coins = self._load_coins_from_config(config_file)
         self.current_positions = {coin: None for coin in self.coins}
         self.trade_history = []  # 所有交易历史
         self.trade_history_by_coin = {coin: [] for coin in self.coins}  # 按币种分类
         self.stop_loss_history = []  # 止损触发历史（保留7天）
         
         self.load()
+    
+    def _load_coins_from_config(self, config_file: str) -> List[str]:
+        """从配置文件加载币种列表"""
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                coins = config.get('coins', [])
+                symbols = [coin.get('symbol') for coin in coins if coin.get('symbol')]
+                if symbols:
+                    return symbols
+                print(f"⚠️ 配置文件中未找到有效币种，将使用默认列表")
+        except FileNotFoundError:
+            print(f"⚠️ 配置文件不存在: {config_file}，将使用默认币种列表")
+        except Exception as e:
+            print(f"⚠️ 加载币种配置失败: {e}，将使用默认币种列表")
+        # 默认回退
+        return ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE']
     
     def load(self):
         """从文件加载统计数据"""
@@ -45,7 +64,8 @@ class PortfolioStatistics:
                     self.win_trades = data.get('win_trades', 0)
                     self.lose_trades = data.get('lose_trades', 0)
                     self.total_pnl = data.get('total_pnl', 0.0)
-                    self.current_positions = data.get('current_positions', {coin: None for coin in self.coins})
+                    stored_positions = data.get('current_positions', {})
+                    self.current_positions = {coin: stored_positions.get(coin) for coin in self.coins}
                     self.stop_loss_history = data.get('stop_loss_history', [])  # 加载止损历史
                     
                     # 重建按币种分类的历史
