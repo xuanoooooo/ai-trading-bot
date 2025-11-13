@@ -191,6 +191,7 @@ async function fetchPositions() {
                     <div class="position-details">
                         <div>开仓价: $${formatNumber(pos.entry_price)}</div>
                         <div>数量: ${pos.amount}</div>
+                        ${pos.leverage ? `<div>杠杆: ${pos.leverage}x</div>` : ''}
                         <div>当前价: $${formatNumber(pos.current_price)}</div>
                         <div>开仓时间: ${formatTime(pos.entry_time)}</div>
                         <div>持仓时长: ${durationText}</div>

@@ -246,6 +246,7 @@ def get_positions():
                         'side': 'long' if amount > 0 else 'short',
                         'entry_price': round(entry_price, price_decimals),
                         'amount': abs(amount),
+                        'leverage': int(float(pos.get('leverage', 0))) if pos.get('leverage') else None,
                         'entry_time': entry_time,
                         'pnl': round(pnl, 2),
                         'roe': round(roe, 2),
