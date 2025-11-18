@@ -807,9 +807,9 @@ ls -lh duobizhong/
 
 #### 3️⃣ **配置环境变量**
 ```bash
-cd /root/ziyong/duobizhong
+cd /path/to/duobizhong   # 进入你的项目根目录（将此路径替换为你本地或服务器上的实际路径）
 
-# 创建或编辑 .env 文件
+# 创建或编辑根目录下的 .env 文件
 vim .env
 ```
 
@@ -840,7 +840,7 @@ import os
 from binance.client import Client
 from dotenv import load_dotenv
 
-load_dotenv('/root/ziyong/duobizhong/.env')
+load_dotenv('./.env')  # 从项目根目录加载 .env，避免在代码或文档中使用绝对路径
 client = Client(os.getenv('BINANCE_API_KEY'), os.getenv('BINANCE_SECRET'))
 ticker = client.futures_ticker(symbol='BTCUSDT')
 print(f"✅ 币安API连接成功！BTC价格: ${float(ticker['lastPrice']):,.2f}")

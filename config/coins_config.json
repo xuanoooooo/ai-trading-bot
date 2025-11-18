@@ -53,6 +53,6 @@
   "portfolio_rules": {
     "leverage": 5,
     "min_cash_reserve_percent": 10,
-    "check_interval_minutes": 3
+    "check_interval_minutes": 5
   }
 }
