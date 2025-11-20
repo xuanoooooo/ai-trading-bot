@@ -1,5 +1,20 @@
 # 🚀 AI多币种投资组合管理系统
 
+> ⚠️ **重要提示**：本项目仅支持**单向持仓模式**！请确保币安合约账户设置为单向持仓。
+
+## 💬 作者的话
+
+"经历了生活的大亏损、在币圈也没获得什么结果，我对自己的水平彻底失望。与其每天假装看盘实则在赌，不如把决策交给 AI——至少它不会因为行情波动而梭哈。这个项目源于一个简单的期望：AI 再不完美也比我强。"
+
+## 💰 支持项目
+
+如果这个项目对你有帮助，欢迎支持。
+
+**网络**：BEP20 / BSC
+**钱包地址**：`0x59B7c28c236E6017df28e7F376B84579872A4E33`
+
+---
+
 ## 📥 安装与部署
 
 ### 推荐目录结构
@@ -61,46 +76,107 @@ vim .env  # 填入你的 API 密钥
 - **可视化看板**: Web实时监控(Flask)，直接读取币安API数据
 - **技术指标分析**: RSI、MACD、ATR、EMA、布林带等多维度指标
 
-## 📈 已完成改进
+## 📈 核心架构设计
 
-### 📊 多周期K线数据传递 (v2.8.0) ⭐NEW
+### 🎯 提示词架构优化 - 代码与策略完全分离 ⭐核心特性
 
-**核心改进**: 为AI提供完整的多周期K线原始数据，增强形态识别和趋势判断能力
+**核心理念**: System Message（不变的规则）vs User Message（变化的数据）
 
-**新增K线数据**：
-- **5分钟周期**：最近13根K线（~1小时，执行层）
-  - 用途：捕捉短期入场时机、识别即时形态
-- **15分钟周期**：最近16根K线（4小时，战术层）
-  - 用途：战术级别趋势判断、支撑阻力识别
-- **1小时周期**：最近10根K线（~10小时，策略层）
-  - 用途：中期趋势分析、关键价格位判断
-- **4小时周期**：最近6根K线（24小时，战略层）
-  - 用途：日级趋势方向、大周期形态识别
+这是项目最重要的架构设计，实现了**代码与策略的完全解耦**：
+- **修改交易策略**：只需编辑外部文本文件 `prompts/default.txt`，无需改动任何代码
+- **调整系统规则**：资金保护、止损机制等硬性约束保持在代码中，确保安全
+- **灵活切换**：可创建多个策略文件（激进/保守/稳健），随时切换测试
 
-**技术指标（按周期精确列出，实际传给 AI 的字段）**：
-- 5分钟（执行层）：
-  - 仅原始 OHLCV（不计算指标，避免小周期噪音过拟合）
-- 15分钟（战术层）：
-  - `EMA20, EMA50`
-  - `RSI(14)`
-  - `MACD(12,26,9)`（含 DIF、DEA/Signal、Histogram）
-  - `BollingerBands(20, 2)`（上轨/中轨/下轨）
-- 1小时（策略层）：
-  - `EMA20, EMA50`
-  - `RSI(14)`
-  - `MACD(12,26,9)`（含时间序列）
-  - `ATR(14)`
-  - `BollingerBands(20, 2)`
-- 4小时（战略层）：
-  - `EMA20, EMA50`
-  - `ATR(14)`
+#### 📋 三层提示词结构
 
-**情绪与交易所数据**：
-- 资金费率（Funding Rate）
-- 持仓量/未平仓合约（Open Interest）
-- 24h 涨跌、15m 涨跌
+**1️⃣ System Message - 系统硬性规则**（代码中，不可修改）
 
-**K线数据格式**：
+位置：`portfolio_manager.py:510-577`
+
+**包含内容**：
+- **JSON 格式规范**：确保 AI 返回可解析的标准 JSON 结构
+- **移动止损机制**：HOLD 时填入新价格，系统自动更新止损单
+- **硬性安全规则**：
+  - 资金保护：必须保留 10% 总资产作为缓冲
+  - 杠杆固定：5x 杠杆（通过配置文件 `coins_config.json` 管理）
+  - 最小开仓：全局 13 USDT + 币种特定限制（动态读取配置）
+  - 止损必填：所有开仓必须提供止损价格
+
+**为什么硬编码**：✅ 保证系统安全 | ✅ 确保格式正确 | ✅ 防止违反交易所规则
+
+---
+
+**2️⃣ User Message - 外部交易策略**（可自由修改，无需改代码）
+
+位置：`prompts/default.txt`
+
+**包含内容**：
+- 📋 交易身份与风格定位（日内/波段/长线）
+- 🎯 决策权限与理念（自主决策、观望也是决策）
+- 📊 多周期分析框架（如何使用 5m/15m/1h/4h 数据）
+- 🎲 入场信号标准（做多/做空的具体技术条件）
+- 💰 仓位管理策略（强/中/弱信号的仓位配置）
+- ⏱️ 持仓时间与频率控制
+- 🛡️ 止损止盈策略（ATR 参考、追踪止盈）
+- 📈 性能目标（夏普比率、最大回撤）
+
+**如何修改策略**：
+```bash
+# 1. 直接编辑策略文件
+vim prompts/default.txt
+
+# 2. 创建多个策略版本测试
+cp prompts/default.txt prompts/aggressive.txt   # 激进策略
+cp prompts/default.txt prompts/conservative.txt # 保守策略
+
+# 3. 重启程序即可生效
+pkill -f portfolio_manager.py && ./scripts/start_portfolio.sh
+```
+
+**优势**：✅ 零代码修改 | ✅ 快速测试策略 | ✅ 版本管理方便
+
+---
+
+**3️⃣ 动态市场数据**（每次调用实时更新）
+
+位置：`portfolio_manager.py:478-507`
+
+**包含内容**：
+- ⏰ 系统状态：启动时间、运行时长、调用次数
+- 💰 资金状况：总资产、已用保证金、可用余额、保证金使用率
+- 📊 **多周期市场数据**（见下文详细说明）
+- 🏦 当前持仓：浮盈浮亏、止损止盈价格
+- 📈 历史统计：胜率、盈亏记录
+- 📝 最近决策：AI 的历史决策及结果
+
+**资金计算逻辑**（重要）：
+```
+最大可用保证金 = 总资产 × 90% - 已用保证金
+
+示例：
+- 初始：total=100, used=0  → 可用 = 90-0  = 90
+- 开仓50：total=100, used=50 → 可用 = 90-50 = 40
+- 再开30：total=100, used=80 → 可用 = 90-80 = 10
+```
+
+---
+
+#### 📊 多周期K线与技术指标体系
+
+为 AI 提供完整的多周期市场视角，支持从短期执行到长期战略的全方位分析：
+
+**K线数据覆盖**：
+- **5分钟** (13根, ~1小时)：执行层，捕捉短期入场时机
+- **15分钟** (16根, 4小时)：战术层，判断短期趋势
+- **1小时** (10根, ~10小时)：策略层，中期趋势分析
+- **4小时** (6根, 24小时)：战略层，日级趋势方向
+
+**技术指标配置**：
+- **15分钟/1小时**：EMA20/50, RSI(14), MACD, ATR(14), 布林带
+- **4小时**：EMA20/50, ATR(14)（轻量级，避免信息冗余）
+- **市场情绪**：资金费率、持仓量、24h/15m涨跌幅
+
+**数据格式示例**：
 ```
 【15分钟K线】最近 16 根:
   K1: 🟢 O:3245.50 H:3250.00 L:3240.00 C:3248.00 (+0.08%) V:1234.5
@@ -108,250 +184,53 @@ vim .env  # 填入你的 API 密钥
   ...
 ```
 
-**优势**：
-- ✅ AI可直接观察K线形态（吞没、十字星、锤子线等）
-- ✅ 多周期K线配合技术指标，提供完整的市场视角
-- ✅ 每个周期覆盖合理时间跨度，避免信息冗余
-- ✅ K线数量经过优化，平衡信息量与Token成本
+**优势**：✅ AI 可观察 K 线形态 | ✅ 多周期趋势共振 | ✅ 平衡信息量与成本
 
 **代码位置**：
-- `market_scanner.py`: 各周期K线数据获取（Line 157-296）
-- `portfolio_manager.py`: K线格式化与传递（Line 234-254, 394-435）
+- `market_scanner.py:157-296` - 各周期数据获取
+- `portfolio_manager.py:234-254, 394-435` - 数据格式化与传递
 
 ---
 
-### 🎯 提示词架构重大优化 (v2.7.0)
+#### 🔧 配置文件动态读取 & OpenAI API 兼容
 
-**核心理念**: System Message（不变的规则）vs User Message（变化的数据）
+**最小开仓金额**：从 `coins_config.json` 动态读取，自动同步到 AI 提示词
+```python
+# 自动生成并插入 System Message
+币种限制：BTC 50 | ETH 24 | SOL 13 | BNB 13 | ...
+```
 
-#### 硬编码提示词（System Message - 不可外部修改）
-
-位置：`portfolio_manager.py:510-577`
-
-**包含内容**：
-1. **基础身份定位**
-   - 专业加密货币投资组合经理
-
-2. **返回格式要求**（JSON结构）
-   - 字段定义：coin, action, reason, position_value, stop_loss, take_profit
-   - 数据类型和格式规范
-   - 示例 JSON 结构
-
-3. **移动止损机制说明**（新增）
-   - HOLD 时填入新 stop_loss 价格即可
-   - 系统自动取消旧止损单 + 创建新止损单
-   - AI 无需执行多个操作，只需提供新价格
-
-4. **硬性规则（红线）**
-   - 资金保护：必须保留 10% 总资产作为手续费和风险缓冲
-   - 最大可用公式：`总资产 × 90% - 已用保证金`
-   - 杠杆固定：5x 杠杆，由系统管理（通过 `config/coins_config.json` 的 `portfolio_rules.leverage` 配置）
-   - 最小开仓金额：全局 13 USDT + 币种特定限制（动态读取配置文件）
-   - 止损必填：所有开仓和持仓必须提供止损价格
-
-**为什么硬编码这些**：
-- ✅ 确保 AI 响应格式正确（JSON 解析不出错）
-- ✅ 防止 AI 违反系统安全限制（资金保护）
-- ✅ 技术机制说明（移动止损如何工作）
-- ✅ 这些是系统层面的约束，不是交易策略
-
----
-
-#### 外部可修改提示词（prompts/default.txt）
-
-位置：`prompts/default.txt`（外部交易策略文件）
-
-**包含内容**：
-- 📋 交易身份与定位（日内交易者、多币种管理）
-- 🎯 决策权限与理念（自主决策、观望也是决策）
-- 📊 多周期分析框架（5m/15m/1h/4h 如何使用）
-- 🎲 入场信号标准（做多/做空的具体条件）
-- 💰 仓位管理建议（强中弱信号的仓位配置）
-- ⏱️ 持仓时间与交易频率（日内为主、降低频率）
-- 🛡️ 止损止盈管理策略（ATR 参考、追踪止盈）
-- 📈 性能优化目标（夏普比率、学习改进）
-- 🧠 决策独立性原则（保持客观、理性决策）
-
-**如何修改策略**：
+**灵活切换 AI 服务商**：
 ```bash
-# 1. 编辑外部提示词文件
-vim prompts/default.txt
-
-# 2. 创建多个策略版本
-cp prompts/default.txt prompts/aggressive.txt   # 激进策略
-cp prompts/default.txt prompts/conservative.txt # 保守策略
-
-# 3. 切换策略（修改代码中的文件路径）
-vim src/core/portfolio_manager.py  # 修改文件路径
-# 或者直接替换 default.txt 内容
-
-# 4. 重启程序生效
-pkill -f portfolio_manager.py
-./scripts/start_portfolio.sh
-```
-
----
-
-#### 动态数据（User Message - 每次变化）
-
-位置：`portfolio_manager.py:478-507`
-
-**包含内容**：
-- ⏰ 系统运行状态（启动时间、运行时长、调用次数）
-- 💰 当前资金状况
-  - 账户总资产（总余额）
-  - 已用保证金（当前持仓占用）
-  - 剩余可用余额（实时同步币安）
-  - 保证金使用率（风险监控）
-  - 当前杠杆（5x）
-- 📊 市场数据
-  - BTC 大盘数据（价格、指标、K线）
-  - 各币种市场数据（技术指标、K线、资金费率）
-  - 当前持仓情况（浮盈浮亏、止损止盈价格）
-  - 历史统计（胜率、盈亏）
-  - 最近决策记录
-
-**优势**：
-- ✅ AI 看到原始数据，完整透明
-- ✅ 资金计算公式在 System Message，数据在 User Message
-- ✅ 将来调整 10% 保留比例，只需修改 System Message
-
----
-
-#### 资金计算逻辑修正（重要）
-
-**旧逻辑（错误）**：
-```python
-可用保证金 = free_balance * 0.9
-# 问题：持仓后 free_balance 减少，可用额度会不断缩水
-```
-
-**新逻辑（正确）**：
-```python
-最大可用 = 总资产 × 90% - 已用保证金
-
-示例：
-初始：total=100, used=0  → 可用 = 90-0  = 90
-开仓50：total=100, used=50 → 可用 = 90-50 = 40
-再开30：total=100, used=80 → 可用 = 90-80 = 10
-亏损2U：total=98,  used=80 → 可用 = 88.2-80 = 8.2
-```
-
-**AI 看到的数据**：
-```
-- 账户总资产: 100.00 USDT
-- 已用保证金: 50.00 USDT
-- 剩余可用余额: 50.00 USDT
-```
-
-**AI 遵守的规则**（System Message）：
-```
-最大可用保证金 = 账户总资产 × 90% - 已用保证金
-示例：总资产 100 USDT，已用 50 USDT → 最多还能用 40 USDT
-```
-
----
-
-#### 配置文件动态读取
-
-**最小开仓金额**：从 `coins_config.json` 动态读取，自动插入 System Message
-```python
-# 代码自动生成（portfolio_manager.py:472-476）
-coin_limits_text = "BTC 50 | ETH 24 | SOL 13 | BNB 13 | ..."
-
-# 插入到 System Message（Line 571）
-币种限制：{coin_limits_text}
-```
-
-**优势**：
-- ✅ 修改配置文件，AI 立即看到新值
-- ✅ 配置文件是唯一数据源
-- ✅ 不需要手动同步两个地方
-
----
-
-#### OpenAI 格式 API 配置（新增）
-
-**灵活切换服务商**：
-```bash
-# .env 文件配置
-OPENAI_API_KEY=[REDACTED_OPENAI_KEY]
+# .env 文件配置（支持所有 OpenAI 兼容 API）
+OPENAI_API_KEY=your_api_key
 OPENAI_BASE_URL=https://api.deepseek.com
 OPENAI_MODEL_NAME=deepseek-chat
 
-# 支持的服务商示例（修改上面三行即可切换）：
+# 支持的服务商示例：
 # DeepSeek:     https://api.deepseek.com          | deepseek-chat
 # SiliconFlow:  https://api.siliconflow.cn/v1     | deepseek-ai/DeepSeek-V2.5
-# Together AI:  https://api.together.xyz/v1       | meta-llama/Meta-Llama-3.1-70B-Instruct
 # Groq:         https://api.groq.com/openai/v1    | llama-3.1-70b-versatile
 # OpenAI:       https://api.openai.com/v1         | gpt-4o
 ```
 
-**代码实现**（portfolio_manager.py:58-61, 578）：
-```python
-deepseek_client = OpenAI(
-    api_key=os.getenv('OPENAI_API_KEY'),
-    base_url=os.getenv('OPENAI_BASE_URL')
-)
-
-# 调用时使用模型名称
-model=os.getenv('OPENAI_MODEL_NAME', 'deepseek-chat')
-```
-
-**优势**：
-- ✅ 切换服务商只需修改 .env（API密钥、端点、模型名称）
-- ✅ 无需修改代码
-- ✅ 支持所有 OpenAI 兼容格式的 API
+**优势**：✅ 修改配置立即生效 | ✅ 唯一数据源 | ✅ 无需手动同步
 
 ---
 
 ### 🎯 币安交易精度设置 ✅
 
-**完全修复并优化，可放心使用**
+**精度配置**：
+- **数量精度**：BTC/ETH 0.001 | SOL 0.1 | BNB 0.01 | XRP/ADA/DOGE 整数
+- **价格精度**：BTC/ETH/SOL/BNB 2位 | XRP/ADA/DOGE 4位
+- **最小金额**：全局 13 USDT | BTC 50 | ETH 24
 
-**🔒 全局最小金额限制（硬编码）**：
-- **13 USDT 统一底线**：任何币种开仓不得低于13美元 ⭐NEW
-- 双重保护：全局限制 + 币种特定限制
-- 代码位置：`portfolio_manager.py:574-579`
-- 安全设计：即使币种配置被修改，也不会低于13美元
+**智能舍入算法**：
+- ✅ 自动选择 floor/ceil，最小化误差（实测 ≤15%）
+- ✅ 全局 13 USDT 硬编码保护（任何币种不得低于此值）
+- ✅ 配置文件：`config/coins_config.json`
 
-**数量精度（Precision）配置**：
-- BTC: 3位小数 (0.001) ✅
-- ETH: 3位小数 (0.001) ✅
-- SOL: 1位小数 (0.1) ✅
-- BNB: 2位小数 (0.01) ✅
-- XRP/ADA/DOGE: 整数 (1) ✅
-
-**最小下单金额（币种特定，高于全局13美元）**：
-- BTC: 50 USDT
-- ETH: 24 USDT
-- SOL/BNB/XRP/ADA/DOGE: 13 USDT（统一为全局限制）
-
-**价格精度（Price Precision）**：
-- BTC/ETH/SOL/BNB: 2位小数（止损价格格式化）
-- XRP/ADA/DOGE: 4位小数（低价币需更高精度）
-
-**智能算法实现**：
-- ✅ **全局13美元硬编码**：任何币种都不能低于此值（安全底线）⭐NEW
-- ✅ 智能取整：自动选择floor/ceil，最小化误差
-- ✅ 误差控制：实测误差≤15%
-- ✅ 双重检查：先检查全局限制，再检查币种限制
-- ✅ 配置位置：`config/coins_config.json`
-- ✅ 计算函数：`portfolio_manager.py:571-611`
-
-**测试验证结果**：
-```
-全局限制测试：
-SOL $5    ❌ 被拒绝（< 13）  |  SOL $10   ❌ 被拒绝（< 13）
-SOL $13   ✅ 通过            |  DOGE $8   ❌ 被拒绝（< 13）
-DOGE $13  ✅ 通过            |  BNB $10   ❌ 被拒绝（< 13）
-
-精度误差测试：
-BTC:  误差 6.00%  ✅  |  ETH:  误差 0.80%  ✅
-SOL:  误差 15.00% ✅  |  BNB:  误差 0.00%  ✅
-XRP:  误差 2.40%  ✅  |  ADA:  误差 0.00%  ✅
-DOGE: 误差 1.00%  ✅
-```
+**测试验证**：全部币种精度符合币安要求，无订单拒绝问题
 
 ## 📁 项目结构
 
@@ -1064,78 +943,6 @@ ssh -L 5000:localhost:5000 root@new-server-ip
 # 浏览器访问
 http://localhost:5000
 ```
-
----
-
-### 🛠️ 路径配置错误修复 (v2.9.0) ⭐NEW
-
-**问题发现**：项目中存在硬编码路径错误，导致文件访问失败
-
-**修复内容**：
-
-#### 🔧 核心模块路径标准化
-
-**1. 项目根目录统一配置**
-```python
-# 在 portfolio_manager.py 和 market_scanner.py 中添加
-import os
-PROJECT_ROOT = '/root/ziyong/duobizhong'
-```
-
-**2. 文件路径统一使用 os.path.join()**
-```python
-# 修复前（硬编码错误路径）
-stats_file = '/root/DS/duobizhong/data/portfolio_stats.json'
-
-# 修复后（标准路径）
-stats_file = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
-```
-
-**3. 外部提示词文件路径修正**
-- 修复：`/root/DS/duobizhong/prompts/default.txt` → `/root/ziyong/duobizhong/prompts/default.txt`
-- 确保AI提示词加载正常
-
-#### 📁 数据文件目录标准化
-
-**目录结构调整**：
-- 将JSON数据文件从项目根目录移动到 `data/` 目录
-- 符合项目架构规范：`src/`、`config/`、`data/`、`prompts/` 分离
-
-**修复的文件路径**：
-1. `portfolio_stats.json` → `data/portfolio_stats.json`
-2. `ai_decisions.json` → `data/ai_decisions.json`
-3. `current_runtime.json` → `data/current_runtime.json`
-
-#### 🔄 导入错误修复
-
-**相对导入问题**：
-```python
-# 修复前（相对导入失败）
-from .portfolio_statistics import PortfolioStatistics
-
-# 修复后（绝对导入）
-from portfolio_statistics import PortfolioStatistics
-```
-
-**优势**：
-- ✅ 解决Python模块导入错误
-- ✅ 统一项目路径管理
-- ✅ 提高代码可移植性
-- ✅ 符合Python项目最佳实践
-
-#### 📋 修复的技术问题
-
-1. **脚本执行权限**：为 `start_portfolio.sh` 添加执行权限
-2. **Python导入系统**：解决相对导入无父包错误
-3. **文件路径标准化**：消除硬编码路径依赖
-4. **跨平台兼容性**：使用 `os.path.join()` 确保路径正确
-
-**代码位置**：
-- `portfolio_manager.py`: 第18行导入修复，第50行PROJECT_ROOT定义
-- `market_scanner.py`: 第9行导入修复，第12行PROJECT_ROOT定义
-- 文件路径统一使用 `os.path.join(PROJECT_ROOT, ...)`
-
----
 
 ## 🚨 风险提示
 
