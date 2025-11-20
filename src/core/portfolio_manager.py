@@ -288,6 +288,8 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     
     # 格式化时间序列（用箭头连接，更直观）
     def format_series(values, decimals=1):
+        if values is None:
+            return "⚠️ 数据不可用"
         if not values or len(values) == 0:
             return "无数据"
         formatted = [f"{v:.{decimals}f}" for v in values]
@@ -297,14 +299,27 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     if btc_data:
         # 计算ATR百分比
         btc_price = btc_data['price']
-        btc_atr_15m_pct = (btc_data['atr_15m'] / btc_price * 100) if btc_price > 0 else 0
-        btc_atr_1h_pct = (btc_data['atr_1h'] / btc_price * 100) if btc_price > 0 else 0
-        
+        btc_atr_15m_pct = (btc_data['atr_15m'] / btc_price * 100) if btc_price > 0 and btc_data.get('atr_15m') else 0
+        btc_atr_1h_pct = (btc_data['atr_1h'] / btc_price * 100) if btc_price > 0 and btc_data.get('atr_1h') else 0
+
+        # 处理资金费率和持仓量可能为None的情况
+        funding_rate = btc_data.get('funding_rate')
+        if funding_rate is not None:
+            funding_text = f"{funding_rate:.6f} {'(多头付费)' if funding_rate > 0 else '(空头付费)' if funding_rate < 0 else '(中性)'}"
+        else:
+            funding_text = "⚠️ 数据不可用"
+
+        open_interest = btc_data.get('open_interest')
+        if open_interest is not None:
+            open_interest_text = f"{open_interest:,.0f} BTC"
+        else:
+            open_interest_text = "⚠️ 数据不可用"
+
         btc_text = f"""
     【BTC大盘】
     - 价格: ${btc_data['price']:,.2f} | 15m: {btc_data['change_15m']:+.2f}%
-    - 资金费率: {btc_data['funding_rate']:.6f} {'(多头付费)' if btc_data['funding_rate'] > 0 else '(空头付费)' if btc_data['funding_rate'] < 0 else '(中性)'}
-    - 持仓量: {btc_data['open_interest']:,.0f} BTC
+    - 资金费率: {funding_text}
+    - 持仓量: {open_interest_text}
 
     15分钟周期:
     - RSI: {btc_data['rsi_15m']:.1f} | 序列: [{format_series(btc_data.get('rsi_series_15m', []), 1)}]
@@ -344,11 +359,22 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             sl = pos.get('stop_loss', 0)
             tp = pos.get('take_profit', 0)
             roe = pos.get('roe', 0)
+            entry_price = pos.get('entry_price', 0)
+
             sl_text = f" | 止损{format_price(sl, coin)}" if sl > 0 else ""
             tp_text = f" | 止盈{format_price(tp, coin)}" if tp > 0 else ""
             roe_text = f"{roe:+.2f}%" if roe != 0 else "0.00%"
+
+            # 获取当前价格并计算价格变动
+            price_change_text = ""
+            if coin in market_data and 'price' in market_data[coin]:
+                current_price = market_data[coin]['price']
+                if entry_price > 0:
+                    price_change_pct = ((current_price - entry_price) / entry_price) * 100
+                    price_change_text = f" | 入场{format_price(entry_price, coin)} → 当前{format_price(current_price, coin)} ({price_change_pct:+.2f}%)"
+
             portfolio_text += f"""
-    - {coin}: {pos['side']}仓 | 保证金回报{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
+    - {coin}: {pos['side']}仓{price_change_text} | 保证金ROE{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
             total_position_value += pos['value']
             total_unrealized_pnl += pos['pnl']
             position_count += 1
@@ -389,23 +415,30 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
         price_display = format_price(data['price'], coin)
 
         # 资金费率
-        funding_rate = data.get('funding_rate', 0)
-        funding_text = '(多头付费)' if funding_rate > 0 else '(空头付费)' if funding_rate < 0 else '(中性)'
-        
+        funding_rate = data.get('funding_rate')
+        if funding_rate is not None:
+            funding_text = f"{funding_rate:.6f} {'(多头付费)' if funding_rate > 0 else '(空头付费)' if funding_rate < 0 else '(中性)'}"
+        else:
+            funding_text = "⚠️ 数据不可用"
+
         # 持仓量
-        open_interest = data.get('open_interest', 0)
+        open_interest = data.get('open_interest')
+        if open_interest is not None:
+            open_interest_text = f"{open_interest:,.0f}"
+        else:
+            open_interest_text = "⚠️ 数据不可用"
 
         # 构建各周期文本
         kline_5m_text = _build_kline_text(data.get('kline_5m'), "5分钟K线 (执行层)", 13)
         kline_15m_text = _build_kline_text(data.get('kline_15m'), "15分钟K线 (战术层)", 16)
         kline_1h_text = _build_kline_text(data.get('kline_1h'), "1小时K线 (策略层)", 10)
         kline_4h_text = _build_kline_text(data.get('kline_4h'), "4小时K线 (战略层)", 6)
-        
+
         indicators_15m_text = _build_indicator_text(data, '15m', [
             ('EMA(20)', 'ema_20_15m'), ('EMA(50)', 'ema_50_15m'),
             ('RSI(14)', 'rsi_14_15m'), ('MACD', 'macd_15m')
         ])
-        
+
         indicators_1h_text = _build_indicator_text(data, '1h', [
             ('EMA(20)', 'ema_20_1h'), ('EMA(50)', 'ema_50_1h'),
             ('ATR(14)', 'atr_14_1h'), ('BBands(20,2)', 'bbands_1h')
@@ -420,7 +453,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 
     {coin}/USDT:
     - 价格: {price_display} | 24h: {data.get('change_24h', 0):+.2f}%
-    - 资金费率: {funding_rate:.6f} {funding_text} | 持仓量: {open_interest:,.0f}
+    - 资金费率: {funding_text} | 持仓量: {open_interest_text}
     - 最小开仓: {data.get('min_order_value', 0)} USDT
 
     --- 5分钟周期 (执行层) ---
@@ -777,32 +810,45 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     # 检查止损价格是否变化（AI可能动态调整）
                     old_stop_loss = current_position.get('stop_loss', 0)
                     stop_order_id = 0
-                    
+
                     if stop_loss != old_stop_loss and stop_loss > 0:
                         print(f"   🔄 止损价格变化: {format_price(old_stop_loss, coin)} → {format_price(stop_loss, coin)}")
-                        
-                        # 1. 取消旧止损单
-                        portfolio_stats.cancel_stop_loss_order(coin, symbol)
-                        
-                        # 2. 下新止损单
+
+                        # 使用"先建后删"策略，确保始终有止损保护
+                        new_stop_order = None
                         try:
+                            # 1. 先下新止损单
                             side_for_stop = 'SELL' if current_position['side'] == 'long' else 'BUY'
                             amount_for_stop = current_position['amount']
                             price_precision = coin_info.get('price_precision', 2)
-                            
-                            stop_order = binance_client.futures_create_order(
+
+                            new_stop_order = binance_client.futures_create_order(
                                 symbol=symbol,
                                 side=side_for_stop,
                                 type='STOP_MARKET',
                                 stopPrice=round(stop_loss, price_precision),
-                                quantity=amount_for_stop,
-                                reduceOnly=True
+                                closePosition=True,  # 使用closePosition而不是quantity
+                                workingType='MARK_PRICE'
                             )
-                            stop_order_id = stop_order.get('orderId', 0)
-                            print(f"   🛡️ 新止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
+                            stop_order_id = new_stop_order.get('orderId', 0)
+                            print(f"   ✅ 新止损单已下: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
+
+                            # 2. 新止损单成功后，再取消旧止损单
+                            portfolio_stats.cancel_stop_loss_order(coin, symbol)
+                            print(f"   ✅ 旧止损单已取消")
+
                         except Exception as e:
-                            print(f"   ⚠️ 新止损单下单失败: {str(e)[:100]}")
-                    
+                            print(f"   ❌ 调整止损失败: {str(e)[:100]}")
+                            # 如果新止损单已创建但后续步骤失败，尝试回滚
+                            if new_stop_order and 'orderId' in new_stop_order:
+                                try:
+                                    binance_client.futures_cancel_order(symbol=symbol, orderId=new_stop_order['orderId'])
+                                    print(f"   ↩️ 已回滚新止损单")
+                                except:
+                                    print(f"   ⚠️ 回滚失败，可能同时存在两个止损单，请手动检查")
+                            # 保持旧止损单不变
+                            stop_order_id = current_position.get('stop_order_id', 0)
+
                     # 更新止损止盈（AI可能动态调整）
                     portfolio_stats.update_stop_loss_take_profit(coin, stop_loss, take_profit, stop_order_id)
                     print(f"✅ {coin} 继续持仓")

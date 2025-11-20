@@ -3,6 +3,7 @@
 复用 deepseekBNB_stats.py 的技术指标计算逻辑
 """
 import os
+import sys
 import pandas as pd
 from binance.client import Client
 from typing import Dict, List
@@ -11,6 +12,12 @@ import json
 # 配置项目根目录
 import os
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# 添加src目录到Python路径
+sys.path.insert(0, os.path.join(PROJECT_ROOT, 'src'))
+
+# 导入重试装饰器
+from utils.retry_decorator import retry_on_api_error
 
 
 def calculate_technical_indicators(df, timeframe='5m'):
@@ -128,6 +135,7 @@ class MarketScanner:
             print(f"❌ 加载配置文件失败: {e}")
             return {'coins': [], 'portfolio_rules': {}}
     
+    @retry_on_api_error(max_retries=3, delay=2)
     def get_coin_1h_data(self, coin: str) -> Dict:
         """获取单个币种的1小时K线数据"""
         try:
@@ -188,6 +196,7 @@ class MarketScanner:
             print(f"❌ 获取{coin}的1小时K线失败: {e}")
             return None
     
+    @retry_on_api_error(max_retries=3, delay=2)
     def get_coin_4h_data(self, coin: str) -> Dict:
         """获取单个币种的4小时K线数据"""
         try:
@@ -245,6 +254,7 @@ class MarketScanner:
             print(f"❌ 获取{coin}的4小时K线失败: {e}")
             return None
     
+    @retry_on_api_error(max_retries=3, delay=2)
     def get_coin_15m_data(self, coin: str) -> Dict:
         """获取单个币种的15分钟K线数据"""
         try:
@@ -355,15 +365,29 @@ class MarketScanner:
             # 获取资金费率和持仓量
             try:
                 premium_index = self.binance_client.futures_funding_rate(symbol=symbol, limit=1)
-                funding_rate = float(premium_index[0]['fundingRate']) if premium_index else 0
-            except:
-                funding_rate = 0
+                if premium_index and len(premium_index) > 0:
+                    funding_rate = float(premium_index[0]['fundingRate'])
+                else:
+                    funding_rate = 0
+            except (KeyError, ValueError, IndexError) as e:
+                print(f"⚠️ [{symbol}] 解析资金费率数据失败: {e}")
+                funding_rate = None
+            except Exception as e:
+                print(f"⚠️ [{symbol}] 获取资金费率失败: {e}")
+                funding_rate = None
 
             try:
                 open_interest_data = self.binance_client.futures_open_interest(symbol=symbol)
-                open_interest = float(open_interest_data['openInterest']) if open_interest_data else 0
-            except:
-                open_interest = 0
+                if open_interest_data and 'openInterest' in open_interest_data:
+                    open_interest = float(open_interest_data['openInterest'])
+                else:
+                    open_interest = 0
+            except (KeyError, ValueError) as e:
+                print(f"⚠️ [{symbol}] 解析持仓量数据失败: {e}")
+                open_interest = None
+            except Exception as e:
+                print(f"⚠️ [{symbol}] 获取持仓量失败: {e}")
+                open_interest = None
 
             # 计算24小时变化率（使用最近24小时数据）
             change_24h = 0.0
@@ -464,6 +488,7 @@ class MarketScanner:
         print("="*60 + "\n")
         return market_data
     
+    @retry_on_api_error(max_retries=3, delay=2)
     def get_btc_context(self) -> Dict:
         """获取BTC市场背景（增强版：包含15分钟和1小时技术指标）"""
         try:
@@ -539,24 +564,67 @@ class MarketScanner:
             # 获取BTC的资金费率和持仓量
             try:
                 btc_funding = self.binance_client.futures_funding_rate(symbol='BTCUSDT', limit=1)
-                btc_funding_rate = float(btc_funding[0]['fundingRate'])
-            except:
-                btc_funding_rate = 0.0
-            
+                if btc_funding and len(btc_funding) > 0:
+                    btc_funding_rate = float(btc_funding[0]['fundingRate'])
+                else:
+                    btc_funding_rate = 0.0
+            except (KeyError, ValueError, IndexError) as e:
+                print(f"⚠️ [BTCUSDT] 解析资金费率数据失败: {e}")
+                btc_funding_rate = None
+            except Exception as e:
+                print(f"⚠️ [BTCUSDT] 获取资金费率失败: {e}")
+                btc_funding_rate = None
+
             try:
                 btc_oi = self.binance_client.futures_open_interest(symbol='BTCUSDT')
-                btc_open_interest = float(btc_oi['openInterest'])
-            except:
-                btc_open_interest = 0.0
+                if btc_oi and 'openInterest' in btc_oi:
+                    btc_open_interest = float(btc_oi['openInterest'])
+                else:
+                    btc_open_interest = 0.0
+            except (KeyError, ValueError) as e:
+                print(f"⚠️ [BTCUSDT] 解析持仓量数据失败: {e}")
+                btc_open_interest = None
+            except Exception as e:
+                print(f"⚠️ [BTCUSDT] 获取持仓量失败: {e}")
+                btc_open_interest = None
             
             # 获取时间序列数据（最近10个值）
-            rsi_series_15m = df_15m.get('rsi_14', pd.Series([0]*10)).tail(10).tolist()
-            macd_series_15m = df_15m.get('macd', pd.Series([0]*10)).tail(10).tolist()
-            atr_series_15m = df_15m.get('atr_14', pd.Series([0]*10)).tail(10).tolist()
+            # 检查技术指标是否存在且有足够数据
+            if 'rsi_14' in df_15m.columns and len(df_15m['rsi_14'].dropna()) >= 10:
+                rsi_series_15m = df_15m['rsi_14'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 15分钟RSI数据不可用")
+                rsi_series_15m = None
 
-            rsi_series_1h = df_1h.get('rsi', pd.Series([0]*10)).tail(10).tolist()
-            macd_series_1h = df_1h.get('macd', pd.Series([0]*10)).tail(10).tolist()
-            atr_series_1h = df_1h.get('atr_14', pd.Series([0]*10)).tail(10).tolist()
+            if 'macd' in df_15m.columns and len(df_15m['macd'].dropna()) >= 10:
+                macd_series_15m = df_15m['macd'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 15分钟MACD数据不可用")
+                macd_series_15m = None
+
+            if 'atr_14' in df_15m.columns and len(df_15m['atr_14'].dropna()) >= 10:
+                atr_series_15m = df_15m['atr_14'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 15分钟ATR数据不可用")
+                atr_series_15m = None
+
+            if 'rsi' in df_1h.columns and len(df_1h['rsi'].dropna()) >= 10:
+                rsi_series_1h = df_1h['rsi'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 1小时RSI数据不可用")
+                rsi_series_1h = None
+
+            if 'macd' in df_1h.columns and len(df_1h['macd'].dropna()) >= 10:
+                macd_series_1h = df_1h['macd'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 1小时MACD数据不可用")
+                macd_series_1h = None
+
+            if 'atr_14' in df_1h.columns and len(df_1h['atr_14'].dropna()) >= 10:
+                atr_series_1h = df_1h['atr_14'].tail(10).tolist()
+            else:
+                print(f"⚠️ [BTCUSDT] 1小时ATR数据不可用")
+                atr_series_1h = None
 
             return {
                 'price': btc_price,
@@ -646,6 +714,7 @@ class MarketScanner:
             print(f"获取持仓失败: {e}")
             return {coin: None for coin in self.coins}
     
+    @retry_on_api_error(max_retries=3, delay=2)
     def get_account_info(self) -> Dict:
         """获取账户信息"""
         try:
