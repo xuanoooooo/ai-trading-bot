@@ -359,11 +359,22 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             sl = pos.get('stop_loss', 0)
             tp = pos.get('take_profit', 0)
             roe = pos.get('roe', 0)
+            entry_price = pos.get('entry_price', 0)
+
             sl_text = f" | 止损{format_price(sl, coin)}" if sl > 0 else ""
             tp_text = f" | 止盈{format_price(tp, coin)}" if tp > 0 else ""
             roe_text = f"{roe:+.2f}%" if roe != 0 else "0.00%"
+
+            # 获取当前价格并计算价格变动
+            price_change_text = ""
+            if coin in market_data and 'price' in market_data[coin]:
+                current_price = market_data[coin]['price']
+                if entry_price > 0:
+                    price_change_pct = ((current_price - entry_price) / entry_price) * 100
+                    price_change_text = f" | 入场{format_price(entry_price, coin)} → 当前{format_price(current_price, coin)} ({price_change_pct:+.2f}%)"
+
             portfolio_text += f"""
-    - {coin}: {pos['side']}仓 | 保证金回报{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
+    - {coin}: {pos['side']}仓{price_change_text} | 保证金ROE{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
             total_position_value += pos['value']
             total_unrealized_pnl += pos['pnl']
             position_count += 1
