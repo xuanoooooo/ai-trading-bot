@@ -98,13 +98,16 @@ class PortfolioStatistics:
     def save(self):
         """保存统计数据到文件"""
         try:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(self.stats_file), exist_ok=True)
+
             # 过滤止损历史，只保留最近7天
             cutoff_time = datetime.now() - timedelta(days=7)
             filtered_stop_losses = [
                 sl for sl in self.stop_loss_history
                 if datetime.fromisoformat(sl['timestamp']) > cutoff_time
             ]
-            
+
             data = {
                 'start_time': self.start_time.isoformat(),
                 'trade_history': self.trade_history[-200:],  # 保留最近200笔

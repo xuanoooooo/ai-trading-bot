@@ -111,6 +111,9 @@ market_scanner = MarketScanner(binance_client, config_path)
 def save_current_runtime():
     """保存当前运行状态到文件"""
     try:
+        # 确保目录存在
+        os.makedirs(os.path.dirname(RUNTIME_FILE), exist_ok=True)
+
         runtime_data = {
             'program_start_time': PROGRAM_START_TIME.isoformat(),
             'invocation_count': INVOCATION_COUNT,
@@ -124,6 +127,9 @@ def save_current_runtime():
 def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
     """记录AI决策到文件"""
     try:
+        # 确保目录存在
+        os.makedirs(os.path.dirname(AI_DECISIONS_FILE), exist_ok=True)
+
         # 加载现有决策
         if os.path.exists(AI_DECISIONS_FILE):
             try:
@@ -138,7 +144,7 @@ def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
                 data = {'decisions': []}
         else:
             data = {'decisions': []}
-        
+
         # 添加新决策
         decision = {
             'time': datetime.now().isoformat(),
@@ -150,10 +156,10 @@ def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
             'confidence': confidence
         }
         data['decisions'].append(decision)
-        
+
         # 只保留最近100条
         data['decisions'] = data['decisions'][-100:]
-        
+
         # 保存
         with open(AI_DECISIONS_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
