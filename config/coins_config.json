@@ -5,7 +5,7 @@
       "binance_symbol": "BTCUSDT",
       "precision": 3,
       "price_precision": 2,
-      "min_order_value": 110
+      "min_order_value": 190
     },
     {
       "symbol": "ETH",

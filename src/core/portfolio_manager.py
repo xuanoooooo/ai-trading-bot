@@ -222,7 +222,9 @@ def safe_json_parse(json_str):
     except json.JSONDecodeError:
         try:
             json_str = json_str.replace("'", '"')
-            json_str = re.sub(r'(\w+):', r'"\1":', json_str)
+            # 修复缺少引号的key（包括完全没引号和缺少前引号的情况）
+            # 例如：stop_loss: 124.50 或 stop_loss": 124.50 → "stop_loss": 124.50
+            json_str = re.sub(r'([,\{\[\s])(?!")([a-zA-Z_]\w*)"?:', r'\1"\2":', json_str)
             json_str = re.sub(r',\s*}', '}', json_str)
             json_str = re.sub(r',\s*]', ']', json_str)
             return json.loads(json_str)
