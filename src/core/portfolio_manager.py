@@ -124,8 +124,8 @@ def save_current_runtime():
     except Exception as e:
         print(f"⚠️ 保存运行状态失败: {e}")
 
-def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
-    """记录AI决策到文件"""
+def save_ai_decision(coin, action, reason, strategy, risk_level, confidence, positions_snapshot=None):
+    """记录AI决策到文件（包含持仓盈亏快照）"""
     try:
         # 确保目录存在
         os.makedirs(os.path.dirname(AI_DECISIONS_FILE), exist_ok=True)
@@ -155,6 +155,11 @@ def save_ai_decision(coin, action, reason, strategy, risk_level, confidence):
             'risk_level': risk_level,
             'confidence': confidence
         }
+
+        # 添加持仓盈亏快照（如果提供）
+        if positions_snapshot:
+            decision['positions_snapshot'] = positions_snapshot
+
         data['decisions'].append(decision)
 
         # 只保留最近100条
@@ -357,17 +362,33 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
     当前杠杆: {PORTFOLIO_CONFIG['leverage']}x
 
     当前持仓:"""
-    
+
     total_position_value = 0
     total_unrealized_pnl = 0
     position_count = 0
-    
+
+    # 读取上一次决策的持仓快照（用于盈亏变化对比）
+    last_snapshot = {}
+    try:
+        if os.path.exists(AI_DECISIONS_FILE):
+            with open(AI_DECISIONS_FILE, 'r', encoding='utf-8') as f:
+                decisions_data = json.load(f)
+                all_decisions = decisions_data.get('decisions', [])
+                # 倒序查找最近一次有快照的决策
+                for decision in reversed(all_decisions):
+                    if 'positions_snapshot' in decision:
+                        last_snapshot = decision.get('positions_snapshot', {})
+                        break
+    except Exception as e:
+        print(f"⚠️ 读取持仓快照失败: {e}")
+
     for coin, pos in portfolio_positions.items():
         if pos:
             sl = pos.get('stop_loss', 0)
             tp = pos.get('take_profit', 0)
             roe = pos.get('roe', 0)
             entry_price = pos.get('entry_price', 0)
+            current_pnl = pos.get('pnl', 0)
 
             sl_text = f" | 止损{format_price(sl, coin)}" if sl > 0 else ""
             tp_text = f" | 止盈{format_price(tp, coin)}" if tp > 0 else ""
@@ -381,10 +402,36 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
                     price_change_pct = ((current_price - entry_price) / entry_price) * 100
                     price_change_text = f" | 入场{format_price(entry_price, coin)} → 当前{format_price(current_price, coin)} ({price_change_pct:+.2f}%)"
 
+            # 对比上次盈亏，显示变化趋势
+            pnl_change_text = ""
+            if coin in last_snapshot:
+                last_pnl = last_snapshot[coin].get('pnl', 0)
+                pnl_diff = current_pnl - last_pnl
+
+                if abs(pnl_diff) > 0.01:  # 变化超过0.01 USDT才显示
+                    if pnl_diff > 0:
+                        # 盈利增加或亏损减少
+                        pnl_change_text = f"\n      📊 盈亏变化: 较上次 ↑ {pnl_diff:+.2f} USDT"
+                        if last_pnl < 0 and current_pnl > 0:
+                            pnl_change_text += " (扭亏为盈 ✅)"
+                        elif last_pnl > 0:
+                            pnl_change_text += " (盈利增长 ✅)"
+                        else:
+                            pnl_change_text += " (亏损收窄 ⚠️)"
+                    else:
+                        # 盈利减少或亏损扩大
+                        pnl_change_text = f"\n      📊 盈亏变化: 较上次 ↓ {pnl_diff:.2f} USDT"
+                        if last_pnl > 0 and current_pnl < 0:
+                            pnl_change_text += " (盈转亏 ❌)"
+                        elif last_pnl < 0:
+                            pnl_change_text += " (亏损扩大 ❌)"
+                        else:
+                            pnl_change_text += " (盈利回吐 ⚠️)"
+
             portfolio_text += f"""
-    - {coin}: {pos['side']}仓{price_change_text} | 保证金ROE{roe_text} | 盈亏{pos['pnl']:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}"""
+    - {coin}: {pos['side']}仓{price_change_text} | 保证金ROE{roe_text} | 盈亏{current_pnl:+.2f} USDT | 数量{pos['amount']:.4f}{sl_text}{tp_text}{pnl_change_text}"""
             total_position_value += pos['value']
-            total_unrealized_pnl += pos['pnl']
+            total_unrealized_pnl += current_pnl
             position_count += 1
         else:
             portfolio_text += f"""
@@ -730,7 +777,22 @@ def execute_portfolio_decisions(decisions_data, market_data):
     strategy = decisions_data.get('strategy', '')
     risk_level = decisions_data.get('risk_level', 'UNKNOWN')
     confidence = decisions_data.get('confidence', 'UNKNOWN')
-    
+
+    # 获取当前持仓信息，用于构建盈亏快照
+    current_positions = market_scanner.get_portfolio_positions()
+
+    # 构建持仓盈亏快照
+    positions_snapshot = {}
+    for coin, pos in current_positions.items():
+        if pos:  # 只保存有持仓的币种
+            positions_snapshot[coin] = {
+                'pnl': pos.get('pnl', 0),
+                'roe': pos.get('roe', 0),
+                'entry_price': pos.get('entry_price', 0),
+                'amount': pos.get('amount', 0),
+                'side': pos.get('side', '')
+            }
+
     if not decisions_data or not decisions_data.get('decisions'):
         print("💤 AI决定观望，不执行交易")
         # 记录观望决策到看板（但不传递给下一次AI）
@@ -740,12 +802,13 @@ def execute_portfolio_decisions(decisions_data, market_data):
             reason=strategy if strategy else '市场观望',
             strategy=strategy,
             risk_level=risk_level,
-            confidence=confidence
+            confidence=confidence,
+            positions_snapshot=positions_snapshot  # 传递快照
         )
         return
-    
+
     decisions = decisions_data['decisions']
-    
+
     print(f"\n{'='*60}")
     print(f"📊 AI投资组合决策")
     print(f"{'='*60}")
@@ -754,7 +817,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
     print(f"信心程度: {confidence}")
     print(f"决策数量: {len(decisions)}个")
     print(f"{'='*60}\n")
-    
+
     # 记录每个AI决策
     for decision in decisions:
         save_ai_decision(
@@ -763,7 +826,8 @@ def execute_portfolio_decisions(decisions_data, market_data):
             reason=decision['reason'],
             strategy=strategy,
             risk_level=risk_level,
-            confidence=confidence
+            confidence=confidence,
+            positions_snapshot=positions_snapshot  # 传递快照
         )
     
     if PORTFOLIO_CONFIG['test_mode']:
