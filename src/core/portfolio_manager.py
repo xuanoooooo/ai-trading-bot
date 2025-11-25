@@ -394,13 +394,12 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             tp_text = f" | 止盈{format_price(tp, coin)}" if tp > 0 else ""
             roe_text = f"{roe:+.2f}%" if roe != 0 else "0.00%"
 
-            # 获取当前价格并计算价格变动
+            # 获取当前价格显示（不显示百分比，避免与保证金ROE混淆）
             price_change_text = ""
             if coin in market_data and 'price' in market_data[coin]:
                 current_price = market_data[coin]['price']
                 if entry_price > 0:
-                    price_change_pct = ((current_price - entry_price) / entry_price) * 100
-                    price_change_text = f" | 入场{format_price(entry_price, coin)} → 当前{format_price(current_price, coin)} ({price_change_pct:+.2f}%)"
+                    price_change_text = f" | 入场{format_price(entry_price, coin)} → 当前{format_price(current_price, coin)}"
 
             # 对比上次盈亏，显示变化趋势
             pnl_change_text = ""
