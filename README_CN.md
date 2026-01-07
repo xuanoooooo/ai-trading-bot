@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-> ⚠️ **重要提示**：本项目仅支持**单向持仓模式**！请确保币安合约账户设置为单向持仓。
+> ⚠️ **重要提示**：本项目通过 CCXT 库支持**多交易所**（Gate.io/Binance/OKX/Bybit）。请确保交易所账户设置为**单向持仓模式**。
 
 ## 💬 作者的话
 
@@ -48,20 +48,23 @@ cd duobizhong
 
 - Python 3.7+
 - tmux (必须安装，用于后台运行)
-- 币安期货账户
+- 交易所账户（Gate.io/Binance/OKX/Bybit）
 - OpenAI 兼容 API (DeepSeek/SiliconFlow/Groq/OpenAI 等)
 
 ### 快速开始
 
 1. **安装依赖**
 ```bash
-pip3 install python-binance openai python-dotenv schedule pandas flask flask-cors
+pip3 install ccxt openai python-dotenv schedule pandas flask flask-cors
 ```
 
 2. **配置环境变量**
 ```bash
 cp .env.example .env
 vim .env  # 填入你的 API 密钥
+
+# 在 config/coins_config.json 中配置交易所
+vim config/coins_config.json  # 设置 "exchange": "gateio" 或 "binance"
 ```
 
 3. **启动交易程序**
@@ -73,13 +76,14 @@ vim .env  # 填入你的 API 密钥
 
 ## 🎯 核心特性
 
+- **多交易所支持**: 通过 CCXT 支持 Gate.io/Binance/OKX/Bybit，配置文件切换 ⭐NEW
 - **AI投资组合经理**: 自主决策、动态调仓、多空灵活
-- **提示词完全分离**: 代码只传递数据，策略完全在外部文件，修改策略无需改代码 ⭐NEW
+- **提示词完全分离**: 代码只传递数据，策略完全在外部文件，修改策略无需改代码
 - **自动止损保护**: 开仓即下止损单到交易所，AI可动态调整
 - **客观信息反馈**: 记录止损触发历史，客观告知AI市场事件
 - **四周期分析**: 5分钟(执行) + 15分钟(战术) + 1小时(策略) + 4小时(战略) + BTC大盘
 - **完整统计**: 分币种+整体 + 持仓同步
-- **可视化看板**: Web实时监控(Flask)，直接读取币安API数据
+- **可视化看板**: Web实时监控(Flask)，直接读取交易所API数据
 - **技术指标分析**: RSI、MACD、ATR、EMA、布林带等多维度指标
 
 ## 📈 核心架构设计
@@ -371,7 +375,7 @@ cp backups/backup_20251111_134530/* data/  # 恢复指定备份
 apt update && apt install -y python3 python3-pip tmux git
 
 # 安装Python依赖
-pip3 install python-binance openai python-dotenv schedule pandas flask flask-cors
+pip3 install ccxt openai python-dotenv schedule pandas flask flask-cors
 ```
 
 ### 配置环境变量
@@ -382,8 +386,13 @@ vim .env
 ```
 
 **必填配置**：
-- `BINANCE_API_KEY` / `BINANCE_SECRET` - 币安API
+- 交易所 API 密钥（选择其一）：
+  - `GATEIO_API_KEY` / `GATEIO_SECRET` - Gate.io
+  - `BINANCE_API_KEY` / `BINANCE_SECRET` - 币安
+  - `OKX_API_KEY` / `OKX_SECRET` / `OKX_PASSWORD` - OKX
+  - `BYBIT_API_KEY` / `BYBIT_SECRET` - Bybit
 - `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL_NAME` - AI服务商
+- 在 `config/coins_config.json` 中设置交易所：`"exchange": "gateio"` （或 binance/okx/bybit）
 
 **支持的AI服务商**：DeepSeek | SiliconFlow | Groq | OpenAI（任何 OpenAI 兼容 API）
 

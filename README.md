@@ -2,7 +2,7 @@
 
 English | [简体中文](README_CN.md)
 
-> ⚠️ **Important**: This project only supports **One-way Position Mode**! Ensure your Binance Futures account is set to one-way position mode.
+> ⚠️ **Important**: This project supports **multiple exchanges** (Gate.io/Binance/OKX/Bybit) via CCXT library. Ensure your exchange account is set to **one-way position mode**.
 
 ## 💬 Author's Note
 
@@ -44,20 +44,23 @@ cd duobizhong
 
 - Python 3.7+
 - tmux (required for background execution)
-- Binance Futures account
+- Exchange account (Gate.io/Binance/OKX/Bybit)
 - OpenAI-compatible API (DeepSeek/SiliconFlow/Groq/OpenAI, etc.)
 
 ### Quick Start
 
 1. **Install Dependencies**
 ```bash
-pip3 install python-binance openai python-dotenv schedule pandas flask flask-cors
+pip3 install ccxt openai python-dotenv schedule pandas flask flask-cors
 ```
 
 2. **Configure Environment Variables**
 ```bash
 cp .env.example .env
 vim .env  # Fill in your API keys
+
+# Configure exchange in config/coins_config.json
+vim config/coins_config.json  # Set "exchange": "gateio" or "binance"
 ```
 
 3. **Start Trading Program**
@@ -69,13 +72,14 @@ For detailed deployment instructions, refer to the "Server Migration Guide" sect
 
 ## 🎯 Core Features
 
+- **Multi-Exchange Support**: Supports Gate.io/Binance/OKX/Bybit via CCXT, switch by config file ⭐NEW
 - **AI Portfolio Manager**: Autonomous decision-making, dynamic rebalancing, flexible long/short positions
-- **Complete Prompt Separation**: Code only passes data, strategies are in external files—modify strategies without touching code ⭐NEW
+- **Complete Prompt Separation**: Code only passes data, strategies are in external files—modify strategies without touching code
 - **Automatic Stop-Loss Protection**: Stop-loss orders placed on exchange immediately upon opening, AI can adjust dynamically
 - **Objective Information Feedback**: Records stop-loss trigger history, objectively informs AI of market events
 - **Four-Timeframe Analysis**: 5m (execution) + 15m (tactical) + 1h (strategic) + 4h (strategic) + BTC market overview
 - **Complete Statistics**: Per-coin + overall + position synchronization
-- **Visual Dashboard**: Web real-time monitoring (Flask), reads Binance API directly
+- **Visual Dashboard**: Web real-time monitoring (Flask), reads exchange API directly
 - **Technical Indicator Analysis**: RSI, MACD, ATR, EMA, Bollinger Bands, and more
 
 ## 📈 Core Architecture Design
@@ -367,7 +371,7 @@ cp backups/backup_20251111_134530/* data/  # Restore specific backup
 apt update && apt install -y python3 python3-pip tmux git
 
 # Install Python dependencies
-pip3 install python-binance openai python-dotenv schedule pandas flask flask-cors
+pip3 install ccxt openai python-dotenv schedule pandas flask flask-cors
 ```
 
 ### Configure Environment Variables
@@ -378,8 +382,13 @@ vim .env
 ```
 
 **Required Config**:
-- `BINANCE_API_KEY` / `BINANCE_SECRET` - Binance API
+- Exchange API Keys (choose one):
+  - `GATEIO_API_KEY` / `GATEIO_SECRET` - Gate.io
+  - `BINANCE_API_KEY` / `BINANCE_SECRET` - Binance
+  - `OKX_API_KEY` / `OKX_SECRET` / `OKX_PASSWORD` - OKX
+  - `BYBIT_API_KEY` / `BYBIT_SECRET` - Bybit
 - `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL_NAME` - AI service provider
+- Set exchange in `config/coins_config.json`: `"exchange": "gateio"` (or binance/okx/bybit)
 
 **Supported AI Providers**: DeepSeek | SiliconFlow | Groq | OpenAI (any OpenAI-compatible API)
 
