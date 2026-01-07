@@ -825,7 +825,32 @@ def calculate_position_size(coin, position_value, current_price, coin_config):
             print(f"⚠️ {coin}: {position_value:.2f} USDT < 币种最小限制 {min_order_value} USDT")
             return 0
         
-        # 计算数量
+        # Gate.io swap 合约按张数计算
+        if exchange.id == 'gateio' and 'defaultType' in exchange.options:
+            if exchange.options['defaultType'] == 'swap':
+                # 获取市场信息
+                symbol = coin_config['symbol']
+                formatted_symbol = format_symbol_for_exchange(symbol, exchange)
+                market = exchange.markets.get(formatted_symbol)
+                
+                if market and 'contractSize' in market:
+                    contract_size = float(market['contractSize'])  # 每张合约的币数量
+                    min_contracts = float(market['limits']['amount'].get('min', 1))  # 最小张数
+                    
+                    # 计算需要多少张合约
+                    amount_in_coins = position_value / current_price  # 需要的币数量
+                    contracts = amount_in_coins / contract_size  # 转换为张数
+                    
+                    # 取整到最小张数
+                    contracts = max(min_contracts, math.ceil(contracts))
+                    
+                    # 转换回币的数量
+                    amount = contracts * contract_size
+                    
+                    print(f"📊 {coin}: {position_value:.2f} USDT → {contracts:.0f} 张 → {amount:.4f} {coin}")
+                    return amount
+        
+        # 其他交易所按币数量计算
         raw_amount = position_value / current_price
         
         # 智能取整
