@@ -1017,8 +1017,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         params={'cost': position_value}  # 直接指定花费的 USDT
                     )
                     
+                    # 调试：打印订单信息
+                    print(f"   🔍 订单返回: {order}")
+                    
                     # 从订单结果获取实际成交数量
-                    filled_amount = float(order.get('filled', 0))
+                    if order and 'filled' in order:
+                        filled_amount = float(order['filled'])
+                    elif order and 'amount' in order:
+                        filled_amount = float(order['amount'])
+                    else:
+                        print(f"   ⚠️ 订单结构异常: {order}")
+                        filled_amount = 0
                     
                     # 2. 立即下止损单（如果AI设置了止损价格）
                     stop_order_id = 0
@@ -1057,8 +1066,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         params={'cost': position_value}  # 直接指定花费的 USDT
                     )
                     
+                    # 调试：打印订单信息
+                    print(f"   🔍 订单返回: {order}")
+                    
                     # 从订单结果获取实际成交数量
-                    filled_amount = float(order.get('filled', 0))
+                    if order and 'filled' in order:
+                        filled_amount = float(order['filled'])
+                    elif order and 'amount' in order:
+                        filled_amount = float(order['amount'])
+                    else:
+                        print(f"   ⚠️ 订单结构异常: {order}")
+                        filled_amount = 0
                     
                     # 2. 立即下止损单（如果AI设置了止损价格）
                     stop_order_id = 0
