@@ -646,16 +646,25 @@ class MarketScanner:
             
             for pos in all_positions:
                 # CCXT返回的持仓格式：contracts字段表示持仓数量
-                contracts = float(pos.get('contracts', 0))
+                contracts_raw = pos.get('contracts', 0)
+                if contracts_raw is None:
+                    contracts_raw = 0
+                contracts = float(contracts_raw)
+                
                 if contracts != 0:
                     symbol = pos.get('symbol', '')  # 格式如 ETH/USDT:USDT
                     # 提取币种名称（ETH/USDT -> ETH）
                     coin = symbol.split('/')[0] if '/' in symbol else symbol.replace('USDT', '')
                     
                     if coin in portfolio:
-                        entry_price = float(pos.get('entryPrice', 0))
-                        unrealized_pnl = float(pos.get('unrealizedPnl', 0))  # CCXT字段名
-                        initial_margin = float(pos.get('initialMargin', 0))
+                        entry_price_raw = pos.get('entryPrice', 0)
+                        entry_price = float(entry_price_raw) if entry_price_raw is not None else 0.0
+                        
+                        unrealized_pnl_raw = pos.get('unrealizedPnl', 0)
+                        unrealized_pnl = float(unrealized_pnl_raw) if unrealized_pnl_raw is not None else 0.0
+                        
+                        initial_margin_raw = pos.get('initialMargin', 0)
+                        initial_margin = float(initial_margin_raw) if initial_margin_raw is not None else 0.0
                         
                         # 计算ROE（保证金回报率）
                         roe = 0.0
