@@ -947,14 +947,15 @@ def execute_portfolio_decisions(decisions_data, market_data):
                             side_for_stop = 'sell' if current_position['side'] == 'long' else 'buy'
                             amount_for_stop = current_position['amount']
 
-                            # CCXT创建止损单
+                            # CCXT创建止损单 - Gate.io 使用 stop 类型
                             new_stop_order = exchange.create_order(
                                 symbol=symbol,
-                                type='stop_market',
+                                type='stop',
                                 side=side_for_stop,
                                 amount=amount_for_stop,
+                                price=stop_loss,  # 止损触发价格
                                 params={
-                                    'stopPrice': stop_loss,  # CCXT自动处理精度
+                                    'stopPrice': stop_loss,
                                     'reduceOnly': True
                                 }
                             )
@@ -1079,26 +1080,35 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_LONG' and stop_loss > 0 and filled_amount > 0:
                         try:
+                            # Gate.io 止损单需要用 stop 类型而不是 stop_market
                             stop_order = exchange.create_order(
                                 symbol=symbol,
-                                type='stop_market',
+                                type='stop',
                                 side='sell',  # 多仓止损用sell
                                 amount=filled_amount,  # 使用实际成交数量
+                                price=stop_loss,  # 止损触发价格
                                 params={
-                                    'stopPrice': stop_loss,  # CCXT自动处理精度
+                                    'stopPrice': stop_loss,
                                     'reduceOnly': True
                                 }
                             )
                             stop_order_id = stop_order.get('id', '')
                             print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                         except Exception as e:
-                            print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
+                            print(f"   ⚠️ 止损单下单失败: {str(e)[:200]}")
                     
                     # 3. 记录持仓
                     if action == 'OPEN_LONG' and filled_amount > 0:
                         portfolio_stats.record_position_entry(coin, 'long', current_price, filled_amount, stop_loss, take_profit, stop_order_id)
                     
-                    print(f"✅ {coin} 多仓成功 ({filled_amount:.4f} {coin})")
+                    # 显示成功信息
+                    market = exchange.markets.get(symbol)
+                    if market and 'contractSize' in market:
+                        contract_size = float(market['contractSize'])
+                        eth_amount = filled_amount * contract_size
+                        print(f"✅ {coin} 多仓成功: {filled_amount:.0f} 张合约 (≈ {eth_amount:.4f} {coin})")
+                    else:
+                        print(f"✅ {coin} 多仓成功 ({filled_amount:.4f} {coin})")
                     
                 elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
                     print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: 保证金 ${position_value:.2f} USDT (杠杆 {PORTFOLIO_CONFIG['leverage']}x)")
@@ -1164,26 +1174,35 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_SHORT' and stop_loss > 0 and filled_amount > 0:
                         try:
+                            # Gate.io 止损单需要用 stop 类型而不是 stop_market
                             stop_order = exchange.create_order(
                                 symbol=symbol,
-                                type='stop_market',
+                                type='stop',
                                 side='buy',  # 空仓止损用buy
                                 amount=filled_amount,  # 使用实际成交数量
+                                price=stop_loss,  # 止损触发价格
                                 params={
-                                    'stopPrice': stop_loss,  # CCXT自动处理精度
+                                    'stopPrice': stop_loss,
                                     'reduceOnly': True
                                 }
                             )
                             stop_order_id = stop_order.get('id', '')
                             print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                         except Exception as e:
-                            print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
+                            print(f"   ⚠️ 止损单下单失败: {str(e)[:200]}")
                     
                     # 3. 记录持仓
                     if action == 'OPEN_SHORT' and filled_amount > 0:
                         portfolio_stats.record_position_entry(coin, 'short', current_price, filled_amount, stop_loss, take_profit, stop_order_id)
                     
-                    print(f"✅ {coin} 空仓成功 ({filled_amount:.4f} {coin})")
+                    # 显示成功信息
+                    market = exchange.markets.get(symbol)
+                    if market and 'contractSize' in market:
+                        contract_size = float(market['contractSize'])
+                        eth_amount = filled_amount * contract_size
+                        print(f"✅ {coin} 空仓成功: {filled_amount:.0f} 张合约 (≈ {eth_amount:.4f} {coin})")
+                    else:
+                        print(f"✅ {coin} 空仓成功 ({filled_amount:.4f} {coin})")
                 else:
                     print(f"⚠️ {coin} 未知动作: {action}")
             
