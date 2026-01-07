@@ -1008,25 +1008,40 @@ def execute_portfolio_decisions(decisions_data, market_data):
                 if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
                     print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: ${position_value:.2f} USDT")
                     
-                    # 1. 开仓 - CCXT 直接用 USDT 金额下单
-                    order = exchange.create_order(
-                        symbol=symbol,
-                        type='market',
-                        side='buy',
-                        amount=None,  # 不指定数量
-                        params={'cost': position_value}  # 直接指定花费的 USDT
-                    )
-                    
-                    # 调试：打印订单信息
-                    print(f"   🔍 订单返回: {order}")
-                    
-                    # 从订单结果获取实际成交数量
-                    if order and 'filled' in order:
-                        filled_amount = float(order['filled'])
-                    elif order and 'amount' in order:
-                        filled_amount = float(order['amount'])
-                    else:
-                        print(f"   ⚠️ 订单结构异常: {order}")
+                    try:
+                        # 1. 开仓 - 先尝试用 cost 参数
+                        try:
+                            order = exchange.create_order(
+                                symbol=symbol,
+                                type='market',
+                                side='buy',
+                                amount=None,
+                                params={'cost': position_value}
+                            )
+                        except Exception as e:
+                            # 如果不支持 cost，则手动计算数量
+                            print(f"   ⚠️ cost参数不支持，改用amount: {e}")
+                            amount = position_value / current_price
+                            order = exchange.create_order(
+                                symbol=symbol,
+                                type='market',
+                                side='buy',
+                                amount=amount
+                            )
+                        
+                        # 调试：打印订单信息
+                        print(f"   🔍 订单返回: {order}")
+                        
+                        # 从订单结果获取实际成交数量
+                        if order and 'filled' in order and order['filled'] is not None:
+                            filled_amount = float(order['filled'])
+                        elif order and 'amount' in order and order['amount'] is not None:
+                            filled_amount = float(order['amount'])
+                        else:
+                            print(f"   ⚠️ 订单结构异常: {order}")
+                            filled_amount = 0
+                    except Exception as e:
+                        print(f"   ❌ 开仓失败: {e}")
                         filled_amount = 0
                     
                     # 2. 立即下止损单（如果AI设置了止损价格）
@@ -1057,25 +1072,40 @@ def execute_portfolio_decisions(decisions_data, market_data):
                 elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
                     print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: ${position_value:.2f} USDT")
                     
-                    # 1. 开仓 - CCXT 直接用 USDT 金额下单
-                    order = exchange.create_order(
-                        symbol=symbol,
-                        type='market',
-                        side='sell',
-                        amount=None,  # 不指定数量
-                        params={'cost': position_value}  # 直接指定花费的 USDT
-                    )
-                    
-                    # 调试：打印订单信息
-                    print(f"   🔍 订单返回: {order}")
-                    
-                    # 从订单结果获取实际成交数量
-                    if order and 'filled' in order:
-                        filled_amount = float(order['filled'])
-                    elif order and 'amount' in order:
-                        filled_amount = float(order['amount'])
-                    else:
-                        print(f"   ⚠️ 订单结构异常: {order}")
+                    try:
+                        # 1. 开仓 - 先尝试用 cost 参数
+                        try:
+                            order = exchange.create_order(
+                                symbol=symbol,
+                                type='market',
+                                side='sell',
+                                amount=None,
+                                params={'cost': position_value}
+                            )
+                        except Exception as e:
+                            # 如果不支持 cost，则手动计算数量
+                            print(f"   ⚠️ cost参数不支持，改用amount: {e}")
+                            amount = position_value / current_price
+                            order = exchange.create_order(
+                                symbol=symbol,
+                                type='market',
+                                side='sell',
+                                amount=amount
+                            )
+                        
+                        # 调试：打印订单信息
+                        print(f"   🔍 订单返回: {order}")
+                        
+                        # 从订单结果获取实际成交数量
+                        if order and 'filled' in order and order['filled'] is not None:
+                            filled_amount = float(order['filled'])
+                        elif order and 'amount' in order and order['amount'] is not None:
+                            filled_amount = float(order['amount'])
+                        else:
+                            print(f"   ⚠️ 订单结构异常: {order}")
+                            filled_amount = 0
+                    except Exception as e:
+                        print(f"   ❌ 开仓失败: {e}")
                         filled_amount = 0
                     
                     # 2. 立即下止损单（如果AI设置了止损价格）
