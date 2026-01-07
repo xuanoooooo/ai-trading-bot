@@ -807,75 +807,11 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
             print(f"❌ AI分析失败: {e}")
             return {'decisions': [], 'strategy': 'AI服务异常，保持观望', 'risk_level': 'HIGH', 'confidence': 'LOW'}
 
-
-def calculate_position_size(coin, position_value, current_price, coin_config):
-    """计算交易数量"""
-    try:
-        # 全局最小金额硬编码（安全底线）
-        GLOBAL_MIN_ORDER_VALUE = 10  # USDT
-
-        if position_value < GLOBAL_MIN_ORDER_VALUE:
-            print(f"⚠️ {coin}: {position_value:.2f} USDT < 全局最小限制 {GLOBAL_MIN_ORDER_VALUE} USDT（硬编码）")
-            return 0
-
-        precision = coin_config['precision']
-        min_order_value = coin_config['min_order_value']
-
-        if position_value < min_order_value:
-            print(f"⚠️ {coin}: {position_value:.2f} USDT < 币种最小限制 {min_order_value} USDT")
-            return 0
-        
-        # Gate.io swap 合约按张数计算
-        if exchange.id == 'gateio' and 'defaultType' in exchange.options:
-            if exchange.options['defaultType'] == 'swap':
-                # 获取市场信息
-                symbol = coin_config['symbol']
-                formatted_symbol = format_symbol_for_exchange(symbol, exchange)
-                market = exchange.markets.get(formatted_symbol)
-                
-                if market and 'contractSize' in market:
-                    contract_size = float(market['contractSize'])  # 每张合约的币数量
-                    min_contracts = float(market['limits']['amount'].get('min', 1))  # 最小张数
-                    
-                    # 计算需要多少张合约
-                    amount_in_coins = position_value / current_price  # 需要的币数量
-                    contracts = amount_in_coins / contract_size  # 转换为张数
-                    
-                    # 取整到最小张数
-                    contracts = max(min_contracts, math.ceil(contracts))
-                    
-                    # 转换回币的数量
-                    amount = contracts * contract_size
-                    
-                    print(f"📊 {coin}: {position_value:.2f} USDT → {contracts:.0f} 张 → {amount:.4f} {coin}")
-                    return amount
-        
-        # 其他交易所按币数量计算
-        raw_amount = position_value / current_price
-        
-        # 智能取整
-        multiplier = 10 ** precision
-        amount_floor = math.floor(raw_amount * multiplier) / multiplier
-        amount_ceil = math.ceil(raw_amount * multiplier) / multiplier
-        
-        value_floor = amount_floor * current_price
-        value_ceil = amount_ceil * current_price
-        
-        error_floor = abs(value_floor - position_value) / position_value * 100
-        error_ceil = abs(value_ceil - position_value) / position_value * 100
-        
-        amount = amount_floor if error_floor < error_ceil else amount_ceil
-        
-        if amount == 0:
-            print(f"⚠️ {coin}: 计算数量为0")
-            return 0
-        
-        return amount
-        
-    except Exception as e:
-        print(f"❌ {coin}: 仓位计算失败 - {e}")
-        return 0
-
+# ==========================================
+# 下单逻辑说明：
+# CCXT 支持直接用 USDT 金额下单，无需手动计算币数量
+# 使用 params={'cost': usdt_value} 即可
+# ==========================================
 
 def execute_portfolio_decisions(decisions_data, market_data):
     """执行投资组合决策"""
@@ -1064,84 +1000,95 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     print(f"⚠️ {coin} 无持仓，跳过平仓")
             
             elif action in ['OPEN_LONG', 'OPEN_SHORT', 'ADD']:
-                amount = calculate_position_size(coin, position_value, current_price, coin_info)
+                # 检查仓位价值是否符合最小要求
+                GLOBAL_MIN_ORDER_VALUE = 10  # USDT
+                if position_value < GLOBAL_MIN_ORDER_VALUE:
+                    print(f"⚠️ {coin}: {position_value:.2f} USDT < 最小限制 {GLOBAL_MIN_ORDER_VALUE} USDT")
+                    continue
                 
-                if amount > 0:
-                    if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
-                        print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: {amount} {coin} (${position_value:.2f})")
-                        
-                        # 1. 开仓 - CCXT
-                        exchange.create_order(
-                            symbol=symbol,
-                            type='market',
-                            side='buy',
-                            amount=amount
-                        )
-                        
-                        # 2. 立即下止损单（如果AI设置了止损价格）
-                        stop_order_id = 0
-                        if action == 'OPEN_LONG' and stop_loss > 0:
-                            try:
-                                price_precision = coin_info.get('price_precision', 2)
-                                stop_order = exchange.create_order(
-                                    symbol=symbol,
-                                    type='stop_market',
-                                    side='sell',  # 多仓止损用sell
-                                    amount=amount,
-                                    params={
-                                        'stopPrice': round(stop_loss, price_precision),
-                                        'reduceOnly': True
-                                    }
-                                )
-                                stop_order_id = stop_order.get('id', '')
-                                print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
-                            except Exception as e:
-                                print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
-                        
-                        # 3. 记录持仓
-                        if action == 'OPEN_LONG':
-                            portfolio_stats.record_position_entry(coin, 'long', current_price, amount, stop_loss, take_profit, stop_order_id)
-                        
-                        print(f"✅ {coin} 多仓成功")
+                if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
+                    print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: ${position_value:.2f} USDT")
                     
-                    elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
-                        print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: {amount} {coin} (${position_value:.2f})")
-                        
-                        # 1. 开仓 - CCXT
-                        exchange.create_order(
-                            symbol=symbol,
-                            type='market',
-                            side='sell',
-                            amount=amount
-                        )
-                        
-                        # 2. 立即下止损单（如果AI设置了止损价格）
-                        stop_order_id = 0
-                        if action == 'OPEN_SHORT' and stop_loss > 0:
-                            try:
-                                price_precision = coin_info.get('price_precision', 2)
-                                stop_order = exchange.create_order(
-                                    symbol=symbol,
-                                    type='stop_market',
-                                    side='buy',  # 空仓止损用buy
-                                    amount=amount,
-                                    params={
-                                        'stopPrice': round(stop_loss, price_precision),
-                                        'reduceOnly': True
-                                    }
-                                )
-                                stop_order_id = stop_order.get('id', '')
-                                print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
-                            except Exception as e:
-                                print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
-                        
-                        # 3. 记录持仓
-                        if action == 'OPEN_SHORT':
-                            portfolio_stats.record_position_entry(coin, 'short', current_price, amount, stop_loss, take_profit, stop_order_id)
-                        
-                        print(f"✅ {coin} 空仓成功")
+                    # 1. 开仓 - CCXT 直接用 USDT 金额下单
+                    order = exchange.create_order(
+                        symbol=symbol,
+                        type='market',
+                        side='buy',
+                        amount=None,  # 不指定数量
+                        params={'cost': position_value}  # 直接指定花费的 USDT
+                    )
+                    
+                    # 从订单结果获取实际成交数量
+                    filled_amount = float(order.get('filled', 0))
+                    
+                    # 2. 立即下止损单（如果AI设置了止损价格）
+                    stop_order_id = 0
+                    if action == 'OPEN_LONG' and stop_loss > 0 and filled_amount > 0:
+                        try:
+                            price_precision = coin_info.get('price_precision', 2)
+                            stop_order = exchange.create_order(
+                                symbol=symbol,
+                                type='stop_market',
+                                side='sell',  # 多仓止损用sell
+                                amount=filled_amount,  # 使用实际成交数量
+                                params={
+                                    'stopPrice': round(stop_loss, price_precision),
+                                    'reduceOnly': True
+                                }
+                            )
+                            stop_order_id = stop_order.get('id', '')
+                            print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
+                        except Exception as e:
+                            print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
+                    
+                    # 3. 记录持仓
+                    if action == 'OPEN_LONG' and filled_amount > 0:
+                        portfolio_stats.record_position_entry(coin, 'long', current_price, filled_amount, stop_loss, take_profit, stop_order_id)
+                    
+                    print(f"✅ {coin} 多仓成功 ({filled_amount:.4f} {coin})")
+                    
+                elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
+                    print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: ${position_value:.2f} USDT")
+                    
+                    # 1. 开仓 - CCXT 直接用 USDT 金额下单
+                    order = exchange.create_order(
+                        symbol=symbol,
+                        type='market',
+                        side='sell',
+                        amount=None,  # 不指定数量
+                        params={'cost': position_value}  # 直接指定花费的 USDT
+                    )
+                    
+                    # 从订单结果获取实际成交数量
+                    filled_amount = float(order.get('filled', 0))
+                    
+                    # 2. 立即下止损单（如果AI设置了止损价格）
+                    stop_order_id = 0
+                    if action == 'OPEN_SHORT' and stop_loss > 0 and filled_amount > 0:
+                        try:
+                            price_precision = coin_info.get('price_precision', 2)
+                            stop_order = exchange.create_order(
+                                symbol=symbol,
+                                type='stop_market',
+                                side='buy',  # 空仓止损用buy
+                                amount=filled_amount,  # 使用实际成交数量
+                                params={
+                                    'stopPrice': round(stop_loss, price_precision),
+                                    'reduceOnly': True
+                                }
+                            )
+                            stop_order_id = stop_order.get('id', '')
+                            print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
+                        except Exception as e:
+                            print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
+                    
+                    # 3. 记录持仓
+                    if action == 'OPEN_SHORT' and filled_amount > 0:
+                        portfolio_stats.record_position_entry(coin, 'short', current_price, filled_amount, stop_loss, take_profit, stop_order_id)
+                    
+                    print(f"✅ {coin} 空仓成功 ({filled_amount:.4f} {coin})")
                 else:
-                    print(f"⚠️ {coin} 数量计算为0，跳过")
+                    print(f"⚠️ {coin} 未知动作: {action}")
             
             time.sleep(0.5)  # 避免API限流
             
