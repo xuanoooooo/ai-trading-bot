@@ -5,7 +5,7 @@
 import os
 import sys
 import pandas as pd
-from binance.client import Client
+import ccxt
 from typing import Dict, List
 import json
 
@@ -18,6 +18,20 @@ sys.path.insert(0, os.path.join(PROJECT_ROOT, 'src'))
 
 # 导入重试装饰器
 from utils.retry_decorator import retry_on_api_error
+
+
+def format_symbol_for_exchange(base_symbol, exchange_obj):
+    """
+    根据交易所类型格式化symbol
+    :param base_symbol: 基础symbol格式，如 "ETH/USDT"
+    :param exchange_obj: CCXT交易所对象
+    :return: 格式化后的symbol
+    """
+    # Gate.io 的 swap 市场需要添加 settle 货币后缀
+    if exchange_obj.id == 'gateio' and 'defaultType' in exchange_obj.options:
+        if exchange_obj.options['defaultType'] == 'swap':
+            return f"{base_symbol}:USDT"
+    return base_symbol
 
 
 def calculate_technical_indicators(df, timeframe='5m'):
@@ -117,14 +131,26 @@ def calculate_technical_indicators(df, timeframe='5m'):
         return df
 
 
+def ccxt_klines_to_df(klines):
+    """将CCXT格式的K线数据转换为DataFrame
+    CCXT格式: [timestamp, open, high, low, close, volume]
+    """
+    df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    for col in ['open', 'high', 'low', 'close', 'volume']:
+        df[col] = df[col].astype(float)
+    return df
+
+
 class MarketScanner:
     """市场扫描器 - 获取所有币种的市场数据"""
     
-    def __init__(self, binance_client: Client, config_file='config/coins_config.json'):
-        self.binance_client = binance_client
+    def __init__(self, exchange, config_file='config/coins_config.json'):
+        self.exchange = exchange
         self.config_file = config_file
         self.coins_config = self.load_config()
-        self.coins = [c['symbol'] for c in self.coins_config['coins']]
+        # 提取币种名称（ETH/USDT -> ETH）
+        self.coins = [c['symbol'].split('/')[0] for c in self.coins_config['coins']]
     
     def load_config(self) -> Dict:
         """加载币种配置"""
@@ -139,28 +165,21 @@ class MarketScanner:
     def get_coin_1h_data(self, coin: str) -> Dict:
         """获取单个币种的1小时K线数据"""
         try:
-            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'] == coin), None)
+            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'].startswith(f"{coin}/")), None)
             if not coin_info:
                 return None
             
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式
+            symbol = format_symbol_for_exchange(base_symbol, self.exchange)
             
             # 获取1小时K线
-            klines_1h = self.binance_client.futures_klines(
+            klines_1h = self.exchange.fetch_ohlcv(
                 symbol=symbol,
-                interval='1h',
-                limit=100 # 足够计算EMA(50)和BB(20)
+                timeframe='1h',
+                limit=100  # 足够计算EMA(50)和BB(20)
             )
             
-            df_1h = pd.DataFrame(klines_1h, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            
-            df_1h = df_1h[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
-            df_1h['timestamp'] = pd.to_datetime(df_1h['timestamp'], unit='ms')
-            for col in ['open', 'high', 'low', 'close', 'volume']:
-                df_1h[col] = df_1h[col].astype(float)
+            df_1h = ccxt_klines_to_df(klines_1h)
             
             # 计算1小时技术指标
             df_1h = calculate_technical_indicators(df_1h, timeframe='1h')
@@ -200,28 +219,21 @@ class MarketScanner:
     def get_coin_4h_data(self, coin: str) -> Dict:
         """获取单个币种的4小时K线数据"""
         try:
-            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'] == coin), None)
+            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'].startswith(f"{coin}/")), None)
             if not coin_info:
                 return None
             
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式
+            symbol = format_symbol_for_exchange(base_symbol, self.exchange)
             
             # 获取4小时K线
-            klines_4h = self.binance_client.futures_klines(
+            klines_4h = self.exchange.fetch_ohlcv(
                 symbol=symbol,
-                interval='4h',
-                limit=100 # 足够计算EMA(50)
+                timeframe='4h',
+                limit=100  # 足够计算EMA(50)
             )
             
-            df_4h = pd.DataFrame(klines_4h, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            
-            df_4h = df_4h[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
-            df_4h['timestamp'] = pd.to_datetime(df_4h['timestamp'], unit='ms')
-            for col in ['open', 'high', 'low', 'close', 'volume']:
-                df_4h[col] = df_4h[col].astype(float)
+            df_4h = ccxt_klines_to_df(klines_4h)
             
             # 计算4小时技术指标
             df_4h = calculate_technical_indicators(df_4h, timeframe='4h')
@@ -258,28 +270,21 @@ class MarketScanner:
     def get_coin_15m_data(self, coin: str) -> Dict:
         """获取单个币种的15分钟K线数据"""
         try:
-            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'] == coin), None)
+            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'].startswith(f"{coin}/")), None)
             if not coin_info:
                 return None
             
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式
+            symbol = format_symbol_for_exchange(base_symbol, self.exchange)
             
             # 获取15分钟K线
-            klines_15m = self.binance_client.futures_klines(
+            klines_15m = self.exchange.fetch_ohlcv(
                 symbol=symbol,
-                interval='15m',
-                limit=100 # 足够计算EMA(50)和MACD
+                timeframe='15m',
+                limit=100  # 足够计算EMA(50)和MACD
             )
             
-            df_15m = pd.DataFrame(klines_15m, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            
-            df_15m = df_15m[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
-            df_15m['timestamp'] = pd.to_datetime(df_15m['timestamp'], unit='ms')
-            for col in ['open', 'high', 'low', 'close', 'volume']:
-                df_15m[col] = df_15m[col].astype(float)
+            df_15m = ccxt_klines_to_df(klines_15m)
             
             # 计算15分钟技术指标
             df_15m = calculate_technical_indicators(df_15m, timeframe='15m')
@@ -319,29 +324,22 @@ class MarketScanner:
         """扫描单个币种的市场数据（5分钟周期）"""
         try:
             # 找到币种配置
-            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'] == coin), None)
+            coin_info = next((c for c in self.coins_config['coins'] if c['symbol'].startswith(f"{coin}/")), None)
             if not coin_info:
                 return None
             
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式
+            symbol = format_symbol_for_exchange(base_symbol, self.exchange)
             
             # 获取K线数据
-            klines = self.binance_client.futures_klines(
+            klines = self.exchange.fetch_ohlcv(
                 symbol=symbol,
-                interval=timeframe,
+                timeframe=timeframe,
                 limit=limit
             )
             
             # 转换为DataFrame
-            df = pd.DataFrame(klines, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            
-            df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']]
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            for col in ['open', 'high', 'low', 'close', 'volume']:
-                df[col] = df[col].astype(float)
+            df = ccxt_klines_to_df(klines)
             
             # 计算5分钟技术指标（仅ATR）
             df = calculate_technical_indicators(df, timeframe='5m')
@@ -364,26 +362,19 @@ class MarketScanner:
 
             # 获取资金费率和持仓量
             try:
-                premium_index = self.binance_client.futures_funding_rate(symbol=symbol, limit=1)
-                if premium_index and len(premium_index) > 0:
-                    funding_rate = float(premium_index[0]['fundingRate'])
-                else:
-                    funding_rate = 0
-            except (KeyError, ValueError, IndexError) as e:
-                print(f"⚠️ [{symbol}] 解析资金费率数据失败: {e}")
-                funding_rate = None
+                # CCXT获取资金费率
+                funding_rate_data = self.exchange.fetch_funding_rate(symbol)
+                funding_rate = float(funding_rate_data['fundingRate']) if funding_rate_data and 'fundingRate' in funding_rate_data else 0
             except Exception as e:
                 print(f"⚠️ [{symbol}] 获取资金费率失败: {e}")
                 funding_rate = None
 
             try:
-                open_interest_data = self.binance_client.futures_open_interest(symbol=symbol)
-                if open_interest_data and 'openInterest' in open_interest_data:
-                    open_interest = float(open_interest_data['openInterest'])
-                else:
-                    open_interest = 0
-            except (KeyError, ValueError) as e:
-                print(f"⚠️ [{symbol}] 解析持仓量数据失败: {e}")
+                # CCXT获取持仓量（Open Interest）
+                oi_data = self.exchange.fetch_open_interest(symbol)
+                open_interest = float(oi_data['openInterestAmount']) if oi_data and 'openInterestAmount' in oi_data else 0
+            except ccxt.NotSupported:
+                # 该交易所不支持获取持仓量，静默跳过
                 open_interest = None
             except Exception as e:
                 print(f"⚠️ [{symbol}] 获取持仓量失败: {e}")
@@ -494,27 +485,22 @@ class MarketScanner:
         try:
             import pandas as pd
             
+            # BTC symbol 格式转换
+            btc_symbol = format_symbol_for_exchange('BTC/USDT', self.exchange)
+            
             # 获取BTC当前价格
-            btc_ticker = self.binance_client.futures_ticker(symbol='BTCUSDT')
-            btc_price = float(btc_ticker['lastPrice'])
+            btc_ticker = self.exchange.fetch_ticker(btc_symbol)
+            btc_price = float(btc_ticker['last'])
             
             # 获取15分钟K线（用于计算技术指标）
-            btc_klines_15m = self.binance_client.futures_klines(
-                symbol='BTCUSDT',
-                interval='15m',
+            btc_klines_15m = self.exchange.fetch_ohlcv(
+                symbol=btc_symbol,
+                timeframe='15m',
                 limit=96  # 24小时数据，足够计算技术指标
             )
             
             # 转换为DataFrame并计算15分钟技术指标
-            df_15m = pd.DataFrame(btc_klines_15m, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            df_15m['open'] = df_15m['open'].astype(float)
-            df_15m['high'] = df_15m['high'].astype(float)
-            df_15m['low'] = df_15m['low'].astype(float)
-            df_15m['close'] = df_15m['close'].astype(float)
-            df_15m['volume'] = df_15m['volume'].astype(float)
+            df_15m = ccxt_klines_to_df(btc_klines_15m)
             df_15m = calculate_technical_indicators(df_15m, timeframe='15m')
             current_15m = df_15m.iloc[-1]
             previous_15m = df_15m.iloc[-2]
@@ -522,70 +508,47 @@ class MarketScanner:
             btc_change_15m = ((current_15m['close'] - previous_15m['close']) / previous_15m['close']) * 100
             
             # 获取1小时K线（用于中期趋势）
-            btc_klines_1h = self.binance_client.futures_klines(
-                symbol='BTCUSDT',
-                interval='1h',
+            btc_klines_1h = self.exchange.fetch_ohlcv(
+                symbol=btc_symbol,
+                timeframe='1h',
                 limit=60  # 2.5天数据
             )
             
             # 转换为DataFrame并计算1小时技术指标
-            df_1h = pd.DataFrame(btc_klines_1h, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            df_1h['open'] = df_1h['open'].astype(float)
-            df_1h['high'] = df_1h['high'].astype(float)
-            df_1h['low'] = df_1h['low'].astype(float)
-            df_1h['close'] = df_1h['close'].astype(float)
-            df_1h['volume'] = df_1h['volume'].astype(float)
+            df_1h = ccxt_klines_to_df(btc_klines_1h)
             df_1h = calculate_technical_indicators(df_1h, timeframe='1h')
             current_1h = df_1h.iloc[-1]
             
             # 获取4小时K线（用于长期趋势，轻量级）
-            btc_klines_4h = self.binance_client.futures_klines(
-                symbol='BTCUSDT',
-                interval='4h',
+            btc_klines_4h = self.exchange.fetch_ohlcv(
+                symbol=btc_symbol,
+                timeframe='4h',
                 limit=60  # 10天数据
             )
             
             # 转换为DataFrame并计算4小时技术指标
-            df_4h = pd.DataFrame(btc_klines_4h, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base', 'taker_buy_quote', 'ignore'
-            ])
-            df_4h['open'] = df_4h['open'].astype(float)
-            df_4h['high'] = df_4h['high'].astype(float)
-            df_4h['low'] = df_4h['low'].astype(float)
-            df_4h['close'] = df_4h['close'].astype(float)
-            df_4h['volume'] = df_4h['volume'].astype(float)
+            df_4h = ccxt_klines_to_df(btc_klines_4h)
             df_4h = calculate_technical_indicators(df_4h, timeframe='4h')
             current_4h = df_4h.iloc[-1]
             
             # 获取BTC的资金费率和持仓量
             try:
-                btc_funding = self.binance_client.futures_funding_rate(symbol='BTCUSDT', limit=1)
-                if btc_funding and len(btc_funding) > 0:
-                    btc_funding_rate = float(btc_funding[0]['fundingRate'])
-                else:
-                    btc_funding_rate = 0.0
-            except (KeyError, ValueError, IndexError) as e:
-                print(f"⚠️ [BTCUSDT] 解析资金费率数据失败: {e}")
-                btc_funding_rate = None
+                # CCXT获取BTC资金费率
+                btc_funding_data = self.exchange.fetch_funding_rate(btc_symbol)
+                btc_funding_rate = float(btc_funding_data['fundingRate']) if btc_funding_data and 'fundingRate' in btc_funding_data else 0.0
             except Exception as e:
-                print(f"⚠️ [BTCUSDT] 获取资金费率失败: {e}")
+                print(f"⚠️ [BTC/USDT] 获取资金费率失败: {e}")
                 btc_funding_rate = None
 
             try:
-                btc_oi = self.binance_client.futures_open_interest(symbol='BTCUSDT')
-                if btc_oi and 'openInterest' in btc_oi:
-                    btc_open_interest = float(btc_oi['openInterest'])
-                else:
-                    btc_open_interest = 0.0
-            except (KeyError, ValueError) as e:
-                print(f"⚠️ [BTCUSDT] 解析持仓量数据失败: {e}")
+                # CCXT获取BTC持仓量
+                btc_oi_data = self.exchange.fetch_open_interest(btc_symbol)
+                btc_open_interest = float(btc_oi_data['openInterestAmount']) if btc_oi_data and 'openInterestAmount' in btc_oi_data else 0.0
+            except ccxt.NotSupported:
+                # 该交易所不支持获取持仓量，静默跳过
                 btc_open_interest = None
             except Exception as e:
-                print(f"⚠️ [BTCUSDT] 获取持仓量失败: {e}")
+                print(f"⚠️ [BTC/USDT] 获取持仓量失败: {e}")
                 btc_open_interest = None
             
             # 获取时间序列数据（最近10个值）
@@ -664,7 +627,7 @@ class MarketScanner:
     def get_portfolio_positions(self) -> Dict[str, Dict]:
         """获取当前所有币种的持仓情况"""
         try:
-            all_positions = self.binance_client.futures_position_information()
+            all_positions = self.exchange.fetch_positions()
             
             portfolio = {coin: None for coin in self.coins}
             
@@ -682,14 +645,16 @@ class MarketScanner:
                 pass
             
             for pos in all_positions:
-                position_amt = float(pos.get('positionAmt', 0))
-                if position_amt != 0:
-                    symbol = pos.get('symbol', '')
-                    coin = symbol.replace('USDT', '')
+                # CCXT返回的持仓格式：contracts字段表示持仓数量
+                contracts = float(pos.get('contracts', 0))
+                if contracts != 0:
+                    symbol = pos.get('symbol', '')  # 格式如 ETH/USDT:USDT
+                    # 提取币种名称（ETH/USDT -> ETH）
+                    coin = symbol.split('/')[0] if '/' in symbol else symbol.replace('USDT', '')
                     
                     if coin in portfolio:
                         entry_price = float(pos.get('entryPrice', 0))
-                        unrealized_pnl = float(pos.get('unRealizedProfit', 0))
+                        unrealized_pnl = float(pos.get('unrealizedPnl', 0))  # CCXT字段名
                         initial_margin = float(pos.get('initialMargin', 0))
                         
                         # 计算ROE（保证金回报率）
@@ -698,12 +663,12 @@ class MarketScanner:
                             roe = (unrealized_pnl / initial_margin) * 100
                         
                         portfolio[coin] = {
-                            'side': 'long' if position_amt > 0 else 'short',
-                            'amount': abs(position_amt),
+                            'side': pos.get('side', 'long'),  # CCXT直接返回'long'或'short'
+                            'amount': abs(contracts),
                             'entry_price': entry_price,
                             'pnl': unrealized_pnl,
-                            'roe': roe,  # 新增：保证金回报率
-                            'value': abs(position_amt) * entry_price,
+                            'roe': roe,
+                            'value': abs(contracts) * entry_price,
                             'stop_loss': local_positions.get(coin, {}).get('stop_loss', 0),
                             'take_profit': local_positions.get(coin, {}).get('take_profit', 0)
                         }
@@ -718,11 +683,14 @@ class MarketScanner:
     def get_account_info(self) -> Dict:
         """获取账户信息"""
         try:
-            account_info = self.binance_client.futures_account()
+            # CCXT获取账户余额 - 不指定type，让CCXT使用defaultType
+            balance = self.exchange.fetch_balance()
             
-            total_balance = float(account_info['totalWalletBalance'])
-            free_balance = float(account_info['availableBalance'])
-            used_margin = float(account_info['totalPositionInitialMargin'])
+            # USDT余额
+            usdt_balance = balance.get('USDT', {})
+            total_balance = float(usdt_balance.get('total', 0))
+            free_balance = float(usdt_balance.get('free', 0))
+            used_margin = total_balance - free_balance
             
             margin_ratio = (used_margin / total_balance * 100) if total_balance > 0 else 0
             

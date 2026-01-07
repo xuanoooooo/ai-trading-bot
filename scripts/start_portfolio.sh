@@ -3,7 +3,7 @@
 # AI多币种投资组合管理系统启动脚本
 
 SESSION_NAME="portfolio"
-SCRIPT_DIR="/root/ziyong/duobizhong"
+SCRIPT_DIR="/root/duobizhong"
 
 echo "=========================================="
 echo "🚀 AI多币种投资组合管理系统"

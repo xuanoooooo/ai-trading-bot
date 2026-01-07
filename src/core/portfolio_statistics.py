@@ -15,14 +15,16 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 class PortfolioStatistics:
     """投资组合统计类 - 管理多币种交易历史和性能指标"""
     
-    def __init__(self, stats_file='data/portfolio_stats.json', binance_client=None, config_file=None):
+    def __init__(self, stats_file='data/portfolio_stats.json', exchange=None, config_file=None):
         self.stats_file = stats_file
-        self.binance_client = binance_client  # 用于取消止损单
+        self.exchange = exchange  # 用于取消止损单
         self.start_time = None
         self.total_trades = 0
         self.win_trades = 0
         self.lose_trades = 0
         self.total_pnl = 0.0
+        self.total_balance = 0.0  # 账户总权益
+        self.free_balance = 0.0   # 可用余额
         
         # 多币种支持
         if config_file is None:
@@ -64,6 +66,8 @@ class PortfolioStatistics:
                     self.win_trades = data.get('win_trades', 0)
                     self.lose_trades = data.get('lose_trades', 0)
                     self.total_pnl = data.get('total_pnl', 0.0)
+                    self.total_balance = data.get('total_balance', 0.0)  # 加载总权益
+                    self.free_balance = data.get('free_balance', 0.0)    # 加载可用余额
                     stored_positions = data.get('current_positions', {})
                     self.current_positions = {coin: stored_positions.get(coin) for coin in self.coins}
                     self.stop_loss_history = data.get('stop_loss_history', [])  # 加载止损历史
@@ -90,6 +94,8 @@ class PortfolioStatistics:
         self.win_trades = 0
         self.lose_trades = 0
         self.total_pnl = 0.0
+        self.total_balance = 0.0
+        self.free_balance = 0.0
         self.current_positions = {coin: None for coin in self.coins}
         self.trade_history_by_coin = {coin: [] for coin in self.coins}
         self.save()
@@ -115,6 +121,8 @@ class PortfolioStatistics:
                 'win_trades': self.win_trades,
                 'lose_trades': self.lose_trades,
                 'total_pnl': self.total_pnl,
+                'total_balance': self.total_balance,  # 保存总权益
+                'free_balance': self.free_balance,    # 保存可用余额
                 'current_positions': self.current_positions,
                 'stop_loss_history': filtered_stop_losses,  # 保存止损历史（7天）
                 'last_update': datetime.now().isoformat()
@@ -123,6 +131,12 @@ class PortfolioStatistics:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"⚠️ 保存统计数据失败: {e}")
+
+    def update_account_info(self, total_balance: float, free_balance: float):
+        """更新账户资金信息"""
+        self.total_balance = total_balance
+        self.free_balance = free_balance
+        self.save()
     
     def record_position_entry(self, coin: str, side: str, entry_price: float, amount: float, stop_loss: float = 0, take_profit: float = 0, stop_order_id: int = 0):
         """记录开仓信息"""
@@ -177,8 +191,8 @@ class PortfolioStatistics:
     
     def cancel_stop_loss_order(self, coin: str, symbol: str) -> bool:
         """取消止损单（容错处理）"""
-        if not self.binance_client:
-            print(f"⚠️ 未配置Binance客户端，无法取消止损单")
+        if not self.exchange:
+            print(f"⚠️ 未配置交易所客户端，无法取消止损单")
             return False
         
         if coin not in self.current_positions or self.current_positions[coin] is None:
@@ -189,9 +203,9 @@ class PortfolioStatistics:
             return False  # 没有止损单
         
         try:
-            self.binance_client.futures_cancel_order(
-                symbol=symbol,
-                orderId=stop_order_id
+            self.exchange.cancel_order(
+                id=stop_order_id,
+                symbol=symbol
             )
             print(f"🔴 已取消{coin}止损单 (订单ID: {stop_order_id})")
             return True

@@ -93,25 +93,25 @@ python3 web/web_app.py
 ```
 
 ### 修改配置
-- 币种配置：`/root/ziyong/duobizhong/config/coins_config.json`
-- 交易策略：`/root/ziyong/duobizhong/prompts/default.txt`
+- 币种配置：`/root/duobizhong/config/coins_config.json`
+- 交易策略：`/root/duobizhong/prompts/default.txt`
 - 环境变量：`.env`
 
 ### 查看数据
-- 交易统计：`/root/ziyong/duobizhong/data/portfolio_stats.json`
-- AI决策记录：`/root/ziyong/duobizhong/data/ai_decisions.json`
+- 交易统计：`/root/duobizhong/data/portfolio_stats.json`
+- AI决策记录：`/root/duobizhong/data/ai_decisions.json`
 - 程序日志：自动生成在根目录
 
 ## 📝 重要文件说明
 
 | 文件 | 作用 | 位置 |
 |------|------|------|
-| 交易主程序 | AI决策引擎，5分钟调用一次 | `/root/ziyong/duobizhong/src/core/portfolio_manager.py` |
-| 市场扫描器 | 获取K线数据和技术指标 | `/root/ziyong/duobizhong/src/core/market_scanner.py` |
-| Web应用 | 可视化监控看板 | `/root/ziyong/duobizhong/web/web_app.py` |
-| 币种配置 | 精度、最小金额、杠杆等 | `/root/ziyong/duobizhong/config/coins_config.json` |
-| 交易策略 | AI提示词，可外部修改 | `/root/ziyong/duobizhong/prompts/default.txt` |
-| 启动脚本 | 后台运行交易程序 | `/root/ziyong/duobizhong/scripts/start_portfolio.sh` |
+| 交易主程序 | AI决策引擎，5分钟调用一次 | `/root/duobizhong/src/core/portfolio_manager.py` |
+| 市场扫描器 | 获取K线数据和技术指标 | `/root/duobizhong/src/core/market_scanner.py` |
+| Web应用 | 可视化监控看板 | `/root/duobizhong/web/web_app.py` |
+| 币种配置 | 精度、最小金额、杠杆等 | `/root/duobizhong/config/coins_config.json` |
+| 交易策略 | AI提示词，可外部修改 | `/root/duobizhong/prompts/default.txt` |
+| 启动脚本 | 后台运行交易程序 | `/root/duobizhong/scripts/start_portfolio.sh` |
 
 ## ✅ 更新完成的功能
 

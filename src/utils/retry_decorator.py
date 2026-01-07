@@ -3,7 +3,7 @@ API调用重试装饰器 - 自动重试网络和API错误
 """
 import time
 from functools import wraps
-from binance.exceptions import BinanceAPIException
+import ccxt
 from requests.exceptions import RequestException, ConnectionError, Timeout
 
 
@@ -32,7 +32,7 @@ def retry_on_api_error(max_retries=3, delay=2, backoff=2):
             while retries < max_retries:
                 try:
                     return func(*args, **kwargs)
-                except (BinanceAPIException, RequestException, ConnectionError, Timeout) as e:
+                except (ccxt.NetworkError, ccxt.ExchangeError, RequestException, ConnectionError, Timeout) as e:
                     retries += 1
                     if retries >= max_retries:
                         print(f"❌ {func.__name__} 重试{max_retries}次后仍失败: {e}")

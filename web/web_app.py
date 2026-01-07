@@ -1,386 +1,315 @@
-"""
-AI交易机器人可视化Web服务
-- 只读取数据，不执行交易
-- 独立运行，不影响交易程序
-"""
-import os
-import sys
 import json
-from datetime import datetime
-from flask import Flask, render_template, jsonify
+import os
+import shutil
+import time
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
+import ccxt
+from dotenv import load_dotenv
 
-# 添加父目录到路径，以便导入market_scanner
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-try:
-    from src.core.market_scanner import MarketScanner
-    from binance.client import Client
-    from dotenv import load_dotenv
-    
-    # 加载环境变量（自动从当前目录或父目录查找.env文件）
-    load_dotenv()
-    
-    # 如果找不到，尝试从父目录加载
-    if not os.getenv('BINANCE_API_KEY'):
-        env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-        load_dotenv(env_path)
-    
-    # 初始化币安客户端（只用于获取公开市场数据）
-    binance_client = Client(
-        api_key=os.getenv('BINANCE_API_KEY'),
-        api_secret=os.getenv('BINANCE_SECRET')
-    )
-    
-    # 配置文件路径（兼容不同运行目录）
-    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'coins_config.json')
-    market_scanner = MarketScanner(binance_client, config_path)
-    SCANNER_AVAILABLE = True
-except Exception as e:
-    print(f"⚠️ 警告: 市场扫描器初始化失败: {e}")
-    print("前端将只显示历史数据，不显示实时价格")
-    SCANNER_AVAILABLE = False
-
-app = Flask(__name__)
-CORS(app)
-
-# 配置 - 使用绝对路径定位数据文件（这些文件由portfolio_manager.py生成）
+# Load environment variables
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATS_FILE = os.path.join(PROJECT_ROOT, 'data', 'portfolio_stats.json')
-AI_DECISIONS_FILE = os.path.join(PROJECT_ROOT, 'data', 'ai_decisions.json')
-RUNTIME_FILE = os.path.join(PROJECT_ROOT, 'data', 'current_runtime.json')
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
-# 记录Web服务启动时间
-WEB_START_TIME = datetime.now()
+app = Flask(__name__, static_folder='dist', static_url_path='/')
+CORS(app) # Enable CORS for all routes
 
-def load_json_file(filepath):
-    """安全地加载JSON文件"""
-    try:
-        # 如果是绝对路径，直接使用；否则相对于项目根目录
-        if os.path.isabs(filepath):
-            full_path = filepath
-        else:
-            full_path = os.path.join(PROJECT_ROOT, filepath)
-            
-        if os.path.exists(full_path):
-            with open(full_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        else:
-            print(f"⚠️ 文件不存在: {full_path}")
-        return None
-    except Exception as e:
-        print(f"加载文件失败 {filepath}: {e}")
-        return None
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), '..', 'config', 'coins_config.json')
+PORTFOLIO_STATS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'portfolio_stats.json')
+AI_DECISIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'ai_decisions.json')
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'prompts')
+DEFAULT_PROMPT_FILE = os.path.join(PROMPTS_DIR, 'default.txt')
 
-@app.route('/')
-def index():
-    """主页"""
-    return render_template('index.html')
-
-@app.route('/api/runtime')
-def get_runtime():
-    """获取Web服务和交易程序的运行状态"""
-    # 尝试读取当前运行状态（本次运行）
-    runtime_data = load_json_file(RUNTIME_FILE)
-    current_start_time = None
-    current_runtime_text = "未运行"
-    current_invocations = 0
+# Initialize exchange client (read from config)
+exchange = None
+try:
+    # Read exchange name from config
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            exchange_name = config.get('exchange', 'binance').lower()
+    else:
+        exchange_name = 'binance'
     
-    if runtime_data:
-        try:
-            current_start_time = datetime.fromisoformat(runtime_data['program_start_time'])
-            current_invocations = runtime_data.get('invocation_count', 0)
-            
-            # 计算本次运行时长
-            current_runtime = datetime.now() - current_start_time
-            current_minutes = int(current_runtime.total_seconds() / 60)
-            current_hours = current_minutes / 60
-            
-            if current_hours < 1:
-                current_runtime_text = f"{current_minutes}分钟"
-            else:
-                current_runtime_text = f"{current_hours:.1f}小时 ({current_minutes}分钟)"
-        except:
-            pass
+    # 根据交易所名称读取对应的API密钥
+    api_key_name = f"{exchange_name.upper()}_API_KEY"
+    api_secret_name = f"{exchange_name.upper()}_SECRET"
+    api_key = os.getenv(api_key_name)
+    api_secret = os.getenv(api_secret_name)
     
-    # 读取累计运行时长（从stats文件）
-    stats = load_json_file(STATS_FILE)
-    total_start_time = None
-    total_runtime_text = "未运行"
-    
-    if stats and 'start_time' in stats:
-        try:
-            total_start_time = datetime.fromisoformat(stats['start_time'])
-            total_runtime = datetime.now() - total_start_time
-            total_minutes = int(total_runtime.total_seconds() / 60)
-            total_hours = total_minutes / 60
-            
-            if total_hours < 1:
-                total_runtime_text = f"{total_minutes}分钟"
-            else:
-                total_runtime_text = f"{total_hours:.1f}小时 ({total_minutes}分钟)"
-        except:
-            pass
-    
-    return jsonify({
-        # 本次运行（从current_runtime.json读取）
-        'current_start_time': current_start_time.strftime('%Y-%m-%d %H:%M:%S') if current_start_time else None,
-        'current_runtime': current_runtime_text,
-        'current_invocations': current_invocations,
-        # 累计运行（从portfolio_stats.json读取）
-        'total_start_time': total_start_time.strftime('%Y-%m-%d %H:%M:%S') if total_start_time else None,
-        'total_runtime': total_runtime_text,
-        # 当前时间
-        'current_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    })
-
-@app.route('/api/stats')
-def get_stats():
-    """获取统计数据"""
-    stats = load_json_file(STATS_FILE)
-    if not stats:
-        return jsonify({'error': '无法加载统计数据'}), 500
-    
-    # 计算运行时长
-    start_time = datetime.fromisoformat(stats.get('start_time', datetime.now().isoformat()))
-    runtime = datetime.now() - start_time
-    runtime_hours = int(runtime.total_seconds() / 3600)
-    runtime_days = runtime_hours // 24
-    runtime_hours_in_day = runtime_hours % 24
-    
-    # 计算胜率
-    total_trades = stats.get('total_trades', 0)
-    win_trades = stats.get('win_trades', 0)
-    win_rate = (win_trades / total_trades * 100) if total_trades > 0 else 0
-    
-    return jsonify({
-        'total_trades': total_trades,
-        'win_trades': win_trades,
-        'lose_trades': stats.get('lose_trades', 0),
-        'win_rate': round(win_rate, 1),
-        'total_pnl': round(stats.get('total_pnl', 0), 2),
-        'runtime_days': runtime_days,
-        'runtime_hours': runtime_hours_in_day,
-        'start_time': stats.get('start_time'),
-        'last_update': stats.get('last_update')
-    })
-
-@app.route('/api/positions')
-def get_positions():
-    """获取当前持仓 - 直接从币安API读取"""
-    if not SCANNER_AVAILABLE:
-        return jsonify({'error': '币安客户端不可用'}), 503
-    
-    try:
-        # 直接调用币安API获取持仓信息
-        binance_positions = binance_client.futures_position_information()
+    if api_key and api_secret:
+        exchange_class = getattr(ccxt, exchange_name)
         
-        # 加载本地记录（用于获取止损止盈信息）
-        stats = load_json_file(STATS_FILE)
-        local_positions = stats.get('current_positions', {}) if stats else {}
-        
-        positions = []
-        total_unrealized_pnl = 0
-        
-        # 币种映射（币安symbol转币种名）
-        symbol_to_coin = {
-            'BTCUSDT': 'BTC',
-            'BNBUSDT': 'BNB',
-            'ETHUSDT': 'ETH',
-            'SOLUSDT': 'SOL',
-            'XRPUSDT': 'XRP',
-            'ADAUSDT': 'ADA',
-            'DOGEUSDT': 'DOGE'
+        # 基础配置
+        exchange_config = {
+            'apiKey': api_key,
+            'secret': api_secret,
+            'enableRateLimit': True,
+            'options': {}
         }
         
-        # 遍历币安持仓
-        for pos in binance_positions:
-            amount = float(pos['positionAmt'])
-            if abs(amount) > 0:  # 有持仓
-                symbol = pos['symbol']
-                coin = symbol_to_coin.get(symbol)
-                
-                if coin:  # 如果是我们关注的币种
-                    entry_price = float(pos['entryPrice'])
-                    pnl = float(pos['unRealizedProfit'])
-                    mark_price = float(pos['markPrice'])
-                    initial_margin = float(pos['initialMargin'])
-
-                    # 计算ROE（保证金回报率）
-                    roe = (pnl / initial_margin * 100) if initial_margin > 0 else 0
-
-                    total_unrealized_pnl += pnl
-
-                    # 从本地记录获取止损止盈和开仓时间
-                    local_pos = local_positions.get(coin, {})
-                    if local_pos:
-                        stop_loss = local_pos.get('stop_loss', 0)
-                        take_profit = local_pos.get('take_profit', 0)
-                        stop_order_id = local_pos.get('stop_order_id', 0)
-                        entry_time = local_pos.get('entry_time', '')
-                    else:
-                        stop_loss = 0
-                        take_profit = 0
-                        stop_order_id = 0
-                        entry_time = ''
-
-                    # 计算持仓时长（分钟）
-                    duration_minutes = 0
-                    if entry_time:
-                        try:
-                            entry_datetime = datetime.fromisoformat(entry_time)
-                            duration = datetime.now() - entry_datetime
-                            duration_minutes = int(duration.total_seconds() / 60)
-                        except:
-                            pass
-
-                    # 根据币种设置合适的价格精度
-                    # DOGE和XRP价格低，需要更多小数位
-                    if coin in ['DOGE', 'XRP']:
-                        price_decimals = 5
-                    else:
-                        price_decimals = 2
-
-                    positions.append({
-                        'coin': coin,
-                        'side': 'long' if amount > 0 else 'short',
-                        'entry_price': round(entry_price, price_decimals),
-                        'amount': abs(amount),
-                        'leverage': int(float(pos.get('leverage', 0))) if pos.get('leverage') else None,
-                        'entry_time': entry_time,
-                        'pnl': round(pnl, 2),
-                        'roe': round(roe, 2),
-                        'duration_minutes': duration_minutes,
-                        'current_price': round(mark_price, price_decimals),
-                        'stop_loss': stop_loss,
-                        'take_profit': take_profit,
-                        'stop_order_id': stop_order_id
-                    })
+        # 不同交易所的特殊配置
+        if exchange_name == 'binance':
+            exchange_config['options'] = {
+                'defaultType': 'future',
+            }
+        elif exchange_name == 'gateio':
+            exchange_config['options'] = {
+                'defaultType': 'swap',
+            }
+        elif exchange_name == 'okx':
+            exchange_config['options'] = {
+                'defaultType': 'swap',
+            }
+            password = os.getenv('OKX_PASSWORD')
+            if password:
+                exchange_config['password'] = password
+        elif exchange_name == 'bybit':
+            exchange_config['options'] = {
+                'defaultType': 'linear',
+            }
+        else:
+            exchange_config['options'] = {
+                'defaultType': 'swap',
+            }
         
-        return jsonify({
-            'positions': positions,
-            'total_unrealized_pnl': round(total_unrealized_pnl, 2)
-        })
-    except Exception as e:
-        print(f"❌ 获取持仓信息失败: {e}")
-        return jsonify({'error': str(e)}), 500
+        exchange = exchange_class(exchange_config)
+        exchange.load_markets()
+        print(f"✅ {exchange_name.upper()} Exchange initialized in Web App")
+    else:
+        print(f"⚠️ {exchange_name.upper()} credentials not found in .env")
+        print(f"   Please set {api_key_name} and {api_secret_name}")
+except Exception as e:
+    print(f"⚠️ Failed to initialize Exchange: {e}")
 
-@app.route('/api/trades')
-def get_trades():
-    """获取交易历史"""
-    stats = load_json_file(STATS_FILE)
-    if not stats:
-        return jsonify({'error': '无法加载交易历史'}), 500
-    
-    # 获取所有交易历史（用于绘制完整的盈亏曲线）
-    trade_history = stats.get('trade_history', [])
-    all_trades = trade_history[::-1]  # 倒序，最新的在前
-    
-    return jsonify({'trades': all_trades})
+# Cache for account info
+cached_account_info = None
+last_account_update = 0
+CACHE_DURATION = 10  # seconds
 
-@app.route('/api/prices')
-def get_prices():
-    """获取实时价格"""
-    if not SCANNER_AVAILABLE:
-        return jsonify({'error': '市场扫描器不可用'}), 503
+# Helper function to read JSON files
+def read_json_file(file_path, default_value={}):
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return default_value
+
+def get_realtime_account_info():
+    """Get account info from exchange with caching"""
+    global cached_account_info, last_account_update
     
+    if not exchange:
+        return None
+        
+    now = time.time()
+    if cached_account_info and (now - last_account_update < CACHE_DURATION):
+        return cached_account_info
+        
     try:
-        prices = {}
-        coins = ['BTC', 'BNB', 'ETH', 'SOL', 'XRP', 'ADA', 'DOGE']
+        balance = exchange.fetch_balance({'type': 'future'})
+        total_balance = balance['total'].get('USDT', 0)
+        free_balance = balance['free'].get('USDT', 0)
         
-        for coin in coins:
-            try:
-                ticker = binance_client.get_symbol_ticker(symbol=f'{coin}USDT')
-                
-                prices[coin] = {
-                    'price': float(ticker['price']),
-                    'symbol': coin
-                }
-            except:
-                pass
+        # Get all positions to calculate unrealized PnL
+        positions = exchange.fetch_positions()
+        total_unrealized_pnl = sum(
+            float(pos.get('unrealizedPnl', 0) or 0) 
+            for pos in positions 
+            if float(pos.get('contracts', 0) or 0) != 0
+        )
         
-        return jsonify({'prices': prices})
+        cached_account_info = {
+            'total_balance': total_balance,
+            'total_unrealized_pnl': total_unrealized_pnl,
+            'total_equity': total_balance + total_unrealized_pnl,
+            'available_balance': free_balance
+        }
+        last_account_update = now
+        return cached_account_info
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"⚠️ Exchange API Error: {e}")
+        return None
 
-@app.route('/api/ai_decisions')
+# Serve React App
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
+
+# API to get configuration
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    config = read_json_file(CONFIG_FILE)
+    return jsonify(config)
+
+# API to update configuration
+@app.route('/api/config', methods=['POST'])
+def update_config():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON"}), 400
+
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return jsonify({"message": "Configuration updated successfully", "config": data}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to list all prompt files
+@app.route('/api/prompts/list', methods=['GET'])
+def list_prompts():
+    try:
+        files = [f for f in os.listdir(PROMPTS_DIR) if f.endswith('.txt')]
+        return jsonify({"files": files})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to get prompt content
+@app.route('/api/prompts/content', methods=['GET'])
+def get_prompt_content():
+    filename = request.args.get('file')
+    if not filename:
+        return jsonify({"error": "Filename required"}), 400
+    
+    if '..' in filename or '/' in filename:
+        return jsonify({"error": "Invalid filename"}), 400
+        
+    filepath = os.path.join(PROMPTS_DIR, filename)
+    if not os.path.exists(filepath):
+        return jsonify({"error": "File not found"}), 404
+        
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return jsonify({"content": content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to save prompt content
+@app.route('/api/prompts/save', methods=['POST'])
+def save_prompt():
+    data = request.get_json()
+    if not data or 'filename' not in data or 'content' not in data:
+        return jsonify({"error": "Filename and content required"}), 400
+        
+    filename = data['filename']
+    content = data['content']
+    
+    if not filename.endswith('.txt'):
+        filename += '.txt'
+        
+    if '..' in filename or '/' in filename:
+        return jsonify({"error": "Invalid filename"}), 400
+        
+    filepath = os.path.join(PROMPTS_DIR, filename)
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return jsonify({"message": "Prompt saved successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API to activate prompt
+@app.route('/api/prompts/activate', methods=['POST'])
+def activate_prompt():
+    data = request.get_json()
+    if not data or 'filename' not in data:
+        return jsonify({"error": "Filename required"}), 400
+        
+    filename = data['filename']
+    
+    if '..' in filename or '/' in filename:
+        return jsonify({"error": "Invalid filename"}), 400
+        
+    source_path = os.path.join(PROMPTS_DIR, filename)
+    if not os.path.exists(source_path):
+        return jsonify({"error": "Source file not found"}), 404
+        
+    try:
+        shutil.copy2(source_path, DEFAULT_PROMPT_FILE)
+        return jsonify({"message": f"Prompt '{filename}' activated successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API: Get positions
+@app.route('/api/positions', methods=['GET'])
+def get_positions():
+    # For positions, we still rely on the file for now as it contains PnL logic
+    # But we could also fetch from Binance if we wanted to be 100% realtime
+    # To keep it simple and consistent with trade history, we'll stick to file for positions list
+    # or we could mix them. Let's stick to file for positions to ensure consistency with strategy.
+    # If you want realtime positions, we can change this too.
+    
+    stats = read_json_file(PORTFOLIO_STATS_FILE)
+    current_positions = stats.get('current_positions', {})
+    
+    # Format for frontend
+    positions_list = []
+    if current_positions:
+        for coin, pos in current_positions.items():
+            if pos:
+                # Calculate realtime PnL if we wanted, but for now use stored
+                # To do it properly, we'd need current prices.
+                positions_list.append({
+                    'symbol': coin,
+                    'amount': pos.get('amount', 0),
+                    'entryPrice': pos.get('entry_price', 0),
+                    'currentPrice': 0, # Frontend doesn't strictly need this if PnL is there
+                    'pnl': pos.get('pnl', 0),
+                    'side': pos.get('side', 'long')
+                })
+                
+    return jsonify({"positions": positions_list})
+
+# API: Get portfolio statistics (Mixed Source)
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    # 1. Load from file
+    stats = read_json_file(PORTFOLIO_STATS_FILE)
+    
+    # 2. Try to get realtime data
+    realtime_info = get_realtime_account_info()
+    
+    response_data = {
+        'total_trades': stats.get('total_trades', 0),
+        'win_trades': stats.get('win_trades', 0),
+        'lose_trades': stats.get('lose_trades', 0),
+        'total_pnl': stats.get('total_pnl', 0.0), # Historical PnL (Realized)
+        
+        # Default to file data if realtime fails
+        'total_balance': stats.get('total_balance', 0.0),
+        'total_unrealized_pnl': 0.0 
+    }
+    
+    # 3. Override with realtime data if available
+    if realtime_info:
+        response_data['total_balance'] = realtime_info['total_equity'] # Use Equity as Total Balance
+        response_data['total_unrealized_pnl'] = realtime_info['total_unrealized_pnl']
+        response_data['available_balance'] = realtime_info['available_balance']
+        
+    return jsonify(response_data)
+
+# API: Get AI decisions
+@app.route('/api/ai_decisions', methods=['GET'])
 def get_ai_decisions():
-    """获取AI决策日志"""
-    decisions = load_json_file(AI_DECISIONS_FILE)
-    if not decisions:
-        return jsonify({'decisions': []})
-    
-    # 获取最近10条决策
-    recent_decisions = decisions.get('decisions', [])[-10:][::-1]
-    
-    return jsonify({'decisions': recent_decisions})
+    decisions = read_json_file(AI_DECISIONS_FILE, default_value={'decisions': []})
+    return jsonify(decisions)
 
-@app.route('/api/account')
-def get_account():
-    """获取账户信息 - 直接从币安API读取"""
-    if not SCANNER_AVAILABLE:
-        return jsonify({'error': '币安客户端不可用'}), 503
-
-    try:
-        # 直接调用币安API获取账户信息
-        account = binance_client.futures_account()
-
-        # 提取关键信息
-        total_balance = float(account.get('totalWalletBalance', 0))
-        available_balance = float(account.get('availableBalance', 0))
-        used_margin = float(account.get('totalInitialMargin', 0))
-
-        # 计算保证金占用率
-        margin_ratio = (used_margin / total_balance * 100) if total_balance > 0 else 0
-
-        return jsonify({
-            'total_balance': round(total_balance, 2),
-            'free_balance': round(available_balance, 2),
-            'used_margin': round(used_margin, 2),
-            'margin_ratio': round(margin_ratio, 1)
-        })
-    except Exception as e:
-        print(f"❌ 获取账户信息失败: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/sharpe_ratio')
-def get_sharpe_ratio():
-    """获取夏普比率和风险管理状态"""
-    try:
-        # 导入统计模块
-        sys.path.append(PROJECT_ROOT)
-        from portfolio_statistics import PortfolioStatistics
-
-        # 加载统计数据
-        stats = PortfolioStatistics(STATS_FILE, binance_client)
-
-        # 计算夏普比率
-        sharpe_info = stats.calculate_sharpe_ratio()
-
-        return jsonify({
-            'sharpe_ratio': sharpe_info['sharpe_ratio'],
-            'risk_level': sharpe_info['risk_level'],
-            'max_positions': sharpe_info['max_positions'],
-            'confidence_threshold': sharpe_info['confidence_threshold'],
-            'sample_size': sharpe_info['sample_size'],
-            'note': sharpe_info['note']
-        })
-    except Exception as e:
-        print(f"❌ 获取夏普比率失败: {e}")
-        return jsonify({'error': str(e)}), 500
+@app.errorhandler(404)
+def not_found(e):
+    if not request.path.startswith('/api/'):
+        return send_from_directory(app.static_folder, 'index.html')
+    return jsonify({"error": "Not Found"}), 404
 
 if __name__ == '__main__':
-    print("=" * 60)
-    print("🚀 AI交易机器人可视化系统")
-    print("=" * 60)
-    print(f"📊 数据文件: {STATS_FILE}")
-    print(f"🤖 AI决策日志: {AI_DECISIONS_FILE}")
-    print(f"🔒 监听地址: 127.0.0.1:5000 (仅本地访问)")
-    print(f"🌐 访问方式: SSH隧道 - ssh -L 5000:localhost:5000 user@server")
-    print(f"   然后浏览器访问: http://localhost:5000")
-    print(f"⚠️  注意: 此服务只读取数据，不执行交易")
-    print("=" * 60)
+    # Ensure necessary data files exist
+    if not os.path.exists(PORTFOLIO_STATS_FILE):
+        os.makedirs(os.path.dirname(PORTFOLIO_STATS_FILE), exist_ok=True)
+        with open(PORTFOLIO_STATS_FILE, 'w', encoding='utf-8') as f:
+            json.dump({}, f, indent=2, ensure_ascii=False)
+    if not os.path.exists(AI_DECISIONS_FILE):
+        os.makedirs(os.path.dirname(AI_DECISIONS_FILE), exist_ok=True)
+        with open(AI_DECISIONS_FILE, 'w', encoding='utf-8') as f:
+            json.dump({'decisions': []}, f, indent=2, ensure_ascii=False)
     
-    # 启动Flask应用（监听所有网络接口，使用服务器安全组控制访问）
-    app.run(host='0.0.0.0', port=5000, debug=False)
-
+    app.run(debug=True, host='0.0.0.0', port=5000)

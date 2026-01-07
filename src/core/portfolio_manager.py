@@ -11,8 +11,7 @@ import re
 from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
-from binance.client import Client
-from binance.exceptions import BinanceAPIException
+import ccxt
 import math
 
 from portfolio_statistics import PortfolioStatistics
@@ -62,51 +61,120 @@ def format_price(price, coin):
     else:
         return f"${price:.2f}"
 
+def format_symbol_for_exchange(base_symbol, exchange_obj):
+    """
+    根据交易所类型格式化symbol
+    :param base_symbol: 基础symbol格式，如 "ETH/USDT"
+    :param exchange_obj: CCXT交易所对象
+    :return: 格式化后的symbol
+    """
+    # Gate.io 的 swap 市场需要添加 settle 货币后缀
+    if exchange_obj.id == 'gateio' and 'defaultType' in exchange_obj.options:
+        if exchange_obj.options['defaultType'] == 'swap':
+            return f"{base_symbol}:USDT"
+    return base_symbol
+
 # 初始化客户端
 deepseek_client = OpenAI(
     api_key=os.getenv('OPENAI_API_KEY'),
     base_url=os.getenv('OPENAI_BASE_URL')
 )
 
-# 重试连接Binance（处理临时网络问题）
-print("🔗 正在连接Binance API...")
-binance_client = None
+# 读取配置文件获取交易所类型
+config_path = os.path.join(PROJECT_ROOT, 'config', 'coins_config.json')
+with open(config_path, 'r', encoding='utf-8') as f:
+    config = json.load(f)
+    exchange_name = config.get('exchange', 'binance').lower()
+
+# 初始化交易所客户端
+print(f"🔗 正在连接 {exchange_name.upper()} API...")
+
+# 根据交易所名称读取对应的API密钥
+api_key_name = f"{exchange_name.upper()}_API_KEY"
+api_secret_name = f"{exchange_name.upper()}_SECRET"
+api_key = os.getenv(api_key_name)
+api_secret = os.getenv(api_secret_name)
+
+if not api_key or not api_secret:
+    print(f"❌ 未找到 {exchange_name.upper()} 的API密钥配置")
+    print(f"   请在 .env 文件中设置 {api_key_name} 和 {api_secret_name}")
+    sys.exit(1)
+
+exchange = None
 max_retries = 5
 retry_delay = 3
 
 for attempt in range(max_retries):
     try:
-        binance_client = Client(
-            api_key=os.getenv('BINANCE_API_KEY'),
-            api_secret=os.getenv('BINANCE_SECRET'),
-            requests_params={'timeout': 30}  # 增加超时时间到30秒
-        )
-        print(f"✅ Binance客户端初始化成功")
+        # 根据配置创建对应的交易所对象
+        exchange_class = getattr(ccxt, exchange_name)
+        
+        # 基础配置
+        exchange_config = {
+            'apiKey': api_key,
+            'secret': api_secret,
+            'enableRateLimit': True,
+            'options': {},
+            'timeout': 30000  # 30秒超时
+        }
+        
+        # 不同交易所的特殊配置
+        if exchange_name == 'binance':
+            exchange_config['options'] = {
+                'defaultType': 'future',
+                'adjustForTimeDifference': True
+            }
+        elif exchange_name == 'gateio':
+            exchange_config['options'] = {
+                'defaultType': 'swap',  # Gate.io 使用 swap 类型
+            }
+        elif exchange_name == 'okx':
+            exchange_config['options'] = {
+                'defaultType': 'swap',
+            }
+            password = os.getenv('OKX_PASSWORD')
+            if password:
+                exchange_config['password'] = password
+        elif exchange_name == 'bybit':
+            exchange_config['options'] = {
+                'defaultType': 'linear',  # Bybit 使用 linear
+            }
+        else:
+            # 其他交易所默认使用 swap
+            exchange_config['options'] = {
+                'defaultType': 'swap',
+            }
+        
+        exchange = exchange_class(exchange_config)
+        
+        # 测试连接
+        exchange.load_markets()
+        print(f"✅ {exchange_name.upper()} 客户端初始化成功")
         break
     except Exception as e:
-        print(f"⚠️ Binance连接失败 (尝试 {attempt + 1}/{max_retries}): {str(e)[:100]}")
+        print(f"⚠️ {exchange_name.upper()} 连接失败 (尝试 {attempt + 1}/{max_retries}): {str(e)[:100]}")
         if attempt < max_retries - 1:
             print(f"   等待 {retry_delay} 秒后重试...")
             time.sleep(retry_delay)
         else:
-            print("❌ 无法连接到Binance API，请检查网络连接")
+            print(f"❌ 无法连接到{exchange_name.upper()} API，请检查网络连接")
             print("   可能原因：")
             print("   1. 网络不稳定或暂时中断")
-            print("   2. Binance API暂时不可用")
+            print(f"   2. {exchange_name.upper()} API暂时不可用")
             print("   3. 需要代理访问国际网络")
+            print("   4. API密钥配置错误")
             print("   程序将退出，请稍后重试")
             exit(1)
 
-if binance_client is None:
+if exchange is None:
     print("❌ 初始化失败，程序退出")
     exit(1)
 
 # 初始化模块（使用全局定义的路径常量）
-portfolio_stats = PortfolioStatistics(PORTFOLIO_STATS_FILE, binance_client)
+portfolio_stats = PortfolioStatistics(PORTFOLIO_STATS_FILE, exchange)
 
-# 配置文件路径
-config_path = os.path.join(PROJECT_ROOT, 'config', 'coins_config.json')
-market_scanner = MarketScanner(binance_client, config_path)
+# 使用已加载的配置
+market_scanner = MarketScanner(exchange, config_path)
 
 def save_current_runtime():
     """保存当前运行状态到文件"""
@@ -198,25 +266,26 @@ print(f"📋 配置加载成功 - 杠杆: {PORTFOLIO_CONFIG['leverage']}x, 最�
 def setup_exchange():
     """设置交易所参数"""
     try:
-        # 为所有币种设置杠杆
+        # 为所有币种设置杠杆（如果交易所不支持就跳过）
         for coin_info in market_scanner.coins_config['coins']:
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式 ETH/USDT
+            symbol = format_symbol_for_exchange(base_symbol, exchange)
+            
+            coin_name = base_symbol.split('/')[0]
             try:
-                binance_client.futures_change_leverage(
-                    symbol=symbol,
-                    leverage=PORTFOLIO_CONFIG['leverage']
-                )
-                print(f"✅ {coin_info['symbol']}: 设置杠杆{PORTFOLIO_CONFIG['leverage']}x")
+                # 逐仓模式（isolated margin）- 更安全，风险隔离
+                exchange.set_leverage(PORTFOLIO_CONFIG['leverage'], symbol)
+                print(f"✅ {coin_name}: 设置杠杆{PORTFOLIO_CONFIG['leverage']}x (逐仓模式)")
+            except ccxt.NotSupported:
+                # 交易所不支持预先设置杠杆，跳过
+                pass
             except Exception as e:
-                print(f"⚠️ {coin_info['symbol']}: 设置杠杆失败 - {e}")
+                # 其他错误显示警告
+                print(f"⚠️ {coin_name}: 设置杠杆失败 - {str(e)[:50]}")
         
-        # 获取余额
-        account_info = binance_client.futures_account()
-        usdt_balance = 0
-        for asset in account_info['assets']:
-            if asset['asset'] == 'USDT':
-                usdt_balance = float(asset['availableBalance'])
-                break
+        # 获取余额（CCXT 会自动适配不同交易所）
+        balance = exchange.fetch_balance()
+        usdt_balance = balance['total'].get('USDT', 0)
         
         print(f"💰 当前USDT余额: {usdt_balance:.2f}")
         return True
@@ -227,21 +296,33 @@ def setup_exchange():
 
 
 def safe_json_parse(json_str):
-    """安全解析JSON"""
+    """安全解析JSON，包含多重容错处理"""
     try:
         return json.loads(json_str)
     except json.JSONDecodeError:
         try:
+            # 容错1：处理真实换行符 - 将字符串中的换行符替换为空格
+            json_str = json_str.replace('\n', ' ').replace('\r', ' ')
+            
+            # 容错2：处理千分位分隔符 - 移除数字中的逗号
+            # 匹配类似 91,262.80 或 103,900 这样的数字
+            json_str = re.sub(r'(\d+),(\d+)', r'\1\2', json_str)
+            
+            # 容错3：单引号转双引号
             json_str = json_str.replace("'", '"')
-            # 修复缺少引号的key（包括完全没引号和缺少前引号的情况）
+            
+            # 容错4：修复缺少引号的key（包括完全没引号和缺少前引号的情况）
             # 例如：stop_loss: 124.50 或 stop_loss": 124.50 → "stop_loss": 124.50
             json_str = re.sub(r'([,\{\[\s])(?!")([a-zA-Z_]\w*)"?:', r'\1"\2":', json_str)
+            
+            # 容错5：移除尾部多余逗号
             json_str = re.sub(r',\s*}', '}', json_str)
             json_str = re.sub(r',\s*]', ']', json_str)
+            
             return json.loads(json_str)
         except json.JSONDecodeError as e:
             print(f"JSON解析失败: {e}")
-            print(f"原始内容: {json_str}")
+            print(f"原始内容: {json_str[:500]}...")  # 只打印前500字符，避免刷屏
             return None
 
 
@@ -682,7 +763,7 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 2. 杠杆固定：当前使用 {PORTFOLIO_CONFIG['leverage']}x 杠杆，由系统管理，无需考虑调整
 
 3. 最小开仓金额（position_value，杠杆后的金额）：
-   - 🔒 全局限制：任何币种不得低于 13 USDT（硬编码，不可突破）
+   - 🔒 全局限制：任何币种不得低于 10 USDT（硬编码，不可突破）
    - 币种限制：{coin_limits_text}
    - 实际生效：取两者中的较大值
 
@@ -731,7 +812,7 @@ def calculate_position_size(coin, position_value, current_price, coin_config):
     """计算交易数量"""
     try:
         # 全局最小金额硬编码（安全底线）
-        GLOBAL_MIN_ORDER_VALUE = 13  # USDT
+        GLOBAL_MIN_ORDER_VALUE = 10  # USDT
 
         if position_value < GLOBAL_MIN_ORDER_VALUE:
             print(f"⚠️ {coin}: {position_value:.2f} USDT < 全局最小限制 {GLOBAL_MIN_ORDER_VALUE} USDT（硬编码）")
@@ -856,12 +937,15 @@ def execute_portfolio_decisions(decisions_data, market_data):
         print(f"{'─'*60}")
         
         try:
-            coin_info = next((c for c in market_scanner.coins_config['coins'] if c['symbol'] == coin), None)
+            # 匹配币种：支持 "ETH" 匹配到 "ETH/USDT"
+            coin_info = next((c for c in market_scanner.coins_config['coins'] 
+                            if c['symbol'] == coin or c['symbol'].startswith(f"{coin}/")), None)
             if not coin_info:
                 print(f"❌ 未找到{coin}的配置")
                 continue
             
-            symbol = coin_info['binance_symbol']
+            base_symbol = coin_info['symbol']  # CCXT基础格式 ETH/USDT
+            symbol = format_symbol_for_exchange(base_symbol, exchange)
             coin_market = market_data.get(coin)
             if not coin_market:
                 print(f"❌ 未找到{coin}的市场数据")
@@ -889,19 +973,22 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         new_stop_order = None
                         try:
                             # 1. 先下新止损单
-                            side_for_stop = 'SELL' if current_position['side'] == 'long' else 'BUY'
+                            side_for_stop = 'sell' if current_position['side'] == 'long' else 'buy'
                             amount_for_stop = current_position['amount']
                             price_precision = coin_info.get('price_precision', 2)
 
-                            new_stop_order = binance_client.futures_create_order(
+                            # CCXT创建止损单
+                            new_stop_order = exchange.create_order(
                                 symbol=symbol,
+                                type='stop_market',
                                 side=side_for_stop,
-                                type='STOP_MARKET',
-                                stopPrice=round(stop_loss, price_precision),
-                                closePosition=True,  # 使用closePosition而不是quantity
-                                workingType='MARK_PRICE'
+                                amount=amount_for_stop,
+                                params={
+                                    'stopPrice': round(stop_loss, price_precision),
+                                    'reduceOnly': True
+                                }
                             )
-                            stop_order_id = new_stop_order.get('orderId', 0)
+                            stop_order_id = new_stop_order.get('id', '')
                             print(f"   ✅ 新止损单已下: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
 
                             # 2. 新止损单成功后，再取消旧止损单
@@ -911,9 +998,9 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         except Exception as e:
                             print(f"   ❌ 调整止损失败: {str(e)[:100]}")
                             # 如果新止损单已创建但后续步骤失败，尝试回滚
-                            if new_stop_order and 'orderId' in new_stop_order:
+                            if new_stop_order and 'id' in new_stop_order:
                                 try:
-                                    binance_client.futures_cancel_order(symbol=symbol, orderId=new_stop_order['orderId'])
+                                    exchange.cancel_order(new_stop_order['id'], symbol)
                                     print(f"   ↩️ 已回滚新止损单")
                                 except:
                                     print(f"   ⚠️ 回滚失败，可能同时存在两个止损单，请手动检查")
@@ -936,13 +1023,13 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     # 1. 先取消止损单（如果存在）
                     portfolio_stats.cancel_stop_loss_order(coin, symbol)
                     
-                    # 2. 平仓
-                    binance_client.futures_create_order(
+                    # 2. 平仓 - CCXT
+                    exchange.create_order(
                         symbol=symbol,
-                        side=side,
-                        type='MARKET',
-                        quantity=amount,
-                        reduceOnly=True
+                        type='market',
+                        side='sell' if current_position['side'] == 'long' else 'buy',
+                        amount=amount,
+                        params={'reduceOnly': True}
                     )
                     
                     # 3. 记录平仓
@@ -958,12 +1045,12 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
                         print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: {amount} {coin} (${position_value:.2f})")
                         
-                        # 1. 开仓
-                        binance_client.futures_create_order(
+                        # 1. 开仓 - CCXT
+                        exchange.create_order(
                             symbol=symbol,
-                            side='BUY',
-                            type='MARKET',
-                            quantity=amount
+                            type='market',
+                            side='buy',
+                            amount=amount
                         )
                         
                         # 2. 立即下止损单（如果AI设置了止损价格）
@@ -971,15 +1058,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         if action == 'OPEN_LONG' and stop_loss > 0:
                             try:
                                 price_precision = coin_info.get('price_precision', 2)
-                                stop_order = binance_client.futures_create_order(
+                                stop_order = exchange.create_order(
                                     symbol=symbol,
-                                    side='SELL',  # 多仓止损用SELL
-                                    type='STOP_MARKET',
-                                    stopPrice=round(stop_loss, price_precision),  # 触发价格
-                                    quantity=amount,
-                                    reduceOnly=True  # 只减仓
+                                    type='stop_market',
+                                    side='sell',  # 多仓止损用sell
+                                    amount=amount,
+                                    params={
+                                        'stopPrice': round(stop_loss, price_precision),
+                                        'reduceOnly': True
+                                    }
                                 )
-                                stop_order_id = stop_order.get('orderId', 0)
+                                stop_order_id = stop_order.get('id', '')
                                 print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                             except Exception as e:
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
@@ -993,12 +1082,12 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
                         print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: {amount} {coin} (${position_value:.2f})")
                         
-                        # 1. 开仓
-                        binance_client.futures_create_order(
+                        # 1. 开仓 - CCXT
+                        exchange.create_order(
                             symbol=symbol,
-                            side='SELL',
-                            type='MARKET',
-                            quantity=amount
+                            type='market',
+                            side='sell',
+                            amount=amount
                         )
                         
                         # 2. 立即下止损单（如果AI设置了止损价格）
@@ -1006,15 +1095,17 @@ def execute_portfolio_decisions(decisions_data, market_data):
                         if action == 'OPEN_SHORT' and stop_loss > 0:
                             try:
                                 price_precision = coin_info.get('price_precision', 2)
-                                stop_order = binance_client.futures_create_order(
+                                stop_order = exchange.create_order(
                                     symbol=symbol,
-                                    side='BUY',  # 空仓止损用BUY
-                                    type='STOP_MARKET',
-                                    stopPrice=round(stop_loss, price_precision),  # 触发价格
-                                    quantity=amount,
-                                    reduceOnly=True  # 只减仓
+                                    type='stop_market',
+                                    side='buy',  # 空仓止损用buy
+                                    amount=amount,
+                                    params={
+                                        'stopPrice': round(stop_loss, price_precision),
+                                        'reduceOnly': True
+                                    }
                                 )
-                                stop_order_id = stop_order.get('orderId', 0)
+                                stop_order_id = stop_order.get('id', '')
                                 print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
                             except Exception as e:
                                 print(f"   ⚠️ 止损单下单失败: {str(e)[:100]}")
@@ -1029,8 +1120,8 @@ def execute_portfolio_decisions(decisions_data, market_data):
             
             time.sleep(0.5)  # 避免API限流
             
-        except BinanceAPIException as e:
-            print(f"❌ {coin} 币安API错误: {e.code} - {e.message}")
+        except ccxt.ExchangeError as e:
+            print(f"❌ {coin} 交易所API错误: {e}")
         except Exception as e:
             print(f"❌ {coin} 执行失败: {e}")
     
@@ -1117,16 +1208,18 @@ def sync_portfolio_positions_on_startup():
             
             if stop_order_id > 0:
                 try:
-                    # 查询止损单状态
-                    coin_info = next((c for c in market_scanner.coins_config['coins'] if c['symbol'] == coin), None)
+                    # 查询止损单状态，匹配币种：支持 "ETH" 匹配到 "ETH/USDT"
+                    coin_info = next((c for c in market_scanner.coins_config['coins'] 
+                                    if c['symbol'] == coin or c['symbol'].startswith(f"{coin}/")), None)
                     if not coin_info:
                         print(f"   ⚠️ 无法找到 {coin} 的配置信息")
                         continue
                     
-                    symbol = coin_info['binance_symbol']
-                    order = binance_client.futures_get_order(
-                        symbol=symbol,
-                        orderId=stop_order_id
+                    base_symbol = coin_info['symbol']
+                    symbol = format_symbol_for_exchange(base_symbol, exchange)
+                    order = exchange.fetch_order(
+                        id=stop_order_id,
+                        symbol=symbol
                     )
                     
                     if order['status'] == 'FILLED':
@@ -1214,6 +1307,9 @@ def portfolio_bot():
     
     # 4. 获取账户信息
     account_info = market_scanner.get_account_info()
+    
+    # 更新统计模块中的账户信息
+    portfolio_stats.update_account_info(account_info['total_balance'], account_info['free_balance'])
     
     # 5. AI分析 (移除 long_term_data)
     decisions_data = analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, account_info)
