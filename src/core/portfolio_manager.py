@@ -1006,31 +1006,41 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     continue
                 
                 if action == 'OPEN_LONG' or (action == 'ADD' and current_position and current_position['side'] == 'long'):
-                    print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: ${position_value:.2f} USDT")
+                    print(f"📈 {'开' if action == 'OPEN_LONG' else '加'}多仓: 保证金 ${position_value:.2f} USDT (杠杆 {PORTFOLIO_CONFIG['leverage']}x)")
                     
                     try:
-                        # 1. 开仓 - 先尝试用 cost 参数
-                        try:
+                        # 1. 计算合约张数（保证金模式）
+                        leverage = PORTFOLIO_CONFIG['leverage']
+                        nominal_value = position_value * leverage  # 名义价值
+                        
+                        # 获取市场信息
+                        market = exchange.markets.get(symbol)
+                        if market and 'contractSize' in market:
+                            # 合约市场，计算合约张数
+                            contract_size = float(market['contractSize'])
+                            eth_needed = nominal_value / current_price
+                            contracts = eth_needed / contract_size
+                            contracts = max(1, round(contracts))  # 至少1张，四舍五入
+                            
+                            print(f"   📊 名义价值: {nominal_value:.2f} USDT → {contracts} 张合约")
+                            
                             order = exchange.create_order(
                                 symbol=symbol,
                                 type='market',
                                 side='buy',
-                                amount=None,
-                                params={'cost': position_value}
+                                amount=contracts
                             )
-                        except Exception as e:
-                            # 如果不支持 cost，则手动计算数量
-                            print(f"   ⚠️ cost参数不支持，改用amount: {e}")
-                            amount = position_value / current_price
+                        else:
+                            # 非合约市场，直接用金额
+                            amount = nominal_value / current_price
+                            print(f"   📊 名义价值: {nominal_value:.2f} USDT → {amount:.6f} {coin}")
+                            
                             order = exchange.create_order(
                                 symbol=symbol,
                                 type='market',
                                 side='buy',
                                 amount=amount
                             )
-                        
-                        # 调试：打印订单信息
-                        print(f"   🔍 订单返回: {order}")
                         
                         # 从订单结果获取实际成交数量
                         if order and 'filled' in order and order['filled'] is not None:
@@ -1070,31 +1080,41 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     print(f"✅ {coin} 多仓成功 ({filled_amount:.4f} {coin})")
                     
                 elif action == 'OPEN_SHORT' or (action == 'ADD' and current_position and current_position['side'] == 'short'):
-                    print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: ${position_value:.2f} USDT")
+                    print(f"📉 {'开' if action == 'OPEN_SHORT' else '加'}空仓: 保证金 ${position_value:.2f} USDT (杠杆 {PORTFOLIO_CONFIG['leverage']}x)")
                     
                     try:
-                        # 1. 开仓 - 先尝试用 cost 参数
-                        try:
+                        # 1. 计算合约张数（保证金模式）
+                        leverage = PORTFOLIO_CONFIG['leverage']
+                        nominal_value = position_value * leverage  # 名义价值
+                        
+                        # 获取市场信息
+                        market = exchange.markets.get(symbol)
+                        if market and 'contractSize' in market:
+                            # 合约市场，计算合约张数
+                            contract_size = float(market['contractSize'])
+                            eth_needed = nominal_value / current_price
+                            contracts = eth_needed / contract_size
+                            contracts = max(1, round(contracts))  # 至少1张，四舍五入
+                            
+                            print(f"   📊 名义价值: {nominal_value:.2f} USDT → {contracts} 张合约")
+                            
                             order = exchange.create_order(
                                 symbol=symbol,
                                 type='market',
                                 side='sell',
-                                amount=None,
-                                params={'cost': position_value}
+                                amount=contracts
                             )
-                        except Exception as e:
-                            # 如果不支持 cost，则手动计算数量
-                            print(f"   ⚠️ cost参数不支持，改用amount: {e}")
-                            amount = position_value / current_price
+                        else:
+                            # 非合约市场，直接用金额
+                            amount = nominal_value / current_price
+                            print(f"   📊 名义价值: {nominal_value:.2f} USDT → {amount:.6f} {coin}")
+                            
                             order = exchange.create_order(
                                 symbol=symbol,
                                 type='market',
                                 side='sell',
                                 amount=amount
                             )
-                        
-                        # 调试：打印订单信息
-                        print(f"   🔍 订单返回: {order}")
                         
                         # 从订单结果获取实际成交数量
                         if order and 'filled' in order and order['filled'] is not None:
