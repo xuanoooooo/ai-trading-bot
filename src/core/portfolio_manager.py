@@ -758,9 +758,9 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 ⚠️ 硬性规则（系统限制，必须遵守）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. 资金保护（重要）：
-   - 必须保留至少 10% 的账户总资产作为手续费和风险缓冲
-   - 最大可用保证金 = 账户总资产 × 90% - 已用保证金
-   - 示例：总资产 100 USDT，已用 50 USDT → 最多还能用 40 USDT (100×0.9-50)
+   - 必须保留至少 {PORTFOLIO_CONFIG['min_cash_reserve_percent']}% 的账户总资产作为手续费和风险缓冲
+   - 最大可用保证金 = 账户总资产 × {100-PORTFOLIO_CONFIG['min_cash_reserve_percent']}% - 已用保证金
+   - 示例：总资产 100 USDT，已用 50 USDT → 最多还能用 {100*(100-PORTFOLIO_CONFIG['min_cash_reserve_percent'])/100-50} USDT (100×{(100-PORTFOLIO_CONFIG['min_cash_reserve_percent'])/100}-50)
    - 这是为了确保有足够资金支付手续费和应对突发波动
 
 2. 杠杆固定：当前使用 {PORTFOLIO_CONFIG['leverage']}x 杠杆，由系统管理，无需考虑调整
