@@ -82,7 +82,20 @@ For detailed deployment instructions, refer to the "Server Migration Guide" sect
 - **Visual Dashboard**: Web real-time monitoring (Flask), reads exchange API directly
 - **Technical Indicator Analysis**: RSI, MACD, ATR, EMA, Bollinger Bands, and more
 
-## 📈 Core Architecture Design
+## � How to Switch Exchanges
+
+**Switch exchanges by config file only, no code changes!**
+
+Edit `config/coins_config.json` line 2:
+```json
+"exchange": "gateio"  // Change to: binance, okx, or bybit
+```
+
+Then configure corresponding API keys in `.env` file and restart.
+
+---
+
+## �📈 Core Architecture Design
 
 ### 🎯 Prompt Architecture Optimization - Complete Code-Strategy Separation ⭐Core Feature
 
@@ -238,7 +251,56 @@ OPENAI_MODEL_NAME=deepseek-chat
 
 **Test Verification**: All coin precisions meet Binance requirements, no order rejection issues
 
-## 📁 Project Structure
+## � How to Switch Exchanges
+
+**Only 2 steps needed, no code changes!**
+
+1. **Configure Exchange API Keys**
+```bash
+vim .env
+
+# Add your exchange API keys (choose one):
+GATEIO_API_KEY=your_key
+GATEIO_SECRET=your_secret
+
+# Or for Binance:
+BINANCE_API_KEY=your_key
+BINANCE_SECRET=your_secret
+
+# Or for OKX:
+OKX_API_KEY=your_key
+OKX_SECRET=your_secret
+OKX_PASSWORD=your_password
+
+# Or for Bybit:
+BYBIT_API_KEY=your_key
+BYBIT_SECRET=your_secret
+```
+
+2. **Set Exchange in Config File**
+```bash
+vim config/coins_config.json
+
+# Change the "exchange" field:
+{
+  "exchange": "gateio",  // Options: gateio, binance, okx, bybit
+  "coins": [
+    ...
+  ]
+}
+```
+
+3. **Restart Program**
+```bash
+pkill -f portfolio_manager.py
+./scripts/start_portfolio.sh
+```
+
+Done! The program will automatically use the correct symbol format and API for your chosen exchange.
+
+---
+
+## �📁 Project Structure
 
 ```
 duobizhong/

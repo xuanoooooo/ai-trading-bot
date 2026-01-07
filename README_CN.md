@@ -86,7 +86,20 @@ vim config/coins_config.json  # 设置 "exchange": "gateio" 或 "binance"
 - **可视化看板**: Web实时监控(Flask)，直接读取交易所API数据
 - **技术指标分析**: RSI、MACD、ATR、EMA、布林带等多维度指标
 
-## 📈 核心架构设计
+## � 如何切换交易所
+
+**仅需修改配置文件，无需改代码！**
+
+编辑 `config/coins_config.json` 第2行：
+```json
+"exchange": "gateio"  // 改为: binance, okx, 或 bybit
+```
+
+然后在 `.env` 配置对应的 API 密钥并重启即可。
+
+---
+
+## �📈 核心架构设计
 
 ### 🎯 提示词架构优化 - 代码与策略完全分离 ⭐核心特性
 
@@ -242,7 +255,56 @@ OPENAI_MODEL_NAME=deepseek-chat
 
 **测试验证**：全部币种精度符合币安要求，无订单拒绝问题
 
-## 📁 项目结构
+## � 如何切换交易所
+
+**只需2步，无需修改代码！**
+
+1. **配置交易所 API 密钥**
+```bash
+vim .env
+
+# 添加你的交易所 API 密钥（选择其一）：
+GATEIO_API_KEY=your_key
+GATEIO_SECRET=your_secret
+
+# 或者币安：
+BINANCE_API_KEY=your_key
+BINANCE_SECRET=your_secret
+
+# 或者 OKX：
+OKX_API_KEY=your_key
+OKX_SECRET=your_secret
+OKX_PASSWORD=your_password
+
+# 或者 Bybit：
+BYBIT_API_KEY=your_key
+BYBIT_SECRET=your_secret
+```
+
+2. **在配置文件中设置交易所**
+```bash
+vim config/coins_config.json
+
+# 修改 "exchange" 字段：
+{
+  "exchange": "gateio",  // 可选: gateio, binance, okx, bybit
+  "coins": [
+    ...
+  ]
+}
+```
+
+3. **重启程序**
+```bash
+pkill -f portfolio_manager.py
+./scripts/start_portfolio.sh
+```
+
+完成！程序会自动使用正确的 symbol 格式和 API。
+
+---
+
+## �📁 项目结构
 
 ```
 duobizhong/
