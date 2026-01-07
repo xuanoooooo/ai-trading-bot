@@ -732,7 +732,10 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 ⚠️ 字段说明：
 - action: 操作类型（OPEN_LONG/OPEN_SHORT/CLOSE/ADD/HOLD）
 - reason: 必须包含K线形态+技术指标，简洁明了
-- position_value: 持仓价值（USDT），HOLD/CLOSE时填0
+- position_value: 保证金金额（USDT），系统会自动计算杠杆后的名义价值
+  * 示例：填 24 表示使用 24 USDT 保证金
+  * 实际开仓：24 × {PORTFOLIO_CONFIG['leverage']}倍杠杆 = {24 * PORTFOLIO_CONFIG['leverage']} USDT 名义价值
+  * HOLD/CLOSE时填0
 - stop_loss/take_profit: 必填具体价格（CLOSE时可填0）
 - decisions为空数组时表示观望
 
@@ -762,8 +765,15 @@ def analyze_portfolio_with_ai(market_data, portfolio_positions, btc_data, accoun
 
 2. 杠杆固定：当前使用 {PORTFOLIO_CONFIG['leverage']}x 杠杆，由系统管理，无需考虑调整
 
-3. 最小开仓金额（position_value，杠杆后的金额）：
-   - 🔒 全局限制：任何币种不得低于 10 USDT（硬编码，不可突破）
+3. 最小开仓金额说明：
+   ⚠️ 重要：position_value 填写的是保证金金额，不是杠杆后的名义价值
+   
+   计算公式：
+   - 名义价值 = position_value（保证金）× {PORTFOLIO_CONFIG['leverage']}（杠杆）
+   - 示例：position_value=24 → 实际开仓 24×{PORTFOLIO_CONFIG['leverage']}={24*PORTFOLIO_CONFIG['leverage']} USDT 名义价值
+   
+   最小限制（针对保证金）：
+   - 🔒 全局限制：任何币种的保证金不得低于 10 USDT（硬编码）
    - 币种限制：{coin_limits_text}
    - 实际生效：取两者中的较大值
 
