@@ -3,32 +3,22 @@
   "coins": [
     {
       "symbol": "ETH/USDT",
-      "precision": 3,
-      "price_precision": 2,
       "min_order_value": 24
     },
     {
       "symbol": "SOL/USDT",
-      "precision": 1,
-      "price_precision": 2,
       "min_order_value": 13
     },
     {
       "symbol": "BNB/USDT",
-      "precision": 2,
-      "price_precision": 2,
       "min_order_value": 13
     },
     {
       "symbol": "HYPE/USDT",
-      "precision": 0,
-      "price_precision": 3,
       "min_order_value": 13
     },
     {
       "symbol": "ASTER/USDT",
-      "precision": 0,
-      "price_precision": 4,
       "min_order_value": 13
     }
   ],

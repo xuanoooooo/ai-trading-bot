@@ -936,7 +936,6 @@ def execute_portfolio_decisions(decisions_data, market_data):
                             # 1. 先下新止损单
                             side_for_stop = 'sell' if current_position['side'] == 'long' else 'buy'
                             amount_for_stop = current_position['amount']
-                            price_precision = coin_info.get('price_precision', 2)
 
                             # CCXT创建止损单
                             new_stop_order = exchange.create_order(
@@ -945,7 +944,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
                                 side=side_for_stop,
                                 amount=amount_for_stop,
                                 params={
-                                    'stopPrice': round(stop_loss, price_precision),
+                                    'stopPrice': stop_loss,  # CCXT自动处理精度
                                     'reduceOnly': True
                                 }
                             )
@@ -976,7 +975,7 @@ def execute_portfolio_decisions(decisions_data, market_data):
             
             elif action == 'CLOSE':
                 if current_position:
-                    amount = round(current_position['amount'], coin_info['precision'])
+                    amount = current_position['amount']  # CCXT自动处理精度
                     side = 'SELL' if current_position['side'] == 'long' else 'BUY'
                     
                     print(f"📤 平{current_position['side']}仓: {amount} {coin}")
@@ -1025,14 +1024,13 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_LONG' and stop_loss > 0 and filled_amount > 0:
                         try:
-                            price_precision = coin_info.get('price_precision', 2)
                             stop_order = exchange.create_order(
                                 symbol=symbol,
                                 type='stop_market',
                                 side='sell',  # 多仓止损用sell
                                 amount=filled_amount,  # 使用实际成交数量
                                 params={
-                                    'stopPrice': round(stop_loss, price_precision),
+                                    'stopPrice': stop_loss,  # CCXT自动处理精度
                                     'reduceOnly': True
                                 }
                             )
@@ -1066,14 +1064,13 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_SHORT' and stop_loss > 0 and filled_amount > 0:
                         try:
-                            price_precision = coin_info.get('price_precision', 2)
                             stop_order = exchange.create_order(
                                 symbol=symbol,
                                 type='stop_market',
                                 side='buy',  # 空仓止损用buy
                                 amount=filled_amount,  # 使用实际成交数量
                                 params={
-                                    'stopPrice': round(stop_loss, price_precision),
+                                    'stopPrice': stop_loss,  # CCXT自动处理精度
                                     'reduceOnly': True
                                 }
                             )
