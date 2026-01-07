@@ -74,6 +74,70 @@ def format_symbol_for_exchange(base_symbol, exchange_obj):
             return f"{base_symbol}:USDT"
     return base_symbol
 
+def create_stop_order(exchange_obj, symbol, side, amount, stop_price):
+    """
+    CCXT 通用止损单创建函数
+    
+    使用 CCXT 推荐的通用方式：
+    - 首先尝试: type='market' + params={'stopPrice': ...}
+    - 如失败则尝试交易所特定方式
+    
+    :param exchange_obj: CCXT交易所对象
+    :param symbol: 交易对
+    :param side: 方向 ('buy' 或 'sell')
+    :param amount: 数量
+    :param stop_price: 止损价格
+    :return: 订单对象或None
+    """
+    try:
+        # 方式1: CCXT 通用方式 (推荐)
+        logger.info(f"创建止损单: {symbol} {side} {amount} @ 触发价 {stop_price}")
+        order = exchange_obj.create_order(
+            symbol=symbol,
+            type='market',
+            side=side,
+            amount=amount,
+            params={
+                'stopPrice': stop_price,
+                'reduceOnly': True
+            }
+        )
+        logger.info(f"止损单创建成功: {order.get('id', 'N/A')}")
+        return order
+    except Exception as e:
+        # 方式2: 交易所特定方式
+        logger.warning(f"通用方式失败: {e}，尝试交易所特定方式...")
+        exchange_id = exchange_obj.id.lower()
+        
+        try:
+            if exchange_id == 'gateio':
+                order = exchange_obj.create_order(
+                    symbol=symbol,
+                    type='limit',
+                    side=side,
+                    amount=amount,
+                    price=stop_price,
+                    params={'stopPrice': stop_price, 'reduceOnly': True}
+                )
+            elif exchange_id == 'bybit':
+                order = exchange_obj.create_order(
+                    symbol=symbol,
+                    type='market',
+                    side=side,
+                    amount=amount,
+                    params={'stopLoss': stop_price, 'reduceOnly': True}
+                )
+            else:
+                logger.error(f"未知交易所: {exchange_id}")
+                return None
+            
+            logger.info(f"特定方式成功: {order.get('id', 'N/A')}")
+            return order
+        except Exception as e2:
+            logger.error(f"创建止损单完全失败: {e2}")
+            return None
+
+
 # 初始化客户端
 deepseek_client = OpenAI(
     api_key=os.getenv('OPENAI_API_KEY'),
@@ -947,17 +1011,9 @@ def execute_portfolio_decisions(decisions_data, market_data):
                             side_for_stop = 'sell' if current_position['side'] == 'long' else 'buy'
                             amount_for_stop = current_position['amount']
 
-                            # CCXT创建止损单 - Gate.io 使用 stop 类型
-                            new_stop_order = exchange.create_order(
-                                symbol=symbol,
-                                type='stop',
-                                side=side_for_stop,
-                                amount=amount_for_stop,
-                                price=stop_loss,  # 止损触发价格
-                                params={
-                                    'stopPrice': stop_loss,
-                                    'reduceOnly': True
-                                }
+                            # 创建止损单（自动适配交易所）
+                            new_stop_order = create_stop_order(
+                                exchange, symbol, side_for_stop, amount_for_stop, stop_loss
                             )
                             stop_order_id = new_stop_order.get('id', '')
                             print(f"   ✅ 新止损单已下: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
@@ -1080,17 +1136,8 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_LONG' and stop_loss > 0 and filled_amount > 0:
                         try:
-                            # Gate.io 止损单需要用 stop 类型而不是 stop_market
-                            stop_order = exchange.create_order(
-                                symbol=symbol,
-                                type='stop',
-                                side='sell',  # 多仓止损用sell
-                                amount=filled_amount,  # 使用实际成交数量
-                                price=stop_loss,  # 止损触发价格
-                                params={
-                                    'stopPrice': stop_loss,
-                                    'reduceOnly': True
-                                }
+                            stop_order = create_stop_order(
+                                exchange, symbol, 'sell', filled_amount, stop_loss
                             )
                             stop_order_id = stop_order.get('id', '')
                             print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
@@ -1174,17 +1221,8 @@ def execute_portfolio_decisions(decisions_data, market_data):
                     stop_order_id = 0
                     if action == 'OPEN_SHORT' and stop_loss > 0 and filled_amount > 0:
                         try:
-                            # Gate.io 止损单需要用 stop 类型而不是 stop_market
-                            stop_order = exchange.create_order(
-                                symbol=symbol,
-                                type='stop',
-                                side='buy',  # 空仓止损用buy
-                                amount=filled_amount,  # 使用实际成交数量
-                                price=stop_loss,  # 止损触发价格
-                                params={
-                                    'stopPrice': stop_loss,
-                                    'reduceOnly': True
-                                }
+                            stop_order = create_stop_order(
+                                exchange, symbol, 'buy', filled_amount, stop_loss
                             )
                             stop_order_id = stop_order.get('id', '')
                             print(f"   🛡️ 止损单已设置: {format_price(stop_loss, coin)} (订单ID: {stop_order_id})")
