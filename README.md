@@ -1,3 +1,9 @@
+# 喜欢ai交易的可以关注
+https://github.com/NoFxAiOS/nofx 这个项目，只需要一行命令就可以启动：# 部署到你的服务器
+curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+这里仅会作为我个人的仓库，做一些我认为ai需要的数据。
+
+
 # 🚀 AI Multi-Coin Portfolio Management System
 
 English | [简体中文](README_CN.md)
